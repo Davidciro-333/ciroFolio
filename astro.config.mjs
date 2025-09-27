@@ -10,6 +10,5 @@ export default defineConfig({
       // @ts-ignore
       plugins: [tailwindcss()],
   },
-  base: '/cirofolio',
   integrations: [react()]
 });
