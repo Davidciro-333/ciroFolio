@@ -4,7 +4,7 @@ export const personalInfo = {
   email: "davidcirortiz06@gmail.com",
   github: "https://github.com/Davidciro-333",
   linkedin: "https://www.linkedin.com/in/david-ciro",
-  profilePicture: "/photoProfile.png",
+  profilePicture: "/cirofolio/photoProfile.png",
   heroDescription: [
     "Tecnólogo en Desarrollo de Software especializado en la automatización de procesos. Experto en el diseño e implementación de flujos de trabajo inteligentes utilizando n8n y Python, conectando con diversas APIs para centralizar y optimizar operaciones. ",
     "Lideré el desarrollo de un agente conversacional desde cero, gestionando la lógica de negocio y la persistencia de datos con PostgreSQL para asegurar una experiencia de usuario coherente. Busco un rol donde pueda aplicar mis habilidades para mejorar la eficiencia operativa y construir soluciones de automatización escalables que generen un impacto medible.",

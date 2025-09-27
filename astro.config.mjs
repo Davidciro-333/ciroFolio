@@ -9,6 +9,7 @@ export default defineConfig({
   vite: {
       // @ts-ignore
       plugins: [tailwindcss()],
+      base: '/cirofolio',
   },
   integrations: [react()]
 });
