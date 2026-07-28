@@ -1,0 +1,121 @@
+---
+// src/components/Pipeline.astro
+// Diagrama de flujo para los casos de estudio.
+//
+// Es una lista ordenada de verdad (<ol>), no un dibujo: se lee con lector de
+// pantalla, se puede copiar y no se rompe al hacer zoom. Sin JS y sin SVG de
+// ancho fijo — un diagrama que obliga a hacer scroll horizontal en el móvil
+// no es un diagrama, es una imagen.
+//
+// Nada se comunica solo con color: las ramas llevan su etiqueta escrita.
+
+export interface Step {
+  /** Número o marca corta del paso. */
+  n: string;
+  title: string;
+  detail?: string;
+  /** Ruta alternativa: qué pasa cuando este paso no se cumple. */
+  branch?: string;
+  /** Destinos en abanico al final del paso. */
+  outputs?: string[];
+}
+
+interface Props {
+  steps: Step[];
+  caption?: string;
+  /** Etiqueta del desvío. Se traduce desde el MDX de cada idioma. */
+  branchLabel?: string;
+}
+
+const { steps, caption, branchLabel = 'else' } = Astro.props;
+---
+
+<figure class="pipeline my-9">
+  <ol class="flex flex-col">
+    {steps.map((step, index) => (
+      <li class="grid grid-cols-[auto_1fr] gap-x-5">
+
+        <!-- Columna del indicador: número + línea conectora -->
+        <div class="flex flex-col items-center">
+          <span
+            class="w-9 h-9 rounded-full shrink-0
+                   flex items-center justify-center
+                   text-[12px] font-bold tabular-nums
+                   border border-[var(--color-neon)]/40 bg-[var(--color-neon)]/[0.08]"
+            style="color: var(--color-neon); font-family: var(--font-body);"
+          >{step.n}</span>
+
+          {index < steps.length - 1 && (
+            <span
+              class="w-px flex-1 min-h-[28px] my-1"
+              style="background: linear-gradient(to bottom, rgba(200,241,53,0.35), rgba(255,255,255,0.08));"
+              aria-hidden="true"
+            ></span>
+          )}
+        </div>
+
+        <!-- Contenido del paso -->
+        <div class={index < steps.length - 1 ? 'pb-7' : ''}>
+          <p
+            class="text-[15px] font-semibold leading-snug"
+            style="font-family: var(--font-body); color: var(--color-text-primary);"
+          >{step.title}</p>
+
+          {step.detail && (
+            <p
+              class="text-[14px] leading-relaxed mt-1"
+              style="font-family: var(--font-body); color: var(--color-text-secondary);"
+            >{step.detail}</p>
+          )}
+
+          {step.branch && (
+            <p
+              class="text-[13px] leading-relaxed mt-3 pl-3 border-l border-dashed"
+              style="font-family: var(--font-body); color: var(--color-text-secondary); border-color: rgba(255,255,255,0.22);"
+            >
+              <span class="font-semibold" style="color: var(--color-text-primary);">{branchLabel} →</span>
+              {' '}{step.branch}
+            </p>
+          )}
+
+          {step.outputs && step.outputs.length > 0 && (
+            <ul class="flex flex-wrap gap-2 mt-3">
+              {step.outputs.map((output) => (
+                <li class="tag">{output}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+      </li>
+    ))}
+  </ol>
+
+  {caption && (
+    <figcaption
+      class="text-[13px] mt-5 pt-4 border-t"
+      style="font-family: var(--font-body); color: var(--color-text-secondary); border-color: rgba(255,255,255,0.08);"
+    >{caption}</figcaption>
+  )}
+</figure>
+
+<style>
+  /* El diagrama vive dentro de .case-prose, que estiliza ul/ol/li/p para
+     lectura larga. Aquí eso estorba: metería viñetas y márgenes entre los
+     pasos. Se neutraliza con especificidad mayor que la de la prosa, en vez
+     de con !important. */
+  figure.pipeline ol,
+  figure.pipeline ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  figure.pipeline li {
+    margin: 0;
+  }
+
+  figure.pipeline p {
+    margin: 0;
+  }
+</style>

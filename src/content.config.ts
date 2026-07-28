@@ -15,13 +15,13 @@ import { LOCALES } from './i18n/config';
  */
 const work = defineCollection({
   loader: glob({
-    pattern: '**/*.md',
+    pattern: '**/*.{md,mdx}',
     base: './src/content/work',
     // OBLIGATORIO: por defecto el loader toma el `slug` del frontmatter como
     // id de la entrada, y aquí los dos idiomas comparten slug — se pisarían
     // el uno al otro y solo se cargaría uno. El id sale del nombre de archivo,
     // que sí es único: "galactic-bills.en".
-    generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+    generateId: ({ entry }) => entry.replace(/\.mdx?$/, ''),
   }),
   schema: z.object({
     slug: z.string(),

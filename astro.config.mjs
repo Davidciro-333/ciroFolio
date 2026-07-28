@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
+import mdx from '@astrojs/mdx';
 
 // Dominio y ruta base del sitio.
 // Hoy el portafolio se sirve en itsciro.com/cirofolio mediante un rewrite de
@@ -10,7 +11,10 @@ const SITE = process.env.PUBLIC_SITE_URL ?? 'https://itsciro.com';
 const BASE = process.env.PUBLIC_BASE_PATH ?? '/cirofolio';
 
 export default defineConfig({
-  integrations: [tailwind()],
+  // MDX en los casos de estudio: permite embeber diagramas de arquitectura,
+  // extractos de código anotados y screencasts dentro del texto, en el punto
+  // exacto donde tienen sentido.
+  integrations: [tailwind(), mdx()],
   site: SITE,
   base: BASE,
 

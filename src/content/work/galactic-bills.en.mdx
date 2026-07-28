@@ -16,6 +16,8 @@ draft: false
 order: 1
 ---
 
+import Pipeline from '../../components/Pipeline.astro';
+
 ## The problem
 
 A small business loses hours every month typing invoices into a spreadsheet. It is the
@@ -33,16 +35,19 @@ silently costs more than no number at all.
 The client sends a photo or a PDF to a Telegram bot, or drops it into a shared Drive
 folder. From there it runs on its own:
 
-1. The file is stored and the pipeline picks it up within a minute
-2. A classifier decides whether this is actually an invoice — a blurry photo of
-   something else gets rejected here instead of polluting the books
-3. Gemini extracts the fiscal fields against a fixed schema, at temperature 0, with a
-   strict JSON response type
-4. The arithmetic is checked: base plus VAT has to equal the total
-5. Anything failing a check goes to a human review queue over Telegram, not to the
-   spreadsheet
-6. Clean rows are filed, deduplicated by file hash, and confirmed back on the same
-   channel the client used
+<Pipeline
+  branchLabel="else"
+  caption="Two checks decide everything: one before the model runs, one after. Neither of them existed in the first version."
+  steps={[
+    { n: '01', title: 'Ingest', detail: 'A photo or PDF arrives through the Telegram bot, or is dropped into the shared Drive folder.' },
+    { n: '02', title: 'Pick up', detail: 'The file is stored and the pipeline detects it in under a minute.' },
+    { n: '03', title: 'Classify', detail: 'Is this actually an invoice?', branch: 'it is not — rejected here, before it can pollute the books.' },
+    { n: '04', title: 'Extract', detail: 'Gemini reads the fiscal fields against a fixed schema, at temperature 0, with a strict JSON response type.' },
+    { n: '05', title: 'Validate', detail: 'Taxable base plus VAT has to equal the total.', branch: 'the numbers do not add up — goes to a human review queue over Telegram, never to the spreadsheet.' },
+    { n: '06', title: 'File', detail: 'The row is written and deduplicated by a hash of the file itself.' },
+    { n: '07', title: 'Confirm', detail: 'The client hears back on the same channel they used.' },
+  ]}
+/>
 
 It runs on self-hosted n8n — AWS EC2, Docker Compose, nginx — infrastructure I manage
 myself.

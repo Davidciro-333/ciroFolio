@@ -18,6 +18,8 @@ draft: false
 order: 2
 ---
 
+import Pipeline from '../../components/Pipeline.astro';
+
 ## The problem I thought I had
 
 Publishing short-form content by hand does not scale. Pick an image, pick a line, lay
@@ -42,6 +44,19 @@ themselves.
 
 There is also a carousel mode: a script is drafted, slides are generated in series with
 the cover first as a style reference for the rest, and the whole set publishes natively.
+
+<Pipeline
+  caption="Step 07 is the one that did not exist for the first three months — and it is the reason this case study has a plot."
+  steps={[
+    { n: '01', title: 'Banks', detail: 'Images and phrases are analysed and vectorised on the way in.' },
+    { n: '02', title: 'Pairing', detail: 'Matching an image to a line is a similarity query, not a decision I make at 11pm.' },
+    { n: '03', title: 'Render', detail: 'FFmpeg composes the 9:16 video with the text burned into the frame.' },
+    { n: '04', title: 'Audio', detail: 'A track is picked by matching mood and energy tags against the phrase.' },
+    { n: '05', title: 'Queue', detail: 'The piece waits its turn under a cadence I control, not a posting spree.' },
+    { n: '06', title: 'Publish', detail: 'n8n drains the queue and handles the specific dance each platform demands — including Facebook’s three-phase upload and tokens that rotate themselves.', outputs: ['YouTube Shorts', 'Instagram Reels', 'Facebook Reels', 'TikTok'] },
+    { n: '07', title: 'Measure', detail: 'Daily insight snapshots are joined back to the recipe that produced each post.' },
+  ]}
+/>
 
 ## When the numbers started falling
 

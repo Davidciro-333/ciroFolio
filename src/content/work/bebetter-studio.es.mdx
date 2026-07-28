@@ -18,6 +18,8 @@ draft: false
 order: 2
 ---
 
+import Pipeline from '../../components/Pipeline.astro';
+
 ## El problema que creía tener
 
 Publicar contenido corto a mano no escala. Elegir imagen, elegir frase, maquetar el
@@ -43,6 +45,19 @@ subida en tres fases de Facebook y los tokens que caducan y tienen que rotarse s
 También hay modo carrusel: se redacta un guion, las slides se generan en serie con la
 portada primero como referencia de estilo para las demás, y el conjunto se publica de
 forma nativa.
+
+<Pipeline
+  caption="El paso 07 es el que no existió durante los tres primeros meses — y es la razón por la que este caso tiene trama."
+  steps={[
+    { n: '01', title: 'Bancos', detail: 'Las imágenes y las frases se analizan y se vectorizan al entrar.' },
+    { n: '02', title: 'Emparejamiento', detail: 'Cruzar una imagen con una frase es una consulta por similitud, no una decisión que tome yo a las once de la noche.' },
+    { n: '03', title: 'Render', detail: 'FFmpeg compone el video 9:16 con el texto quemado en el fotograma.' },
+    { n: '04', title: 'Audio', detail: 'Se elige pista cruzando etiquetas de mood y energía contra la frase.' },
+    { n: '05', title: 'Cola', detail: 'La pieza espera su turno bajo una cadencia que controlo, no una ráfaga de publicaciones.' },
+    { n: '06', title: 'Publicación', detail: 'n8n drena la cola y resuelve el baile particular de cada plataforma — incluida la subida en tres fases de Facebook y los tokens que se rotan solos.', outputs: ['YouTube Shorts', 'Instagram Reels', 'Facebook Reels', 'TikTok'] },
+    { n: '07', title: 'Medición', detail: 'Cada día se recogen métricas y se cruzan con la receta que produjo cada publicación.' },
+  ]}
+/>
 
 ## Cuando los números empezaron a caer
 

@@ -16,6 +16,8 @@ draft: false
 order: 1
 ---
 
+import Pipeline from '../../components/Pipeline.astro';
+
 ## El problema
 
 Un negocio pequeño pierde horas cada mes pasando facturas a una hoja de cálculo. Es el
@@ -33,16 +35,19 @@ silencio cuesta más que no tener ningún número.
 El cliente manda una foto o un PDF a un bot de Telegram, o lo deja en una carpeta
 compartida de Drive. A partir de ahí funciona solo:
 
-1. El archivo queda guardado y el pipeline lo recoge en menos de un minuto
-2. Un clasificador decide si esto es realmente una factura — una foto borrosa de otra
-   cosa se rechaza aquí, en vez de contaminar la contabilidad
-3. Gemini extrae los campos fiscales contra un esquema fijo, a temperatura 0 y con tipo
-   de respuesta JSON estricto
-4. Se comprueba la aritmética: base más IVA tiene que dar el total
-5. Todo lo que no pasa una comprobación va a una cola de revisión humana por Telegram,
-   no a la hoja
-6. Las filas limpias se archivan, deduplicadas por hash del archivo, y se confirman de
-   vuelta por el mismo canal que usó el cliente
+<Pipeline
+  branchLabel="si no"
+  caption="Dos comprobaciones deciden todo: una antes de que corra el modelo y otra después. Ninguna de las dos existía en la primera versión."
+  steps={[
+    { n: '01', title: 'Ingesta', detail: 'Llega una foto o un PDF por el bot de Telegram, o se deja en la carpeta compartida de Drive.' },
+    { n: '02', title: 'Recogida', detail: 'El archivo queda guardado y el pipeline lo detecta en menos de un minuto.' },
+    { n: '03', title: 'Clasificación', detail: '¿Esto es realmente una factura?', branch: 'no lo es — se rechaza aquí, antes de poder contaminar la contabilidad.' },
+    { n: '04', title: 'Extracción', detail: 'Gemini lee los campos fiscales contra un esquema fijo, a temperatura 0 y con tipo de respuesta JSON estricto.' },
+    { n: '05', title: 'Validación', detail: 'La base imponible más el IVA tiene que dar el total.', branch: 'los números no cuadran — va a una cola de revisión humana por Telegram, nunca a la hoja.' },
+    { n: '06', title: 'Archivado', detail: 'Se escribe la fila, deduplicada por un hash del propio archivo.' },
+    { n: '07', title: 'Confirmación', detail: 'El cliente recibe respuesta por el mismo canal que usó.' },
+  ]}
+/>
 
 Corre sobre n8n self-hosted — AWS EC2, Docker Compose, nginx — infraestructura que
 gestiono yo.
