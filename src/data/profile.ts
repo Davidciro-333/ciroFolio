@@ -3,10 +3,9 @@ import type { Localized } from '../i18n/config';
 /**
  * Datos de perfil y contacto.
  *
- * NOTA DE FASE: el copy de la bio conserva el tono de la versión anterior.
- * El reposicionamiento (automatización con IA, operador de sistemas vivos,
- * async-first) entra en la Fase 2 — al estar centralizado aquí, será editar
- * este archivo y no tocar ningún componente.
+ * El copy sigue el posicionamiento decidido: ingeniero de automatización con
+ * IA, encuadre de "operador de sistemas vivos", async-first declarado como
+ * forma de trabajo (nunca un nivel de idioma) y cero cifras infladas.
  */
 
 export const profile = {
@@ -15,25 +14,25 @@ export const profile = {
   location: { en: 'Medellín, Colombia', es: 'Medellín, Colombia' } as Localized,
   timezone: 'UTC-5',
 
-  /** Bio corta del hero. */
+  /** Bio corta del hero. Tiene que dejar claro el diferencial en 5 segundos. */
   heroBio: {
-    en: 'I’m David Ciro, a developer and UI designer based in Medellín. I build fast, well-crafted interfaces — from the design in Figma to the production deploy.',
-    es: 'Soy David Ciro, desarrollador web y diseñador UI basado en Medellín. Construyo interfaces rápidas, bonitas y funcionales — desde el diseño en Figma hasta el deploy en producción.',
+    en: 'I build AI automation systems that run in production — conversational commerce, document extraction and content pipelines. I design them, deploy them on my own infrastructure, and keep them running.',
+    es: 'Construyo sistemas de automatización con IA que corren en producción — comercio conversacional, extracción de documentos y pipelines de contenido. Los diseño, los despliego en infraestructura propia y los mantengo funcionando.',
   } as Localized,
 
   /** Párrafos de la sección "Sobre mí". */
   aboutParagraphs: [
     {
-      en: 'I’m a developer and UI designer based in Medellín, Colombia. I’ve worked freelance since 2022, building digital products that pair solid engineering with design that actually matters.',
-      es: 'Soy desarrollador web y diseñador UI basado en Medellín, Colombia. Trabajo como freelance desde 2022, construyendo productos digitales que combinan código sólido con diseño que realmente importa.',
+      en: 'I design, build and operate AI automation systems. Not prototypes — systems that run on their own: bots handling conversations over an official WhatsApp provider, pipelines publishing to four networks on a schedule, workflows reading invoices and filing them every day.',
+      es: 'Diseño, construyo y opero sistemas de automatización con IA. No prototipos — sistemas que funcionan solos: bots atendiendo conversaciones vía un proveedor oficial de WhatsApp, pipelines publicando programados en cuatro redes, workflows que leen facturas y las archivan a diario.',
     },
     {
-      en: 'I started in visual design and motion back in 2020 — that gives me a different angle: I understand both the designer’s intent and the developer’s constraints. I specialise in React, Astro and automation with n8n.',
-      es: 'Empecé en diseño visual y motion en 2020 — eso me da una perspectiva diferente: entiendo tanto la intención del diseñador como las restricciones del desarrollador. Me especializo en React, Astro y automatización con n8n.',
+      en: 'Most of what I’ve built started as a pilot for one case and became a configurable platform. That transition is where the interesting decisions are — what becomes configuration and what stays put. Sales safeguards and payment validation don’t belong in a config file, and knowing where that line sits is the part nobody can improvise.',
+      es: 'Casi todo lo que he construido empezó como un piloto para un solo caso y terminó siendo una plataforma configurable. Esa transición es donde están las decisiones interesantes — qué pasa a ser configuración y qué se queda quieto. Las salvaguardas de venta y la validación de pagos no van en un archivo de config, y saber dónde está esa frontera es lo que no se improvisa.',
     },
     {
-      en: 'I hold a Software Development degree from Institución Universitaria Pascual Bravo (2020–2024). The rest I learned by shipping real things.',
-      es: 'Soy Tecnólogo en Desarrollo de Software por la Institución Universitaria Pascual Bravo (2020–2024). El resto lo aprendí construyendo cosas reales.',
+      en: 'I work async-first: Slack, Notion, pull requests and written documentation. I’m on UTC-5, which overlaps the entire US working day. And I run my own infrastructure — AWS EC2 behind nginx, Docker, self-hosted n8n — so I don’t need anyone else to deploy what I build.',
+      es: 'Trabajo async-first: Slack, Notion, pull requests y documentación escrita. Estoy en UTC-5, con solape completo con la jornada laboral de EE.UU. Y gestiono mi propia infraestructura — AWS EC2 detrás de nginx, Docker, n8n self-hosted — así que no dependo de nadie para desplegar lo que construyo.',
     },
   ] as Localized[],
 

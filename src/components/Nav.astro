@@ -14,10 +14,10 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const links = [
-  { label: t(ui.nav.services),   href: '#servicios' },
-  { label: t(ui.nav.about),      href: '#sobre-mi' },
-  { label: t(ui.nav.work),       href: '#proyectos' },
-  { label: t(ui.nav.experience), href: '#experiencia' },
+  { label: t(ui.nav.services),   href: '#engagements' },
+  { label: t(ui.nav.about),      href: '#about' },
+  { label: t(ui.nav.work),       href: '#systems' },
+  { label: t(ui.nav.experience), href: '#experience' },
 ];
 
 // Conmutador de idioma: enlaza a esta misma página en el otro idioma.
@@ -70,7 +70,7 @@ const otherLangs = LOCALES.filter((locale) => locale !== lang);
       </a>
     ))}
 
-    <a href="#contacto" class="btn-primary md:hidden text-xs px-4 py-2">
+    <a href="#contact" class="btn-primary md:hidden text-xs px-4 py-2">
       {t(ui.nav.contact)}
     </a>
   </div>

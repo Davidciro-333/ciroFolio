@@ -1,6 +1,7 @@
 ---
 // src/components/Contacto.astro
 
+import ContactForm from './ContactForm.astro';
 import { ui } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
 import { profile } from '../data/profile';
@@ -15,7 +16,7 @@ const t = useTranslations(lang);
 ---
 
 <section
-  id="contacto"
+  id="contact"
   class="card-dark relative overflow-hidden
          px-8 md:px-12 lg:px-16
          pt-12 pb-10 md:pt-16 md:pb-12"
@@ -45,14 +46,23 @@ const t = useTranslations(lang);
         {t(ui.contact.titleLine3)}
       </h2>
 
-      <!-- Disponibilidad -->
-      <div class="inline-flex items-center gap-2 w-fit">
-        <span class="w-2 h-2 rounded-full bg-[var(--color-neon)] animate-neon-pulse inline-block"></span>
-        <span class="type-label" style="color: var(--color-text-muted);">{t(ui.contact.available)}</span>
+      <!-- Disponibilidad + forma de trabajo.
+           Se declara CÓMO se trabaja (async-first, UTC-5), nunca un nivel de
+           idioma: es cierto, es la forma real de trabajar, y muchas agencias
+           remotas lo leen como cultura y no como limitación. -->
+      <div class="flex flex-col gap-2">
+        <div class="inline-flex items-center gap-2 w-fit">
+          <span class="w-2 h-2 rounded-full bg-[var(--color-neon)] animate-neon-pulse inline-block"></span>
+          <span class="type-label" style="color: var(--color-text-muted);">{t(ui.contact.available)}</span>
+        </div>
+        <p class="type-label" style="color: var(--color-text-faint);">{t(ui.contact.async)}</p>
       </div>
     </div>
 
-    <!-- Email grande -->
+    <!-- Formulario: la conversión del sitio -->
+    <ContactForm lang={lang} />
+
+    <!-- Email como vía secundaria -->
     <div>
       <p class="type-label mb-3">{t(ui.contact.emailLabel)}</p>
       <a
@@ -61,10 +71,11 @@ const t = useTranslations(lang);
         aria-label={t(ui.contact.emailAria)}
       >
         <span
-          class="font-extrabold uppercase tracking-tight
-                 text-[clamp(28px,5vw,56px)] leading-none
+          class="font-extrabold tracking-tight
+                 text-[clamp(20px,3.2vw,36px)] leading-none
                  text-[var(--color-text-secondary)]
-                 group-hover:text-white transition-colors duration-300"
+                 group-hover:text-white transition-colors duration-300
+                 break-all"
           style="font-family: var(--font-display);"
         >
           {profile.email}
