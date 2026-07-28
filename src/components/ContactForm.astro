@@ -1,0 +1,193 @@
+---
+// src/components/ContactForm.astro
+//
+// Formulario corto de primer contacto. Deliberadamente asíncrono: no hay
+// botón de "agendar llamada". El primer intercambio ocurre por escrito, que
+// es donde se puede pensar la respuesta y llegar preparado a la llamada.
+//
+// Los campos de plazo y presupuesto filtran: quien no los quiere responder
+// tampoco iba a cerrar.
+
+import { ui } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { contactForm, isFormEnabled } from '../data/contact';
+import { profile } from '../data/profile';
+import type { Lang } from '../i18n/config';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const fieldClass =
+  'w-full bg-white/[0.03] border border-white/[0.10] rounded-[10px] px-4 py-3 ' +
+  'text-[14px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] ' +
+  'focus:outline-none focus:border-[var(--color-neon)] focus:bg-white/[0.05] ' +
+  'transition-colors duration-250';
+---
+
+<form
+  id="contact-form"
+  class="flex flex-col gap-5 max-w-xl"
+  data-endpoint={contactForm.endpoint}
+  data-access-key={contactForm.accessKey}
+  data-subject={contactForm.subject}
+  data-mailto={profile.email}
+  data-enabled={String(isFormEnabled)}
+  novalidate={false}
+>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="flex flex-col gap-2">
+      <label for="cf-name" class="type-label">{t(ui.form.name)} *</label>
+      <input id="cf-name" name="name" type="text" required autocomplete="name" class={fieldClass} />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="cf-company" class="type-label">{t(ui.form.company)}</label>
+      <input id="cf-company" name="company" type="text" autocomplete="organization" class={fieldClass} />
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <label for="cf-email" class="type-label">{t(ui.form.email)} *</label>
+    <input id="cf-email" name="email" type="email" required autocomplete="email" class={fieldClass} />
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <label for="cf-project" class="type-label">{t(ui.form.project)} *</label>
+    <textarea id="cf-project" name="project" required rows="4" class={fieldClass}></textarea>
+    <p class="type-label" style="color: var(--color-text-muted); text-transform: none; letter-spacing: 0;">
+      {t(ui.form.projectHint)}
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="flex flex-col gap-2">
+      <label for="cf-timeline" class="type-label">{t(ui.form.timeline)}</label>
+      <select id="cf-timeline" name="timeline" class={fieldClass}>
+        <option value="">{t(ui.form.select)}</option>
+        {t(ui.form.timelineOptions).map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="cf-budget" class="type-label">{t(ui.form.budget)}</label>
+      <select id="cf-budget" name="budget" class={fieldClass}>
+        <option value="">{t(ui.form.select)}</option>
+        {t(ui.form.budgetOptions).map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <!-- Trampa antispam: invisible para personas, irresistible para bots -->
+  <input
+    type="text"
+    name="botcheck"
+    tabindex="-1"
+    autocomplete="off"
+    aria-hidden="true"
+    style="position:absolute;left:-9999px;opacity:0;height:0;width:0;"
+  />
+
+  <div class="flex items-center gap-4 flex-wrap">
+    <button type="submit" class="btn-primary" data-label={t(ui.form.submit)} data-sending={t(ui.form.sending)}>
+      {t(ui.form.submit)} <span aria-hidden="true">↗</span>
+    </button>
+
+    <p
+      id="cf-status"
+      role="status"
+      aria-live="polite"
+      class="type-label"
+      style="color: var(--color-text-muted); text-transform: none; letter-spacing: 0;"
+      data-success={t(ui.form.success)}
+      data-error={t(ui.form.error)}
+    ></p>
+  </div>
+</form>
+
+<style>
+  /* El desplegable de un <select> lo pinta el sistema operativo, no la página:
+     hereda el color de texto del campo (blanco) pero abre sobre fondo claro,
+     así que las opciones quedaban blanco sobre blanco.
+
+     color-scheme le dice al navegador que dibuje el widget nativo en oscuro
+     —popup, flecha y scrollbar—, y los colores explícitos en option cubren a
+     los navegadores que no lo aplican al desplegable. */
+  select {
+    color-scheme: dark;
+  }
+
+  select option {
+    background-color: var(--color-surface-2);
+    color: var(--color-text-primary);
+  }
+</style>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const status = document.getElementById('cf-status');
+  if (form && status) {
+    const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const labelIdle = button.dataset.label ?? 'Send';
+    const labelSending = button.dataset.sending ?? 'Sending…';
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+
+      const data = new FormData(form);
+
+      // Trampa antispam rellenada → un bot. Se finge éxito y no se envía nada.
+      if (data.get('botcheck')) {
+        status.textContent = status.dataset.success ?? '';
+        form.reset();
+        return;
+      }
+
+      // Sin endpoint configurado: se abre el cliente de correo con todo
+      // escrito, para no perder el contacto por falta de configuración.
+      if (form.dataset.enabled !== 'true') {
+        const body = [...data.entries()]
+          .filter(([key, value]) => key !== 'botcheck' && value)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join('\n');
+        const subject = encodeURIComponent(form.dataset.subject ?? 'Project inquiry');
+        window.location.href =
+          `mailto:${form.dataset.mailto}?subject=${subject}&body=${encodeURIComponent(body)}`;
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = labelSending;
+      status.textContent = '';
+
+      try {
+        data.append('access_key', form.dataset.accessKey ?? '');
+        data.append('subject', form.dataset.subject ?? '');
+
+        const response = await fetch(form.dataset.endpoint ?? '', {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: data,
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        status.textContent = status.dataset.success ?? '';
+        form.reset();
+      } catch {
+        status.textContent = status.dataset.error ?? '';
+      } finally {
+        button.disabled = false;
+        button.textContent = labelIdle;
+      }
+    });
+  }
+</script>

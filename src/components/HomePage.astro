@@ -1,0 +1,34 @@
+---
+// src/components/HomePage.astro
+// La home completa. Las páginas por idioma son wrappers de este componente,
+// así la estructura no puede divergir entre inglés y español.
+
+import Layout       from '../layouts/Layout.astro';
+import Nav          from './Nav.astro';
+import Hero         from './Hero.astro';
+import Contratacion from './Contratacion.astro';
+import SobreMi      from './SobreMi.astro';
+import Proyectos   from './Proyectos.astro';
+import Experiencia from './Experiencia.astro';
+import Contacto    from './Contacto.astro';
+import type { Lang } from '../i18n/config';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<Layout lang={lang}>
+  <Nav lang={lang} />
+
+  <main class="px-[var(--section-pad-x)] flex flex-col gap-[var(--section-gap)]">
+    <Hero         lang={lang} />
+    <Contratacion lang={lang} />
+    <SobreMi      lang={lang} />
+    <Proyectos    lang={lang} />
+    <Experiencia  lang={lang} />
+    <Contacto     lang={lang} />
+  </main>
+</Layout>

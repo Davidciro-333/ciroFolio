@@ -1,0 +1,128 @@
+---
+slug: bebetter-studio
+lang: es
+title: beBetterStudio
+summary: Pipeline de contenido que genera video corto, lo publica programado en cuatro redes y mide qué decisiones funcionaron de verdad.
+role: Diseño, construcción y operación
+year: '2026'
+stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, SQLite, AWS S3]
+metrics:
+  - { value: '4', label: 'Redes con publicación automática' }
+  - { value: '60', label: 'Posts cruzados con su receta' }
+  - { value: '39/40', label: 'Publicaciones huérfanas recuperadas' }
+  - { value: '238', label: 'Imágenes indexadas y vectorizadas' }
+links:
+  - { label: 'La cuenta donde publica', url: 'https://www.instagram.com/bebetter.path/' }
+  - { label: 'Un carrusel que produjo', url: 'https://www.instagram.com/p/DbRZ5MgD9Rx/' }
+draft: false
+order: 2
+---
+
+import Pipeline from '../../components/Pipeline.astro';
+
+## El problema que creía tener
+
+Publicar contenido corto a mano no escala. Elegir imagen, elegir frase, maquetar el
+texto, renderizar, subir a cuatro redes, escribir cuatro copies, programar. Veinte
+minutos por pieza, todos los días, para siempre.
+
+Así que construí la máquina. Funcionó. Y aun así la cuenta se empezó a caer — que
+resultó ser el problema realmente interesante.
+
+## El sistema
+
+Una app web más una capa de automatización. La app tiene un banco de imágenes y un
+banco de frases; cada uno se analiza y se vectoriza, de modo que emparejar imagen con
+frase es una consulta por similitud y no una decisión que yo tenga que tomar a las once
+de la noche.
+
+De ahí en adelante: la composición se renderiza con FFmpeg a un video 9:16, se elige
+pista de audio cruzando etiquetas de mood y energía, y la pieza entra en una cola con su
+propia cadencia. n8n drena esa cola y publica en **YouTube Shorts, Instagram Reels,
+Facebook Reels y TikTok** — con el baile particular que exige cada uno, incluida la
+subida en tres fases de Facebook y los tokens que caducan y tienen que rotarse solos.
+
+También hay modo carrusel: se redacta un guion, las slides se generan en serie con la
+portada primero como referencia de estilo para las demás, y el conjunto se publica de
+forma nativa.
+
+<Pipeline
+  caption="El paso 07 es el que no existió durante los tres primeros meses — y es la razón por la que este caso tiene trama."
+  steps={[
+    { n: '01', title: 'Bancos', detail: 'Las imágenes y las frases se analizan y se vectorizan al entrar.' },
+    { n: '02', title: 'Emparejamiento', detail: 'Cruzar una imagen con una frase es una consulta por similitud, no una decisión que tome yo a las once de la noche.' },
+    { n: '03', title: 'Render', detail: 'FFmpeg compone el video 9:16 con el texto quemado en el fotograma.' },
+    { n: '04', title: 'Audio', detail: 'Se elige pista cruzando etiquetas de mood y energía contra la frase.' },
+    { n: '05', title: 'Cola', detail: 'La pieza espera su turno bajo una cadencia que controlo, no una ráfaga de publicaciones.' },
+    { n: '06', title: 'Publicación', detail: 'n8n drena la cola y resuelve el baile particular de cada plataforma — incluida la subida en tres fases de Facebook y los tokens que se rotan solos.', outputs: ['YouTube Shorts', 'Instagram Reels', 'Facebook Reels', 'TikTok'] },
+    { n: '07', title: 'Medición', detail: 'Cada día se recogen métricas y se cruzan con la receta que produjo cada publicación.' },
+  ]}
+/>
+
+## Cuando los números empezaron a caer
+
+El pipeline producía. La cuenta no.
+
+| | Abril | Mayo | Junio | Julio |
+|---|---|---|---|---|
+| Alcance mediano | 3.840 | 2.310 | 1.138 | **385** |
+
+La explicación fácil es el algoritmo, y es la explicación que yo quería. Otros dos
+números decían lo contrario:
+
+- **El skip rate subió** de 43,7% a 52,8%
+- **El watch time bajó** de 6,4s a 5,0s
+
+Ninguno de los dos depende de a cuánta gente te muestra la plataforma. Dependen de lo
+que pasa cuando alguien ya está mirando. El alcance caía porque el contenido había
+empeorado, y yo no podía verlo porque no tenía forma de saber qué *decisiones* producían
+qué resultados.
+
+## El eslabón perdido
+
+Cada publicación tiene una receta: qué frase, qué imagen, qué mood, qué formato, a qué
+hora. Esa receta vivía en mi base de datos. El rendimiento vivía en la API de la
+plataforma. Nada los unía.
+
+Construir el vínculo para las publicaciones nuevas fue fácil. El problema eran las 40
+anteriores a que todo esto existiera — justo las que cubren toda la caída. El plan las
+daba por perdidas.
+
+No lo estaban. **Los videos llevan la frase quemada en el fotograma**, lo que significa
+que la miniatura la contiene literal. El caption no: el caption es una reescritura, que
+es exactamente por lo que cruzar por solapamiento léxico se quedaba en 25–50% incluso
+para publicaciones que sí correspondían.
+
+Así que leí las miniaturas con visión y comparé frase contra frase. **De 40 huérfanas,
+se recuperaron 39. Queda una.** Para comparar: el pase por embeddings que probé primero
+recuperó exactamente una.
+
+La regla que hizo confiable la reconciliación fue negarse a adivinar: cuatro pasadas, de
+la señal más fuerte a la más débil, y cuando no había confianza la publicación se
+quedaba sin vincular. Un cruce equivocado envenena todas las conclusiones que vengan
+después y no deja rastro. Una huérfana se ve y se arregla.
+
+## Lo que dijeron los datos
+
+Con el rendimiento cruzado con la receta, una variable se movía casi al mismo ritmo que
+la caída. Las frases atribuidas a un autor con nombre:
+
+**Abril 17% → Mayo 32% → Junio 91% → Julio 83%**
+
+Vi los diez extremos — las cinco mejores y las cinco peores. Las que viajan señalan a
+alguien reconocible y rematan con un giro. Las planas son citas de filósofos entre
+comillas.
+
+Eso es una hipótesis con evidencia detrás, no una conclusión. Ahora es un test
+controlado: diez piezas nuevas escritas con la voz propia de la cuenta, etiquetadas como
+grupo aparte, intercaladas con citas — y medidas por **skip rate y watch time**, no por
+alcance, porque el alcance es el número que miente.
+
+## Estado actual
+
+Funcionando. Publicando programado en cuatro redes, con panel de analítica propio sobre
+las APIs de las plataformas y recolección diaria de métricas.
+
+Lo que vale la pena llevarse no es el renderizador. Es que un pipeline de contenido sin
+medición es una máquina para producir más de aquello que ya estabas haciendo mal — solo
+que más rápido.
