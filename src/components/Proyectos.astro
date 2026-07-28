@@ -37,6 +37,8 @@ const items = projects.map((project) => ({
         <p class="type-label mb-2">{t(ui.work.eyebrow)}</p>
         <h2 class="type-section">{t(ui.work.title)}</h2>
       </div>
+      <!-- Número decorativo enorme: es el único sitio donde `faint` es
+           legítimo — no se lee, se percibe como textura. -->
       <span class="type-year text-right hidden md:block" style="color: var(--color-text-faint); line-height:1;">
         {String(items.length).padStart(2, '0')}
       </span>
@@ -73,7 +75,7 @@ const items = projects.map((project) => ({
                 >{p.name}</h3>
 
                 <div class="flex items-center gap-3 shrink-0 ml-auto">
-                  <span class="type-label hidden md:block" style="color: var(--color-text-faint);">{p.year}</span>
+                  <span class="type-label hidden md:block" style="color: var(--color-text-muted);">{p.year}</span>
                   {p.href && (
                     <span
                       class="w-8 h-8 rounded-full border border-white/[0.12] flex items-center justify-center

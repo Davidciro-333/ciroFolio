@@ -4,25 +4,33 @@ export default {
   theme: {
     extend: {
       // ── Color tokens ──────────────────────────────────────
+      // Apuntan a las variables de global.css en vez de repetir los hex:
+      // tenerlos en dos sitios garantizaba que algún día divergieran, y con
+      // la corrección de contraste ya habría pasado.
       colors: {
         // Backgrounds
-        'base':       '#0a0a0c',   // página principal
-        'surface':    '#111115',   // cards oscuras
-        'surface-2':  '#181820',   // cards oscuras secundarias
+        'base':       'var(--color-base)',
+        'surface':    'var(--color-surface)',
+        'surface-2':  'var(--color-surface-2)',
 
         // Acento único
-        'neon':       '#c8f135',   // acid green — acento principal
-        'neon-dim':   '#a0c020',   // versión más apagada para hover
+        'neon':       'var(--color-neon)',
+        'neon-dim':   'var(--color-neon-dim)',
 
-        // Texto
-        'text-primary':   '#ffffff',
-        'text-secondary': '#9999a8',
-        'text-muted':     '#555560',
-        'text-faint':     '#33333e',
+        // Texto sobre superficie oscura
+        'text-primary':   'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
+        'text-muted':     'var(--color-text-muted)',
+        'text-faint':     'var(--color-text-faint)',
+
+        // Texto sobre superficie clara
+        'on-light-primary':   'var(--color-on-light-primary)',
+        'on-light-secondary': 'var(--color-on-light-secondary)',
+        'on-light-muted':     'var(--color-on-light-muted)',
 
         // Bordes
-        'border-dark':  'rgba(255,255,255,0.07)',
-        'border-light': 'rgba(0,0,0,0.08)',
+        'border-dark':  'var(--color-border-dark)',
+        'border-light': 'var(--color-border-light)',
       },
 
       // ── Tipografía ────────────────────────────────────────

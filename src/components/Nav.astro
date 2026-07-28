@@ -49,7 +49,7 @@ const otherLangs = LOCALES.filter((locale) => locale !== lang);
     {links.map(link => (
       <a
         href={link.href}
-        class="type-ui text-text-faint hover:text-text-primary transition-colors duration-250"
+        class="type-ui text-text-muted hover:text-text-primary transition-colors duration-250"
       >
         {link.label}
       </a>
@@ -62,7 +62,7 @@ const otherLangs = LOCALES.filter((locale) => locale !== lang);
       <a
         href={alternates[locale]}
         hreflang={locale}
-        class="type-ui text-text-faint hover:text-text-primary transition-colors duration-250
+        class="type-ui text-text-muted hover:text-text-primary transition-colors duration-250
                border border-white/[0.12] rounded-[99px] px-3 py-1"
         aria-label={t(ui.nav.switchLang)}
       >

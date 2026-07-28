@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "check": "astro check",
+    "check:contrast": "node scripts/check-contrast.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview"
   },

@@ -21,7 +21,7 @@ const t = useTranslations(lang);
     <!-- Header -->
     <div class="flex items-end justify-between mb-8 md:mb-10">
       <div>
-        <p class="type-label mb-2" style="color: var(--color-text-muted);">{t(ui.about.eyebrow)}</p>
+        <p class="type-label mb-2" style="color: var(--color-on-light-muted);">{t(ui.about.eyebrow)}</p>
         <h2 class="type-section" style="color: #0a0a0c;">{t(ui.about.title)}</h2>
       </div>
       <!-- Año decorativo -->
@@ -48,7 +48,7 @@ const t = useTranslations(lang);
 
         <!-- Stack -->
         <div class="mt-2">
-          <p class="type-label mb-3" style="color: var(--color-text-muted);">{t(ui.about.stack)}</p>
+          <p class="type-label mb-3" style="color: var(--color-on-light-muted);">{t(ui.about.stack)}</p>
           <div class="flex flex-wrap gap-2">
             {profile.stack.map(item => (
               <span
@@ -78,7 +78,7 @@ const t = useTranslations(lang);
                 class="font-extrabold text-[32px] leading-none tracking-tight"
                 style="font-family: var(--font-display); color: #0a0a0c;"
               >{s.value}</span>
-              <span class="type-label" style="color: var(--color-text-muted);">{t(s.label)}</span>
+              <span class="type-label" style="color: var(--color-on-light-muted);">{t(s.label)}</span>
             </div>
           ))}
         </div>

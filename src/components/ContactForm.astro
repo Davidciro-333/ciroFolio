@@ -23,7 +23,7 @@ const t = useTranslations(lang);
 
 const fieldClass =
   'w-full bg-white/[0.03] border border-white/[0.10] rounded-[10px] px-4 py-3 ' +
-  'text-[14px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] ' +
+  'text-[14px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] ' +
   'focus:outline-none focus:border-[var(--color-neon)] focus:bg-white/[0.05] ' +
   'transition-colors duration-250';
 ---
@@ -58,7 +58,7 @@ const fieldClass =
   <div class="flex flex-col gap-2">
     <label for="cf-project" class="type-label">{t(ui.form.project)} *</label>
     <textarea id="cf-project" name="project" required rows="4" class={fieldClass}></textarea>
-    <p class="type-label" style="color: var(--color-text-faint); text-transform: none; letter-spacing: 0;">
+    <p class="type-label" style="color: var(--color-text-muted); text-transform: none; letter-spacing: 0;">
       {t(ui.form.projectHint)}
     </p>
   </div>

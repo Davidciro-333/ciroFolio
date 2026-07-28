@@ -94,11 +94,21 @@
   --color-neon-dim:    #a0c020;
   --color-white:       #ffffff;
 
-  /* Texto */
-  --color-text-primary:   #ffffff;
-  --color-text-secondary: #9999a8;
-  --color-text-muted:     #555560;
-  --color-text-faint:     #33333e;
+  /* Texto sobre SUPERFICIE OSCURA (--color-surface #111115).
+     Los ratios son contraste WCAG contra ese fondo; el mínimo AA para
+     texto normal es 4.5:1. Verificado por cálculo, no a ojo. */
+  --color-text-primary:   #ffffff;  /* 18.84:1 */
+  --color-text-secondary: #9999a8;  /*  6.71:1 */
+  --color-text-muted:     #7c7c92;  /*  4.62:1 — antes #555560, que daba 2.56:1 y no cumplía */
+  --color-text-faint:     #606070;  /*  3.05:1 — SOLO decorativo grande o UI, nunca texto de lectura */
+
+  /* Texto sobre SUPERFICIE CLARA (tarjetas blancas de Sobre mí y Experiencia).
+     Los tokens de arriba no sirven aquí: aclarar un gris para que funcione
+     sobre oscuro lo rompe sobre blanco. Un token por superficie, no uno solo
+     estirado hasta que falla en los dos lados. */
+  --color-on-light-primary:   #0a0a0c;  /* 19.78:1 */
+  --color-on-light-secondary: #555560;  /*  7.36:1 */
+  --color-on-light-muted:     #6b6b7a;  /*  5.24:1 */
 
   /* Bordes */
   --color-border-dark:  rgba(255, 255, 255, 0.07);
