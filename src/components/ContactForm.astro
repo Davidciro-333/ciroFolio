@@ -112,6 +112,24 @@ const fieldClass =
   </div>
 </form>
 
+<style>
+  /* El desplegable de un <select> lo pinta el sistema operativo, no la página:
+     hereda el color de texto del campo (blanco) pero abre sobre fondo claro,
+     así que las opciones quedaban blanco sobre blanco.
+
+     color-scheme le dice al navegador que dibuje el widget nativo en oscuro
+     —popup, flecha y scrollbar—, y los colores explícitos en option cubren a
+     los navegadores que no lo aplican al desplegable. */
+  select {
+    color-scheme: dark;
+  }
+
+  select option {
+    background-color: var(--color-surface-2);
+    color: var(--color-text-primary);
+  }
+</style>
+
 <script>
   const form = document.getElementById('contact-form') as HTMLFormElement | null;
   const status = document.getElementById('cf-status');
