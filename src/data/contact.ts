@@ -27,7 +27,7 @@ export const contactForm: ContactFormConfig = {
   endpoint: 'https://api.web3forms.com/submit',
   // ↓ Pegar aquí la access key de web3forms.com. Hasta entonces el formulario
   //   sigue funcionando en modo mailto: no se pierde ningún contacto.
-  accessKey: '',
+  accessKey: 'a5672fb6-decd-4345-a9d1-a7b32969f40c',
   subject: 'New project inquiry — itsciro.com',
 };
 
