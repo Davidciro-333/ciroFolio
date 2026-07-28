@@ -34,7 +34,7 @@ export const projects: Project[] = [
       es: 'Captura y contabilización de facturas para negocios pequeños. El cliente manda una foto o un PDF por mensajería y un LLM extrae los campos fiscales, valida el cuadre y los archiva — sin digitación manual.',
     },
     tags: ['n8n', 'Gemini', 'Document AI', 'Telegram', 'Google Cloud'],
-    hasCase: false,
+    hasCase: true,
   },
   {
     num: '02',
@@ -46,7 +46,7 @@ export const projects: Project[] = [
       es: 'Pipeline de contenido que genera video corto y carruseles, los publica programados en cuatro redes y mide qué funcionó de verdad — con panel de analítica propio sobre las APIs de las plataformas.',
     },
     tags: ['Node.js', 'TypeScript', 'FFmpeg', 'Gemini', 'n8n', 'SQLite'],
-    hasCase: false,
+    hasCase: true,
   },
   {
     num: '03',

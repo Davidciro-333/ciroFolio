@@ -1,0 +1,112 @@
+---
+slug: bebetter-studio
+lang: en
+title: beBetterStudio
+summary: A content pipeline that generates short-form video, publishes it across four networks on a schedule, and measures which decisions actually worked.
+role: Design, build and operations
+year: '2026'
+stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, SQLite, AWS S3]
+metrics:
+  - { value: '4', label: 'Networks published to automatically' }
+  - { value: '60', label: 'Posts reconciled to their recipe' }
+  - { value: '39/40', label: 'Orphan posts recovered' }
+  - { value: '238', label: 'Images indexed and vectorised' }
+links:
+  - { label: 'The account it publishes to', url: 'https://www.instagram.com/bebetter.path/' }
+  - { label: 'A carousel it produced', url: 'https://www.instagram.com/p/DbRZ5MgD9Rx/' }
+draft: false
+order: 2
+---
+
+## The problem I thought I had
+
+Publishing short-form content by hand does not scale. Pick an image, pick a line, lay
+out the text, render, upload to four networks, write four captions, schedule. Twenty
+minutes per post, every day, forever.
+
+So I built the machine. It worked. And then the account started dying anyway — which
+turned out to be the actually interesting problem.
+
+## The system
+
+A web app plus an automation layer. The app holds a bank of images and a bank of
+phrases; each is analysed and vectorised so that pairing an image to a line is a
+similarity query, not a judgement call I have to make at 11pm.
+
+From there: the composition renders through FFmpeg into a 9:16 video, an audio track
+is picked by matching mood and energy tags, and the piece goes into a queue with its
+own publishing cadence. n8n drains that queue and posts to **YouTube Shorts, Instagram
+Reels, Facebook Reels and TikTok** — with the platform-specific dance each one demands,
+including Facebook's three-phase upload and tokens that expire and have to rotate
+themselves.
+
+There is also a carousel mode: a script is drafted, slides are generated in series with
+the cover first as a style reference for the rest, and the whole set publishes natively.
+
+## When the numbers started falling
+
+The pipeline was producing. The account was not.
+
+| | April | May | June | July |
+|---|---|---|---|---|
+| Median reach | 3,840 | 2,310 | 1,138 | **385** |
+
+The easy explanation is the algorithm, and it is the explanation I wanted. Two other
+numbers said otherwise:
+
+- **Skip rate rose** from 43.7% to 52.8%
+- **Watch time dropped** from 6.4s to 5.0s
+
+Neither of those depends on how many people the platform shows you to. They depend on
+what happens once someone is already watching. The reach was falling because the
+content had gotten worse, and I could not see it because I had no idea which
+*decisions* produced which results.
+
+## The missing link
+
+Every post has a recipe: which phrase, which image, which mood, which format, what
+time. That recipe lived in my database. The performance lived in the platform's API.
+Nothing connected them.
+
+Building the link for new posts was easy. The problem was the 40 posts published before
+any of this existed — the ones covering the entire decline. The plan assumed they were
+lost.
+
+They were not. **The videos have the phrase burned into the frame**, which means the
+thumbnail literally contains it. The caption does not — the caption is a rewrite, which
+is exactly why matching by lexical overlap kept landing at 25–50% even for posts that
+did correspond.
+
+So I read the thumbnails with vision and compared phrase against phrase. **Of 40 orphan
+posts, 39 were recovered. One remains.** For contrast, the embedding pass I tried first
+recovered exactly one.
+
+The rule that made the reconciliation trustworthy was refusing to guess: four passes,
+strongest signal to weakest, and when confidence was not there the post stayed
+unlinked. A wrong link poisons every conclusion downstream and leaves no trace. An
+orphan is visible and fixable.
+
+## What the data said
+
+With performance joined to recipe, one variable moved almost exactly in step with the
+decline. Phrases attributed to a named author:
+
+**April 17% → May 32% → June 91% → July 83%**
+
+I watched the ten extremes — five best, five worst. The ones that traveled name
+somebody recognisable and land on a turn. The flat ones are quoted philosophers in
+quotation marks.
+
+That is a hypothesis with evidence behind it, not a conclusion. It is now a controlled
+test: ten new pieces written in the account's own voice, tagged as a distinct cohort,
+interleaved with quotes — and measured on **skip rate and watch time**, not on reach,
+because reach is the number that lies.
+
+## Where it stands
+
+Running. Publishing on schedule across four networks, with its own analytics panel
+built on the platform APIs, collecting daily snapshots.
+
+The part worth taking away is not the renderer. It is that a content pipeline without
+measurement is a machine for producing more of whatever you were already doing wrong —
+faster.
