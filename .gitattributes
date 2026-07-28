@@ -1,0 +1,12 @@
+# Normaliza finales de línea: LF en el repo, nativo en el disco.
+# Evita diffs falsos entre Windows y los builds de Vercel.
+* text=auto eol=lf
+
+# Binarios: nunca tocar
+*.png binary
+*.jpg binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary

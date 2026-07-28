@@ -1,0 +1,117 @@
+---
+// src/components/Proyectos.astro
+
+import { ui } from '../i18n/ui';
+import { useTranslations, localePath } from '../i18n/utils';
+import { projects } from '../data/projects';
+import type { Lang } from '../i18n/config';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+// Solo enlazan los proyectos que ya tienen su caso de estudio publicado.
+const items = projects.map((project) => ({
+  ...project,
+  href: project.hasCase ? localePath(lang, `/work/${project.slug}`) : undefined,
+}));
+---
+
+<section id="proyectos" class="card-dark relative overflow-hidden px-8 md:px-12 lg:px-16 pt-10 pb-12 md:pt-12 md:pb-14">
+
+  <!-- Orb sutil esquina superior derecha -->
+  <div
+    class="orb orb-neon"
+    style="width:400px;height:400px;top:-120px;right:-80px;opacity:0.5;"
+    aria-hidden="true"
+  ></div>
+
+  <div class="relative z-10">
+
+    <!-- Header -->
+    <div class="flex items-end justify-between mb-8 md:mb-10">
+      <div>
+        <p class="type-label mb-2">{t(ui.work.eyebrow)}</p>
+        <h2 class="type-section">{t(ui.work.title)}</h2>
+      </div>
+      <span class="type-year text-right hidden md:block" style="color: var(--color-text-faint); line-height:1;">
+        {String(items.length).padStart(2, '0')}
+      </span>
+    </div>
+
+    <div class="sep-dark"></div>
+
+    <!-- Lista de proyectos -->
+    <ul class="divide-y divide-white/[0.06]">
+      {items.map((p) => {
+        const Tag = p.href ? 'a' : 'div';
+        return (
+          <li>
+            <Tag
+              href={p.href}
+              class:list={[
+                'group flex flex-col gap-4 py-7 md:py-8',
+                '-mx-8 md:-mx-12 lg:-mx-16 px-8 md:px-12 lg:px-16',
+                'transition-colors duration-300',
+                p.href && 'hover:bg-white/[0.02]',
+              ]}
+              aria-label={p.href ? `${t(ui.work.viewCase)}: ${p.name}` : undefined}
+            >
+
+              <!-- Fila superior: número + nombre + año + flecha -->
+              <div class="flex items-baseline gap-4 md:gap-6">
+                <span class="type-label text-neon shrink-0 tabular-nums">{p.num}</span>
+
+                <h3
+                  class:list={[
+                    'type-project flex-1 transition-colors duration-300',
+                    p.href && 'group-hover:text-neon',
+                  ]}
+                >{p.name}</h3>
+
+                <div class="flex items-center gap-3 shrink-0 ml-auto">
+                  <span class="type-label hidden md:block" style="color: var(--color-text-faint);">{p.year}</span>
+                  {p.href && (
+                    <span
+                      class="w-8 h-8 rounded-full border border-white/[0.12] flex items-center justify-center
+                             text-sm text-[var(--color-text-muted)]
+                             group-hover:border-[var(--color-neon)] group-hover:text-[var(--color-neon)] group-hover:bg-[var(--color-neon)]/10
+                             transition-all duration-300"
+                      aria-hidden="true"
+                    >↗</span>
+                  )}
+                </div>
+              </div>
+
+              <!-- Fila inferior: descripción + tags -->
+              <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 pl-7">
+                <p class="type-body flex-1 max-w-xl">{t(p.description)}</p>
+
+                <div class="flex flex-wrap gap-2 md:justify-end">
+                  {p.tags.map(tag => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              </div>
+
+            </Tag>
+          </li>
+        );
+      })}
+    </ul>
+
+    <!-- Separador final + CTA -->
+    <div class="sep-dark mt-0 mb-8 md:mb-10"></div>
+
+    <div class="flex items-center justify-between">
+      <p class="type-body" style="max-width:340px;">{t(ui.work.outro)}</p>
+      <a href="#contacto" class="btn-primary shrink-0">
+        {t(ui.work.ctaContact)} <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+
+  </div>
+</section>

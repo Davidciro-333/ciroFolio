@@ -1,0 +1,192 @@
+---
+// src/components/CaseStudy.astro
+// Plantilla de caso de estudio — registro SOBRIO.
+//
+// La home es el registro expresivo (Nohemi masiva, acid green, orbs). Aquí no:
+// misma marca y misma paleta, pero sin glow y con densidad de información,
+// porque detrás de un diagrama o una tabla de métricas el neón cansa y estorba
+// la lectura.
+
+import { render } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Nav from './Nav.astro';
+import { ui } from '../i18n/ui';
+import { useTranslations, localePath } from '../i18n/utils';
+import type { Lang } from '../i18n/config';
+import type { WorkEntry } from '../lib/work';
+
+interface Props {
+  lang: Lang;
+  entry: WorkEntry;
+}
+
+const { lang, entry } = Astro.props;
+const t = useTranslations(lang);
+const { data } = entry;
+const { Content } = await render(entry);
+---
+
+<Layout lang={lang} title={`${data.title} — David Ciro`} description={data.summary}>
+  <Nav lang={lang} />
+
+  <main class="px-[var(--section-pad-x)] pb-[var(--section-gap)]">
+    <article class="card-dark px-8 md:px-12 lg:px-16 pt-10 pb-12 md:pt-12 md:pb-16">
+
+      <!-- Volver -->
+      <a
+        href={`${localePath(lang, '/')}#proyectos`}
+        class="type-ui text-text-faint hover:text-text-primary transition-colors duration-250"
+      >
+        <span aria-hidden="true">←</span> {t(ui.caseStudy.back)}
+      </a>
+
+      {data.draft && (
+        <p class="type-label mt-6 inline-flex items-center gap-2 px-3 py-1 rounded-[6px]"
+           style="background: rgba(255,255,255,0.06); color: var(--color-text-muted);">
+          {t(ui.caseStudy.draft)}
+        </p>
+      )}
+
+      <!-- Cabecera -->
+      <header class="mt-8 md:mt-10 max-w-3xl">
+        <h1 class="type-section">{data.title}</h1>
+        <p class="type-body mt-4 text-[15px] leading-relaxed">{data.summary}</p>
+      </header>
+
+      <div class="sep-dark my-8 md:my-10"></div>
+
+      <!-- Ficha: rol, año, stack -->
+      <dl class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+        <div>
+          <dt class="type-label mb-2">{t(ui.caseStudy.role)}</dt>
+          <dd class="type-body">{data.role}</dd>
+        </div>
+        <div>
+          <dt class="type-label mb-2">{t(ui.caseStudy.year)}</dt>
+          <dd class="type-body tabular-nums">{data.year}</dd>
+        </div>
+        <div>
+          <dt class="type-label mb-2">{t(ui.caseStudy.stack)}</dt>
+          <dd class="flex flex-wrap gap-2 mt-1">
+            {data.stack.map((item) => <span class="tag">{item}</span>)}
+          </dd>
+        </div>
+      </dl>
+
+      <!-- Métricas de sistema — verificables, nunca infladas -->
+      {data.metrics.length > 0 && (
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-[14px] overflow-hidden mb-10">
+          {data.metrics.map((metric) => (
+            <div class="bg-[var(--color-surface)] px-5 py-5 flex flex-col gap-1">
+              <span
+                class="font-extrabold text-[26px] leading-none tracking-tight text-neon"
+                style="font-family: var(--font-display);"
+              >{metric.value}</span>
+              <span class="type-label">{metric.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <!-- Cuerpo del caso -->
+      <div class="case-prose max-w-3xl">
+        <Content />
+      </div>
+
+      <!-- Artefactos públicos: la prueba que cualquiera puede comprobar solo -->
+      {data.links.length > 0 && (
+        <>
+          <div class="sep-dark my-8 md:my-10"></div>
+          <p class="type-label mb-3">{t(ui.caseStudy.links)}</p>
+          <ul class="flex flex-wrap gap-4">
+            {data.links.map((link) => (
+              <li>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="type-ui hover:text-neon transition-colors duration-250"
+                >
+                  {link.label} <span aria-hidden="true">↗</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+    </article>
+  </main>
+</Layout>
+
+<style>
+  /* Registro sobrio: legibilidad por encima de espectáculo. */
+  .case-prose :global(h2) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(20px, 3vw, 28px);
+    line-height: 1.15;
+    margin: 2.5rem 0 0.75rem;
+    color: var(--color-text-primary);
+  }
+  .case-prose :global(h3) {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 16px;
+    margin: 2rem 0 0.5rem;
+    color: var(--color-text-primary);
+  }
+  .case-prose :global(p),
+  .case-prose :global(li) {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+  }
+  .case-prose :global(p) { margin-bottom: 1rem; }
+  .case-prose :global(ul),
+  .case-prose :global(ol) { margin: 0 0 1rem 1.25rem; }
+  .case-prose :global(ul) { list-style: disc; }
+  .case-prose :global(ol) { list-style: decimal; }
+  .case-prose :global(li) { margin-bottom: 0.35rem; }
+  .case-prose :global(a) {
+    color: var(--color-neon);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .case-prose :global(blockquote) {
+    border-left: 2px solid var(--color-neon);
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    color: var(--color-text-muted);
+  }
+  .case-prose :global(pre) {
+    background: var(--color-surface-2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+  }
+  .case-prose :global(code) {
+    font-size: 13px;
+  }
+  .case-prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+  }
+  .case-prose :global(th),
+  .case-prose :global(td) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.6rem 0.5rem;
+    text-align: left;
+    color: var(--color-text-secondary);
+  }
+  .case-prose :global(th) {
+    color: var(--color-text-primary);
+    font-weight: 600;
+  }
+</style>

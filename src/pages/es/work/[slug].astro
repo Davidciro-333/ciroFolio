@@ -1,0 +1,21 @@
+---
+import CaseStudy from '../../../components/CaseStudy.astro';
+import { getPublishedWork, type WorkEntry } from '../../../lib/work';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getPublishedWork('es');
+  return entries.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: { entry },
+  }));
+};
+
+interface Props {
+  entry: WorkEntry;
+}
+
+const { entry } = Astro.props;
+---
+
+<CaseStudy lang="es" entry={entry} />

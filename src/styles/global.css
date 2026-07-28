@@ -1,146 +1,497 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+/* ─────────────────────────────────────────────────────────
+   CIROFOLIO — Global Styles
+   ─────────────────────────────────────────────────────────
+   Estructura:
+   1. @font-face   — Nohemi (en src/assets/fonts, procesada por Vite
+                     con rutas relativas para que respete `base`)
+   2. CSS tokens   — variables globales
+   3. Base reset   — box-model, scroll, selección
+   4. Typography   — clases reutilizables
+   5. Components   — cards, botones, separadores
+   6. Animations   — keyframes globales
+   ───────────────────────────────────────────────────────── */
 
-@custom-variant dark (&:is(.dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* ── 1. FUENTES ─────────────────────────────────────────── */
+@font-face {
+  font-family: 'Nohemi';
+  src: url('../assets/fonts/Nohemi-Thin.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('../assets/fonts/Nohemi-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('../assets/fonts/Nohemi-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('../assets/fonts/Nohemi-Medium.woff2') format('woff2'),
+       url('../assets/fonts/Nohemi-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('../assets/fonts/Nohemi-SemiBold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('../assets/fonts/Nohemi-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  /* Falta el .woff2 de este peso — el que había pesaba 4 bytes y estaba
+     corrupto. Descargar el woff2 real de Fontshare cuando se pueda: es el
+     peso más usado del sitio (display uppercase). */
+  src: url('../assets/fonts/Nohemi-ExtraBold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('../assets/fonts/Nohemi-Black.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* Inter desde Google Fonts — añadir en <head> del Layout:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+*/
+
+
+/* ── 2. CSS TOKENS ──────────────────────────────────────── */
 :root {
-  --radius: 0.625rem;
-  /* Backgrounds y neutrales */
-  --background: oklch(0.98 0.01 85.87);  /* Blanco cálido muy sutil */
-  --foreground: oklch(0.15 0.02 45);     /* Negro cálido */
-  --card: oklch(0.985 0.008 85.87);      /* Card con toque dorado */
-  --card-foreground: oklch(0.15 0.02 45);
-  --popover: oklch(0.985 0.008 85.87);
-  --popover-foreground: oklch(0.15 0.02 45);
-  
-  /* Colores dorados principales */
-  --primary: oklch(0.62 0.15 85.87);     /* Dorado principal */
-  --primary-foreground: oklch(0.98 0.01 85.87);
-  --secondary: oklch(0.95 0.02 85.87);   /* Dorado muy claro */
-  --secondary-foreground: oklch(0.25 0.05 45);
-  
-  /* Muted con toque dorado */
-  --muted: oklch(0.94 0.015 85.87);
-  --muted-foreground: oklch(0.5 0.03 65);
-  --accent: oklch(0.92 0.03 85.87);      /* Acento dorado suave */
-  --accent-foreground: oklch(0.25 0.05 45);
-  
-  /* Destructive mantener rojo */
-  --destructive: oklch(0.577 0.245 27.325);
-  
-  /* Borders y inputs con toque dorado */
-  --border: oklch(0.88 0.02 85.87);
-  --input: oklch(0.88 0.02 85.87);
-  --ring: oklch(0.62 0.15 85.87);        /* Ring dorado */
-  
-  /* Charts con paleta dorada */
-  --chart-1: oklch(0.62 0.15 85.87);     /* Dorado principal */
-  --chart-2: oklch(0.45 0.12 65);        /* Bronce */
-  --chart-3: oklch(0.7 0.18 95);         /* Amarillo dorado */
-  --chart-4: oklch(0.35 0.08 45);        /* Marrón dorado oscuro */
-  --chart-5: oklch(0.8 0.12 105);        /* Champagne */
-  
-  /* Sidebar */
-  --sidebar: oklch(0.98 0.01 85.87);
-  --sidebar-foreground: oklch(0.15 0.02 45);
-  --sidebar-primary: oklch(0.62 0.15 85.87);
-  --sidebar-primary-foreground: oklch(0.98 0.01 85.87);
-  --sidebar-accent: oklch(0.94 0.015 85.87);
-  --sidebar-accent-foreground: oklch(0.25 0.05 45);
-  --sidebar-border: oklch(0.88 0.02 85.87);
-  --sidebar-ring: oklch(0.62 0.15 85.87);
+  /* Colores */
+  --color-base:        #0a0a0c;
+  --color-surface:     #111115;
+  --color-surface-2:   #181820;
+  --color-neon:        #c8f135;
+  --color-neon-dim:    #a0c020;
+  --color-white:       #ffffff;
+
+  /* Texto */
+  --color-text-primary:   #ffffff;
+  --color-text-secondary: #9999a8;
+  --color-text-muted:     #555560;
+  --color-text-faint:     #33333e;
+
+  /* Bordes */
+  --color-border-dark:  rgba(255, 255, 255, 0.07);
+  --color-border-mid:   rgba(255, 255, 255, 0.12);
+  --color-border-light: rgba(0, 0, 0, 0.08);
+
+  /* Tipografía */
+  --font-display: 'Nohemi', 'Arial Black', sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+
+  /* Espaciado de secciones */
+  --section-gap:    12px;   /* gap entre cards de sección */
+  --section-pad-x:  clamp(16px, 4vw, 40px);
+  --section-pad-y:  clamp(24px, 4vw, 40px);
+
+  /* Radius */
+  --radius-card:    20px;
+  --radius-card-sm: 14px;
+  --radius-btn:     99px;
+  --radius-tag:     6px;
+
+  /* Transiciones */
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.dark {
-  /* Backgrounds oscuros con toque cálido */
-  --background: oklch(0.12 0.015 45);     /* Negro cálido */
-  --foreground: oklch(0.95 0.02 85.87);  /* Blanco dorado */
-  --card: oklch(0.18 0.02 45);           /* Card oscuro cálido */
-  --card-foreground: oklch(0.95 0.02 85.87);
-  --popover: oklch(0.18 0.02 45);
-  --popover-foreground: oklch(0.95 0.02 85.87);
-  
-  /* Dorados para modo oscuro */
-  --primary: oklch(0.75 0.18 85.87);     /* Dorado brillante */
-  --primary-foreground: oklch(0.15 0.02 45);
-  --secondary: oklch(0.25 0.03 45);      /* Gris dorado oscuro */
-  --secondary-foreground: oklch(0.9 0.02 85.87);
-  
-  /* Muted oscuro con toque dorado */
-  --muted: oklch(0.22 0.025 45);
-  --muted-foreground: oklch(0.65 0.05 75);
-  --accent: oklch(0.28 0.04 55);
-  --accent-foreground: oklch(0.9 0.02 85.87);
-  
-  /* Destructive mantener */
-  --destructive: oklch(0.704 0.191 22.216);
-  
-  /* Borders y inputs modo oscuro */
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.7 0.15 85.87);
-  
-  /* Charts modo oscuro con dorados */
-  --chart-1: oklch(0.75 0.18 85.87);     /* Dorado brillante */
-  --chart-2: oklch(0.55 0.15 65);        /* Bronce medio */
-  --chart-3: oklch(0.8 0.2 95);          /* Amarillo dorado */
-  --chart-4: oklch(0.45 0.1 45);         /* Marrón dorado */
-  --chart-5: oklch(0.85 0.15 105);       /* Champagne claro */
-  
-  /* Sidebar modo oscuro */
-  --sidebar: oklch(0.18 0.02 45);
-  --sidebar-foreground: oklch(0.95 0.02 85.87);
-  --sidebar-primary: oklch(0.75 0.18 85.87);
-  --sidebar-primary-foreground: oklch(0.15 0.02 45);
-  --sidebar-accent: oklch(0.25 0.03 45);
-  --sidebar-accent-foreground: oklch(0.9 0.02 85.87);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.7 0.15 85.87);
+
+/* ── 3. BASE RESET ──────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+body {
+  background-color: var(--color-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* Selección de texto con acento neon */
+::selection {
+  background-color: var(--color-neon);
+  color: #000;
+}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-base); }
+::-webkit-scrollbar-thumb { background: var(--color-surface-2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-faint); }
+
+img, video { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; background: none; border: none; font: inherit; }
+
+
+/* ── 4. TYPOGRAPHY CLASSES ──────────────────────────────── */
+@layer components {
+
+  /* Display — Nohemi uppercase */
+  .type-hero {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(64px, 10vw, 120px);
+    line-height: 0.88;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  .type-section {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
   }
+
+  .type-project {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(28px, 4vw, 48px);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .type-service {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(18px, 2.5vw, 26px);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  .type-year {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+  }
+
+  .type-cta {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  /* Body — Inter */
+  .type-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .type-body {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+  }
+
+  .type-body-strong {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+  }
+
+  .type-ui {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+}
+
+
+/* ── 5. COMPONENT CLASSES ───────────────────────────────── */
+@layer components {
+
+  /* Cards */
+  .card-dark {
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+
+  .card-light {
+    background: var(--color-white);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+
+  /* Botones */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-neon);
+    color: #000;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 22px;
+    border-radius: var(--radius-btn);
+    transition: all 250ms var(--ease-smooth);
+  }
+  .btn-primary:hover {
+    background: var(--color-neon-dim);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: var(--radius-btn);
+    border: 0.5px solid var(--color-border-mid);
+    transition: all 250ms var(--ease-smooth);
+  }
+  .btn-ghost:hover {
+    color: var(--color-text-primary);
+    border-color: rgba(255,255,255,0.25);
+  }
+
+  /* Botón CTA circular */
+  .btn-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-neon);
+    color: #000;
+    font-weight: 700;
+    font-size: 15px;
+    transition: transform 250ms var(--ease-spring);
+  }
+  .btn-circle:hover { transform: scale(1.1) rotate(15deg); }
+
+  /* Botón nav circle (+ menu) */
+  .btn-nav-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: var(--color-text-primary);
+    font-size: 18px;
+    line-height: 1;
+    transition: all 250ms var(--ease-smooth);
+  }
+  .btn-nav-circle:hover {
+    border-color: var(--color-neon);
+    color: var(--color-neon);
+  }
+
+  /* Separador horizontal */
+  .sep-dark  { height: 0.5px; background: var(--color-border-dark); }
+  .sep-light { height: 0.5px; background: var(--color-border-light); }
+
+  /* Tag / pill */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-tag);
+    border: 1px solid rgba(200, 241, 53, 0.25);
+    color: var(--color-neon);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(200, 241, 53, 0.06);
+  }
+
+  /* Ambient orbs (decoración de fondo) */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+  }
+  .orb-neon   { background: radial-gradient(circle, rgba(200,241,53,0.08) 0%, transparent 70%); }
+  .orb-warm   { background: radial-gradient(circle, rgba(120,90,10,0.07)  0%, transparent 70%); }
+
+  /* Browser mockup */
+  .browser-frame {
+    background: #1a1a20;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .browser-bar {
+    background: #222228;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .browser-dots {
+    display: flex;
+    gap: 5px;
+  }
+  .browser-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .browser-url {
+    flex: 1;
+    background: #2e2e36;
+    border-radius: 4px;
+    height: 16px;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+  }
+  .browser-screen {
+    background: #0c0c10;
+    padding: 16px;
+  }
+
+  /* Neon text utility */
+  .text-neon { color: var(--color-neon); }
+}
+
+
+/* ── 6. ANIMATIONS / KEYFRAMES ──────────────────────────── */
+@layer utilities {
+
+  /* Fade up — para elementos al entrar en viewport */
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Fade in simple */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Slide in desde izquierda */
+  @keyframes slide-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Ticker loop (Logo Loop) */
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* Cursor blink (Text Type) */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  /* Neon pulse suave */
+  @keyframes neon-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.7; }
+  }
+
+  /* Clases de animación */
+  .animate-fade-up {
+    animation: fade-up 0.6s var(--ease-smooth) both;
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s var(--ease-smooth) both;
+  }
+  .animate-slide-left {
+    animation: slide-in-left 0.5s var(--ease-smooth) both;
+  }
+  .animate-neon-pulse {
+    animation: neon-pulse 3s ease-in-out infinite;
+  }
+
+  /* Delays encadenables */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
+  .delay-800 { animation-delay: 800ms; }
 }

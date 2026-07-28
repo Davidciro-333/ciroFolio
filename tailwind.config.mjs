@@ -1,0 +1,92 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./src/**/*.{astro,html,js,jsx,ts,tsx,svelte,vue}'],
+  theme: {
+    extend: {
+      // ── Color tokens ──────────────────────────────────────
+      colors: {
+        // Backgrounds
+        'base':       '#0a0a0c',   // página principal
+        'surface':    '#111115',   // cards oscuras
+        'surface-2':  '#181820',   // cards oscuras secundarias
+
+        // Acento único
+        'neon':       '#c8f135',   // acid green — acento principal
+        'neon-dim':   '#a0c020',   // versión más apagada para hover
+
+        // Texto
+        'text-primary':   '#ffffff',
+        'text-secondary': '#9999a8',
+        'text-muted':     '#555560',
+        'text-faint':     '#33333e',
+
+        // Bordes
+        'border-dark':  'rgba(255,255,255,0.07)',
+        'border-light': 'rgba(0,0,0,0.08)',
+      },
+
+      // ── Tipografía ────────────────────────────────────────
+      fontFamily: {
+        // Nohemi: display para headlines
+        // Inter: body, UI, labels
+        display: ['Nohemi', 'Arial Black', 'sans-serif'],
+        body:    ['Inter', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        // Escala display (Nohemi)
+        'display-2xl': ['clamp(64px, 10vw, 120px)', { lineHeight: '0.88', letterSpacing: '-0.03em' }],
+        'display-xl':  ['clamp(48px, 7vw,  90px)',  { lineHeight: '0.90', letterSpacing: '-0.03em' }],
+        'display-lg':  ['clamp(36px, 5vw,  64px)',  { lineHeight: '0.92', letterSpacing: '-0.02em' }],
+        'display-md':  ['clamp(24px, 3vw,  42px)',  { lineHeight: '0.95', letterSpacing: '-0.02em' }],
+        'display-sm':  ['clamp(18px, 2vw,  28px)',  { lineHeight: '1.0',  letterSpacing: '-0.01em' }],
+
+        // Escala body (Inter)
+        'label':  ['11px', { lineHeight: '1',    letterSpacing: '0.07em' }],
+        'body-sm':['12px', { lineHeight: '1.65', letterSpacing: '0' }],
+        'body':   ['14px', { lineHeight: '1.65', letterSpacing: '0' }],
+        'body-lg':['16px', { lineHeight: '1.7',  letterSpacing: '0' }],
+        'ui':     ['13px', { lineHeight: '1',    letterSpacing: '0' }],
+      },
+      fontWeight: {
+        // Nohemi pesos clave
+        thin:       '100',
+        light:      '300',
+        regular:    '400',
+        medium:     '500',
+        semibold:   '600',
+        bold:       '700',
+        extrabold:  '800',
+        black:      '900',
+      },
+
+      // ── Spacing system ────────────────────────────────────
+      // Usa los de Tailwind por defecto (4px base) — no necesitamos override
+
+      // ── Border radius ────────────────────────────────────
+      borderRadius: {
+        'card':   '20px',
+        'card-sm':'14px',
+        'btn':    '99px',
+        'tag':    '6px',
+      },
+
+      // ── Shadows ───────────────────────────────────────────
+      boxShadow: {
+        'neon-glow': '0 0 24px rgba(200, 241, 53, 0.25)',
+        'card-dark': '0 8px 32px rgba(0,0,0,0.4)',
+      },
+
+      // ── Transitions ───────────────────────────────────────
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
+      transitionDuration: {
+        '250': '250ms',
+        '400': '400ms',
+        '600': '600ms',
+      },
+    },
+  },
+  plugins: [],
+};

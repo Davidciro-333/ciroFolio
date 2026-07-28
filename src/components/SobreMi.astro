@@ -1,0 +1,113 @@
+---
+// src/components/SobreMi.astro
+
+import { ui } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { profile } from '../data/profile';
+import type { Lang } from '../i18n/config';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<section id="sobre-mi" class="card-light relative overflow-hidden px-8 md:px-12 lg:px-16 pt-10 pb-12 md:pt-12 md:pb-14">
+
+  <div class="relative z-10">
+
+    <!-- Header -->
+    <div class="flex items-end justify-between mb-8 md:mb-10">
+      <div>
+        <p class="type-label mb-2" style="color: var(--color-text-muted);">{t(ui.about.eyebrow)}</p>
+        <h2 class="type-section" style="color: #0a0a0c;">{t(ui.about.title)}</h2>
+      </div>
+      <!-- Año decorativo -->
+      <span class="type-year hidden md:block" style="color: rgba(0,0,0,0.08); line-height:1;">2020—</span>
+    </div>
+
+    <div class="sep-light mb-8 md:mb-10"></div>
+
+    <!-- Layout principal: bio izquierda / stats + stack derecha -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px] lg:grid-cols-[1fr_320px] gap-10 md:gap-14">
+
+      <!-- ── Bio ──────────────────────────────────────────── -->
+      <div class="flex flex-col gap-6">
+
+        {profile.aboutParagraphs.map((paragraph, index) => (
+          index === 0 ? (
+            <p class="type-body-strong" style="color: #0a0a0c; font-size: 15px; line-height: 1.65;">
+              {t(paragraph)}
+            </p>
+          ) : (
+            <p class="type-body" style="color: #555560;">{t(paragraph)}</p>
+          )
+        ))}
+
+        <!-- Stack -->
+        <div class="mt-2">
+          <p class="type-label mb-3" style="color: var(--color-text-muted);">{t(ui.about.stack)}</p>
+          <div class="flex flex-wrap gap-2">
+            {profile.stack.map(item => (
+              <span
+                class="inline-flex items-center px-3 py-1.5 rounded-[6px] text-[11px] font-medium"
+                style="background: rgba(0,0,0,0.05); color: #333340; border: 1px solid rgba(0,0,0,0.08);"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Stats + CTA ──────────────────────────────────── -->
+      <div class="flex flex-col gap-6">
+
+        <!-- Stats -->
+        <div class="flex flex-col gap-px rounded-[14px] overflow-hidden"
+             style="border: 1px solid rgba(0,0,0,0.07);">
+          {profile.stats.map((s, i) => (
+            <div
+              class="flex flex-col gap-1 px-5 py-4"
+              style={`background: ${i % 2 === 0 ? 'rgba(0,0,0,0.025)' : 'rgba(0,0,0,0.01)'};`}
+            >
+              <span
+                class="font-extrabold text-[32px] leading-none tracking-tight"
+                style="font-family: var(--font-display); color: #0a0a0c;"
+              >{s.value}</span>
+              <span class="type-label" style="color: var(--color-text-muted);">{t(s.label)}</span>
+            </div>
+          ))}
+        </div>
+
+        <!-- CTA -->
+        <div class="flex flex-col gap-3">
+          <!-- El CV en inglés llega en una fase posterior. Hasta entonces el
+               CTA principal es el contacto, que es la conversión del sitio. -->
+          <a
+            href="#contacto"
+            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-[99px] font-semibold text-[13px]
+                   bg-[#0a0a0c] text-white hover:bg-[#222230] transition-colors duration-250"
+          >
+            {t(ui.about.ctaTalk)}
+          </a>
+          <a
+            href={`mailto:${profile.email}`}
+            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-[99px] font-medium text-[13px]
+                   text-[#555560] hover:text-[#0a0a0c]
+                   border border-black/[0.12] hover:border-black/[0.25]
+                   transition-colors duration-250"
+          >
+            {profile.email}
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
