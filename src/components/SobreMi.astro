@@ -24,8 +24,13 @@ const t = useTranslations(lang);
         <p class="type-label mb-2" style="color: var(--color-on-light-muted);">{t(ui.about.eyebrow)}</p>
         <h2 class="type-section" style="color: #0a0a0c;">{t(ui.about.title)}</h2>
       </div>
-      <!-- Año decorativo -->
-      <span class="type-year hidden md:block" style="color: rgba(0,0,0,0.08); line-height:1;">2020—</span>
+      <!-- Año decorativo. Usa el token de superficie clara, igual que su gemelo
+           sobre fondo oscuro en Proyectos.astro: antes era rgba(0,0,0,0.08),
+           que sobre blanco daba 1.08:1 y no se veía. -->
+      <span
+        class="type-year hidden md:block"
+        style="color: var(--color-on-light-faint); line-height:1;"
+      >2020—</span>
     </div>
 
     <div class="sep-light mb-8 md:mb-10"></div>

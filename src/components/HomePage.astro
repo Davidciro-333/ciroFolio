@@ -12,6 +12,8 @@ import Proyectos   from './Proyectos.astro';
 import Experiencia from './Experiencia.astro';
 import Contacto    from './Contacto.astro';
 import type { Lang } from '../i18n/config';
+import { ogRoute, ogImagePath } from '../lib/og-routes';
+import { ogCard } from '../data/seo';
 
 interface Props {
   lang: Lang;
@@ -20,7 +22,11 @@ interface Props {
 const { lang } = Astro.props;
 ---
 
-<Layout lang={lang}>
+<Layout
+  lang={lang}
+  ogImage={ogImagePath(ogRoute.home(lang))}
+  ogImageHeading={ogCard.homeTitle[lang]}
+>
   <Nav lang={lang} />
 
   <main class="px-[var(--section-pad-x)] flex flex-col gap-[var(--section-gap)]">

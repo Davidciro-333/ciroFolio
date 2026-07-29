@@ -6,6 +6,8 @@ import '../styles/global.css';
 import { withBase } from '../lib/url';
 import { getAlternates } from '../i18n/utils';
 import { LOCALES, LOCALE_TAGS, OG_LOCALES, DEFAULT_LOCALE, type Lang } from '../i18n/config';
+import { SITE_NAME, meta, ogImageAlt } from '../data/seo';
+import { OG_WIDTH, OG_HEIGHT } from '../lib/og-routes';
 
 interface Props {
   lang: Lang;
@@ -13,27 +15,25 @@ interface Props {
   description?: string;
   /** Ruta a la imagen de Open Graph. Sin valor no se emiten las metas de imagen. */
   ogImage?: string;
+  /**
+   * Texto grande impreso en la tarjeta. Solo se usa para construir
+   * `og:image:alt`; por defecto se asume que es el título de la página.
+   */
+  ogImageHeading?: string;
+  /** `article` en los casos de estudio, `website` en el resto. */
+  ogType?: 'website' | 'article';
 }
 
-const defaults = {
-  en: {
-    title: 'David Ciro — AI Automation Engineer',
-    description:
-      'I build AI automation systems that run in production: conversational commerce, document extraction and content pipelines. Available for freelance work. Based in Colombia, UTC-5.',
-  },
-  es: {
-    title: 'David Ciro — Ingeniero de Automatización con IA',
-    description:
-      'Construyo sistemas de automatización con IA que corren en producción: comercio conversacional, extracción de documentos y pipelines de contenido. Disponible para trabajo freelance. Colombia, UTC-5.',
-  },
-} as const;
-
-const { lang, ogImage } = Astro.props;
-const title = Astro.props.title ?? defaults[lang].title;
-const description = Astro.props.description ?? defaults[lang].description;
+const { lang, ogImage, ogImageHeading, ogType = 'website' } = Astro.props;
+const title = Astro.props.title ?? meta.title[lang];
+const description = Astro.props.description ?? meta.description[lang];
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImageUrl = ogImage ? new URL(withBase(ogImage), Astro.site).href : undefined;
+const imageAlt = ogImageAlt[lang](ogImageHeading ?? title);
+
+// Declara que la misma página existe en el otro idioma.
+const alternateLocales = LOCALES.filter((locale) => locale !== lang);
 
 // La misma página en cada idioma, para las etiquetas hreflang.
 const alternates = getAlternates(Astro.url.pathname);
@@ -66,15 +66,34 @@ const alternates = getAlternates(Astro.url.pathname);
     <meta property="og:title"       content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url"         content={canonical.href} />
-    <meta property="og:type"        content="website" />
+    <meta property="og:type"        content={ogType} />
+    <meta property="og:site_name"   content={SITE_NAME} />
     <meta property="og:locale"      content={OG_LOCALES[lang]} />
-    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {alternateLocales.map((locale) => (
+      <meta property="og:locale:alternate" content={OG_LOCALES[locale]} />
+    ))}
+    {ogImageUrl && (
+      <>
+        <meta property="og:image"        content={ogImageUrl} />
+        <meta property="og:image:type"   content="image/png" />
+        {/* LinkedIn y WhatsApp reservan el hueco con estas dos: sin ellas a
+            veces no pintan la imagen en el primer scrapeo. */}
+        <meta property="og:image:width"  content={String(OG_WIDTH)} />
+        <meta property="og:image:height" content={String(OG_HEIGHT)} />
+        <meta property="og:image:alt"    content={imageAlt} />
+      </>
+    )}
 
     <!-- Twitter -->
     <meta name="twitter:card"        content={ogImageUrl ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title"       content={title} />
     <meta name="twitter:description" content={description} />
-    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+    {ogImageUrl && (
+      <>
+        <meta name="twitter:image"     content={ogImageUrl} />
+        <meta name="twitter:image:alt" content={imageAlt} />
+      </>
+    )}
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />

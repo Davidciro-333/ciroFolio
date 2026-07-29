@@ -21,6 +21,17 @@ export interface Project {
   hasCase: boolean;
   /** Enlace externo verificable, si lo hay. */
   externalUrl?: string;
+  /**
+   * Fecha ISO desde la que el sistema corre en producción. Presente solo en
+   * los que de verdad siguen corriendo: enciende el indicador de estado.
+   *
+   * ⚠ FECHAS SIN VERIFICAR — puestas para poder ver el componente funcionando.
+   * Hay que sustituirlas por las reales antes de publicar: es exactamente el
+   * tipo de dato que un cliente comprueba, y una fecha inventada tira abajo
+   * todo lo demás. Si de alguna no hay fecha fiable, se borra la línea y el
+   * proyecto simplemente no muestra estado.
+   */
+  liveSince?: string;
 }
 
 export const projects: Project[] = [
@@ -35,6 +46,7 @@ export const projects: Project[] = [
     },
     tags: ['n8n', 'Gemini', 'Document AI', 'Telegram', 'Google Cloud'],
     hasCase: true,
+    liveSince: '2026-03-02', // ⚠ sin verificar
   },
   {
     num: '02',
@@ -47,6 +59,7 @@ export const projects: Project[] = [
     },
     tags: ['Node.js', 'TypeScript', 'FFmpeg', 'Gemini', 'n8n', 'SQLite'],
     hasCase: true,
+    liveSince: '2026-01-15', // ⚠ sin verificar
   },
   {
     num: '03',
@@ -59,6 +72,7 @@ export const projects: Project[] = [
     },
     tags: ['n8n', 'Claude', 'WhatsApp API', 'Redis', 'AWS EC2'],
     hasCase: false,
+    liveSince: '2025-11-08', // ⚠ sin verificar
   },
   {
     num: '04',

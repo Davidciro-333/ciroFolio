@@ -19,8 +19,17 @@
 interface ContactFormConfig {
   endpoint: string;
   accessKey: string;
-  /** Asunto del correo que le llega a David. */
+  /**
+   * Prefijo del asunto. El formulario le añade el nombre, el presupuesto y el
+   * plazo de cada envío, para poder priorizar desde la bandeja sin abrir el
+   * correo: `New inquiry — David · 2k – 5k USD · Within a month`.
+   */
   subject: string;
+  /**
+   * Nombre del remitente. Sin esto, Web3Forms envía como "Notifications", que
+   * en una bandeja llena no se distingue de un aviso automático cualquiera.
+   */
+  fromName: string;
 }
 
 export const contactForm: ContactFormConfig = {
@@ -28,7 +37,8 @@ export const contactForm: ContactFormConfig = {
   // ↓ Pegar aquí la access key de web3forms.com. Hasta entonces el formulario
   //   sigue funcionando en modo mailto: no se pierde ningún contacto.
   accessKey: 'a5672fb6-decd-4345-a9d1-a7b32969f40c',
-  subject: 'New project inquiry — itsciro.com',
+  subject: 'New inquiry',
+  fromName: 'itsciro.com',
 };
 
 export const isFormEnabled = contactForm.endpoint !== '' && contactForm.accessKey !== '';

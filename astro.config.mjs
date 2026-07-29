@@ -7,7 +7,10 @@ import mdx from '@astrojs/mdx';
 // Vercel desde el proyecto del bio-link. Cuando se mude a su dominio dedicado
 // se cambian estas dos constantes (o las variables de entorno) y nada más:
 // ningún enlace interno hardcodea la base — todos pasan por `withBase()`.
-const SITE = process.env.PUBLIC_SITE_URL ?? 'https://itsciro.com';
+// Con `www`: itsciro.com/cirofolio responde 307 hacia www.itsciro.com/cirofolio.
+// El canonical y og:url deben apuntar al destino final, no al que redirige —
+// LinkedIn cachea la tarjeta por URL y no revalida en días.
+const SITE = process.env.PUBLIC_SITE_URL ?? 'https://www.itsciro.com';
 const BASE = process.env.PUBLIC_BASE_PATH ?? '/cirofolio';
 
 export default defineConfig({
