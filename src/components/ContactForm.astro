@@ -34,6 +34,7 @@ const fieldClass =
   data-endpoint={contactForm.endpoint}
   data-access-key={contactForm.accessKey}
   data-subject={contactForm.subject}
+  data-from-name={contactForm.fromName}
   data-mailto={profile.email}
   data-enabled={String(isFormEnabled)}
   novalidate={false}
@@ -96,7 +97,7 @@ const fieldClass =
   />
 
   <div class="flex items-center gap-4 flex-wrap">
-    <button type="submit" class="btn-primary" data-label={t(ui.form.submit)} data-sending={t(ui.form.sending)}>
+    <button type="submit" class="btn-primary" data-sending={t(ui.form.sending)}>
       {t(ui.form.submit)} <span aria-hidden="true">↗</span>
     </button>
 
@@ -135,8 +136,21 @@ const fieldClass =
   const status = document.getElementById('cf-status');
   if (form && status) {
     const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-    const labelIdle = button.dataset.label ?? 'Send';
+    const buttonIdle = button.innerHTML;
     const labelSending = button.dataset.sending ?? 'Sending…';
+
+    // Asunto con lo justo para priorizar desde la bandeja sin abrir el correo.
+    // El presupuesto y el plazo salen de <select>, así que son valores cerrados;
+    // el nombre es texto libre del visitante y por eso se recorta.
+    const buildSubject = (data: FormData) => {
+      const base = form.dataset.subject ?? 'New inquiry';
+      const name = String(data.get('name') ?? '').trim().slice(0, 40);
+      const rest = [data.get('budget'), data.get('timeline')]
+        .map((value) => String(value ?? '').trim())
+        .filter(Boolean);
+
+      return [name ? `${base} — ${name}` : base, ...rest].join(' · ');
+    };
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -158,7 +172,7 @@ const fieldClass =
           .filter(([key, value]) => key !== 'botcheck' && value)
           .map(([key, value]) => `${key}: ${value}`)
           .join('\n');
-        const subject = encodeURIComponent(form.dataset.subject ?? 'Project inquiry');
+        const subject = encodeURIComponent(buildSubject(data));
         window.location.href =
           `mailto:${form.dataset.mailto}?subject=${subject}&body=${encodeURIComponent(body)}`;
         return;
@@ -170,7 +184,8 @@ const fieldClass =
 
       try {
         data.append('access_key', form.dataset.accessKey ?? '');
-        data.append('subject', form.dataset.subject ?? '');
+        data.append('subject', buildSubject(data));
+        data.append('from_name', form.dataset.fromName ?? '');
 
         const response = await fetch(form.dataset.endpoint ?? '', {
           method: 'POST',
@@ -178,15 +193,32 @@ const fieldClass =
           body: data,
         });
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        // Web3Forms responde 200 con {"success": false} cuando rechaza el
+        // envío —key inválida, spam, cuota agotada—, así que mirar solo
+        // response.ok daría por enviado un mensaje que nunca salió y el
+        // contacto se perdería en silencio. La confirmación es el cuerpo.
+        //
+        // Si el cuerpo no se puede leer, se cuenta como fallo: sin
+        // confirmación explícita no se anuncia éxito. Decir "algo falló"
+        // cuando sí llegó cuesta un correo duplicado; decir "recibido"
+        // cuando no llegó cuesta el contacto entero.
+        const result: { success?: boolean; message?: string } | null =
+          await response.json().catch(() => null);
+
+        if (!response.ok || result?.success !== true) {
+          throw new Error(result?.message ?? `HTTP ${response.status}`);
+        }
 
         status.textContent = status.dataset.success ?? '';
         form.reset();
-      } catch {
+      } catch (error) {
+        console.error('[contact-form]', error);
         status.textContent = status.dataset.error ?? '';
       } finally {
         button.disabled = false;
-        button.textContent = labelIdle;
+        // innerHTML y no textContent: el botón lleva la flecha ↗ en un span,
+        // y asignar texto plano la borraba para siempre tras el primer envío.
+        button.innerHTML = buttonIdle;
       }
     });
   }
