@@ -1,0 +1,118 @@
+---
+// src/components/SystemStatus.astro
+//
+// Indicador de "esto sigue corriendo". La diferencia entre un portafolio y
+// una prueba: un proyecto se enseña, un sistema en producción se comprueba.
+//
+// El sitio es estático, así que el conteo de días NO se calcula en el build:
+// quedaría congelado en la fecha del despliegue y envejecería en silencio,
+// que es peor que no ponerlo. Se renderiza la fecha —siempre cierta— y el
+// cliente la convierte en días al cargar. Sin JavaScript se lee la fecha.
+//
+// Solo dice lo que se puede sostener si un cliente pregunta: desde cuándo
+// está en producción. No afirma tiempo sin caídas ni ausencia de mantenimiento.
+
+import { ui } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { LOCALE_TAGS, type Lang } from '../i18n/config';
+
+interface Props {
+  /** Fecha ISO (YYYY-MM-DD) desde la que el sistema corre en producción. */
+  since: string;
+  lang: Lang;
+}
+
+const { since, lang } = Astro.props;
+const t = useTranslations(lang);
+
+const readableDate = new Date(`${since}T00:00:00Z`).toLocaleDateString(LOCALE_TAGS[lang], {
+  year: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+});
+---
+
+<span class="system-status" data-since={since} data-days-label={t(ui.status.days)}>
+  <span class="dot" aria-hidden="true"></span>
+  <span class="label">{t(ui.status.live)}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span class="detail">
+    {t(ui.status.since)} <time datetime={since}>{readableDate}</time>
+  </span>
+</span>
+
+<style>
+  .system-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .label {
+    color: var(--color-neon);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  .sep {
+    color: var(--color-text-faint);
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-neon);
+    flex-shrink: 0;
+    /* El halo es lo que lo hace leer como "latiendo" y no como una viñeta. */
+    box-shadow: 0 0 0 0 rgba(200, 241, 53, 0.55);
+    animation: status-pulse 2.4s ease-out infinite;
+  }
+
+  @keyframes status-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(200, 241, 53, 0.55);
+    }
+    70% {
+      box-shadow: 0 0 0 7px rgba(200, 241, 53, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(200, 241, 53, 0);
+    }
+  }
+
+  /* El estado se comunica por color y por texto; el latido solo lo adorna,
+     así que se puede quitar entero sin perder información. */
+  @media (prefers-reduced-motion: reduce) {
+    .dot {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // La fecha renderizada es correcta pero fría. Con JavaScript se convierte en
+  // el número que de verdad impresiona —cuántos días lleva corriendo— y que se
+  // recalcula en cada visita en vez de envejecer con el último despliegue.
+  for (const el of document.querySelectorAll<HTMLElement>('.system-status[data-since]')) {
+    const since = el.dataset.since;
+    const label = el.dataset.daysLabel;
+    const detail = el.querySelector('.detail');
+    if (!since || !label || !detail) continue;
+
+    const start = Date.parse(`${since}T00:00:00Z`);
+    if (Number.isNaN(start)) continue;
+
+    const days = Math.floor((Date.now() - start) / 86_400_000);
+    // Una fecha futura o de hoy significa dato mal puesto: se deja la fecha.
+    if (days < 1) continue;
+
+    detail.textContent = `${days.toLocaleString()} ${label}`;
+  }
+</script>

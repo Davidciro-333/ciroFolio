@@ -1,0 +1,120 @@
+---
+// src/components/NotFoundPage.astro
+//
+// La 404 es zona caliente: aquí no se decide ninguna contratación, así que es
+// el sitio donde el sitio puede permitirse tener carácter sin gastar crédito.
+// De ahí el pixel art, que en el hero o en un caso de estudio costaría caro.
+//
+// El encuadre sigue siendo el del resto del portafolio —una ruta que no tiene
+// nada escuchando detrás— en vez del "¡ups, te perdiste!" de costumbre.
+
+import Layout from '../layouts/Layout.astro';
+import Nav from './Nav.astro';
+import PixelServer from './PixelServer.astro';
+import { ui } from '../i18n/ui';
+import { useTranslations, localePath } from '../i18n/utils';
+import type { Lang } from '../i18n/config';
+import { ogRoute, ogImagePath } from '../lib/og-routes';
+import { ogCard } from '../data/seo';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const home = localePath(lang, '/');
+---
+
+<Layout
+  lang={lang}
+  title={`404 — ${t(ui.notFound.title)}`}
+  description={t(ui.notFound.body)}
+  ogImage={ogImagePath(ogRoute.notFound(lang))}
+  ogImageHeading={ogCard.notFoundTitle[lang]}
+>
+  <Nav lang={lang} />
+
+  <main class="px-[var(--section-pad-x)]">
+    <section
+      class="card-dark px-8 md:px-12 lg:px-16 py-16 md:py-24 flex flex-col md:flex-row
+             items-center md:items-center gap-10 md:gap-16 justify-center"
+    >
+      <PixelServer width={190} class="shrink-0" />
+
+      <div class="flex flex-col items-center md:items-start text-center md:text-left max-w-lg">
+        <p class="type-label mb-2">{t(ui.notFound.eyebrow)}</p>
+        <h1 class="type-section mb-4">{t(ui.notFound.title)}</h1>
+        <p class="type-body mb-6">{t(ui.notFound.body)}</p>
+
+        <!-- La ruta pedida, en registro de log. El sitio es estático, así que
+             el servidor no la conoce: la rellena el cliente. Sin JavaScript
+             se queda el guion, que no miente ni deja un hueco raro. -->
+        <p class="log-line mb-8" aria-hidden="true">
+          <span class="log-prompt">GET</span>
+          <span data-requested-path>—</span>
+          <span class="log-code">404</span>
+        </p>
+
+        <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+          <a href={`${home}#systems`} class="btn-primary">
+            {t(ui.notFound.back)} <span aria-hidden="true">↗</span>
+          </a>
+          <a href={`${home}#contact`} class="btn-ghost">
+            {t(ui.notFound.contact)}
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .log-line {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    word-break: break-all;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .log-prompt {
+    color: var(--color-text-faint);
+  }
+
+  .log-code {
+    color: #e05252;
+    font-weight: 600;
+  }
+
+  /* Secundario del CTA principal: mismo peso tipográfico, sin el relleno,
+     para que no compitan por la atención. */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 22px;
+    border: 1px solid var(--color-border-mid);
+    border-radius: var(--radius-btn);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    transition:
+      color 0.25s,
+      border-color 0.25s;
+  }
+
+  .btn-ghost:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-mid);
+  }
+</style>
+
+<script>
+  const slot = document.querySelector('[data-requested-path]');
+  if (slot) slot.textContent = window.location.pathname;
+</script>

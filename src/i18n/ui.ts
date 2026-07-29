@@ -113,5 +113,25 @@ export const ui = {
     links: { en: 'Links',       es: 'Enlaces' },
     draft: { en: 'Draft — not published yet', es: 'Borrador — sin publicar' },
   },
+
+  /** Indicador de estado de los sistemas que siguen corriendo. */
+  status: {
+    live: { en: 'Live', es: 'Activo' },
+    // Fallback sin JavaScript: la fecha en crudo, que siempre es cierta.
+    since: { en: 'in production since', es: 'en producción desde' },
+    // Con JavaScript se sustituye por el conteo, que nunca envejece.
+    days: { en: 'days in production', es: 'días en producción' },
+  },
+
+  notFound: {
+    eyebrow: { en: '/ Error 404', es: '/ Error 404' },
+    title:   { en: 'Process not found', es: 'Proceso no encontrado' },
+    body: {
+      en: 'Nothing is bound to this path. It was moved, renamed, or it never ran here in the first place.',
+      es: 'No hay nada escuchando en esta ruta. La movieron, la renombraron, o nunca corrió aquí.',
+    },
+    back:    { en: 'Back to the systems', es: 'Volver a los sistemas' },
+    contact: { en: 'Report it to me',     es: 'Repórtamelo' },
+  },
   // Obliga a que cada entrada tenga los dos idiomas: si falta uno, no compila.
 } satisfies Record<string, Record<string, Localized<string> | Localized<string[]>>>;

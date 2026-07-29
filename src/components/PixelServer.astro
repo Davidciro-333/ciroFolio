@@ -1,0 +1,119 @@
+---
+// src/components/PixelServer.astro
+//
+// Sprite de pixel art dibujado a mano, sin assets binarios: el dibujo ES el
+// mapa de caracteres de abajo. Para editarlo se edita texto — cambiar un LED
+// de sitio es cambiar una letra, y el diff se lee en una revisión de código.
+//
+// Se renderiza como SVG de rectángulos de 1×1 con `shape-rendering: crispEdges`,
+// así que escala a cualquier tamaño sin perder el borde duro del píxel y pesa
+// unos pocos kB. Los colores salen de los tokens del sitio: el pixel art usa
+// la misma paleta que el resto, no una paleta retro pegada encima.
+//
+// Un rack con cuatro bahías. Tres LED en verde y uno en rojo: es la bahía que
+// no responde, que es exactamente lo que significa un 404.
+
+interface Props {
+  /** Ancho en píxeles CSS. El alto sale solo por la relación del viewBox. */
+  width?: number;
+  class?: string;
+}
+
+const { width = 200, class: className } = Astro.props;
+
+/**
+ * Leyenda:
+ *   .  transparente      k  chasis (borde)     d  hueco entre bahías
+ *   m  carcasa           l  brillo lateral     g  rejilla de ventilación
+ *   n  LED en servicio   r  LED caído (parpadea)
+ */
+const SPRITE = [
+  '.kkkkkkkkkkkkkkkkkk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kmnmggggggggggmlmk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kddddddddddddddddk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kmnmggggggggggmlmk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kddddddddddddddddk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kmrmggggggggggmlmk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kddddddddddddddddk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kmnmggggggggggmlmk.',
+  '.kmmmmmmmmmmmmmmmmk.',
+  '.kkkkkkkkkkkkkkkkkk.',
+  '..kk............kk..',
+];
+
+const PALETTE: Record<string, string> = {
+  k: '#2a2a35',
+  d: 'var(--color-base)',
+  m: 'var(--color-surface-2)',
+  l: '#3a3a48',
+  g: 'var(--color-surface)',
+  n: 'var(--color-neon)',
+  r: '#e05252',
+};
+
+const COLS = SPRITE[0].length;
+const ROWS = SPRITE.length;
+
+// Un rect por píxel pintado. Los '.' no generan nodo.
+const pixels = SPRITE.flatMap((row, y) =>
+  [...row].flatMap((char, x) => {
+    const fill = PALETTE[char];
+    return fill ? [{ x, y, fill, alert: char === 'r' }] : [];
+  }),
+);
+---
+
+<svg
+  viewBox={`0 0 ${COLS} ${ROWS}`}
+  width={width}
+  height={(width * ROWS) / COLS}
+  class:list={['pixel-server', className]}
+  role="img"
+  aria-label="Rack de servidores en pixel art: tres bahías con el indicador en verde y una con el indicador en rojo"
+>
+  {pixels.map((p) => (
+    <rect x={p.x} y={p.y} width="1" height="1" fill={p.fill} class:list={[p.alert && 'led-alert']} />
+  ))}
+</svg>
+
+<style>
+  .pixel-server {
+    /* Borde duro: sin esto el navegador interpola y el píxel se ablanda. */
+    shape-rendering: crispEdges;
+    image-rendering: pixelated;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .led-alert {
+    animation: led-blink 1.4s steps(1, end) infinite;
+  }
+
+  /* steps() y no una curva suave: un LED de hardware conmuta, no se desvanece. */
+  @keyframes led-blink {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    56%,
+    100% {
+      opacity: 0.25;
+    }
+  }
+
+  /* Quien pidió menos movimiento ve el LED encendido y quieto: la información
+     (esta bahía está caída) se transmite por color, no por parpadeo. */
+  @media (prefers-reduced-motion: reduce) {
+    .led-alert {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>
