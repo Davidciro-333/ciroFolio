@@ -109,6 +109,9 @@
   --color-on-light-primary:   #0a0a0c;  /* 19.78:1 */
   --color-on-light-secondary: #555560;  /*  7.36:1 */
   --color-on-light-muted:     #6b6b7a;  /*  5.24:1 */
+  --color-on-light-faint:     #9292a0;  /*  3.07:1 — pareja clara de text-faint:
+                                           decorativo grande (el año de marca de
+                                           agua), nunca texto de lectura. */
 
   /* Bordes */
   --color-border-dark:  rgba(255, 255, 255, 0.07);

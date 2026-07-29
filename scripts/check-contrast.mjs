@@ -74,6 +74,7 @@ const checks = [
   ['on-light-primary',   token('on-light-primary'),   WHITE,   4.5, 'texto sobre tarjeta blanca'],
   ['on-light-secondary', token('on-light-secondary'), WHITE,   4.5, 'texto sobre tarjeta blanca'],
   ['on-light-muted',     token('on-light-muted'),     WHITE,   4.5, 'texto sobre tarjeta blanca'],
+  ['on-light-faint',     token('on-light-faint'),     WHITE,   3.0, 'SOLO decorativo grande / UI'],
 ];
 
 console.log(`Superficie oscura: ${surface}\n`);
