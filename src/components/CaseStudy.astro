@@ -14,6 +14,7 @@ import { ui } from '../i18n/ui';
 import { useTranslations, localePath } from '../i18n/utils';
 import type { Lang } from '../i18n/config';
 import type { WorkEntry } from '../lib/work';
+import { ogRoute, ogImagePath } from '../lib/og-routes';
 
 interface Props {
   lang: Lang;
@@ -26,7 +27,14 @@ const { data } = entry;
 const { Content } = await render(entry);
 ---
 
-<Layout lang={lang} title={`${data.title} — David Ciro`} description={data.summary}>
+<Layout
+  lang={lang}
+  title={`${data.title} — David Ciro`}
+  description={data.summary}
+  ogImage={ogImagePath(ogRoute.work(lang, data.slug))}
+  ogImageHeading={data.title}
+  ogType="article"
+>
   <Nav lang={lang} />
 
   <main class="px-[var(--section-pad-x)] pb-[var(--section-gap)]">
