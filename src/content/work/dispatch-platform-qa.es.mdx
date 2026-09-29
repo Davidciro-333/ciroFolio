@@ -1,0 +1,105 @@
+---
+slug: dispatch-platform-qa
+lang: es
+title: Plataforma de despacho de taxis
+summary: QA y arreglos de una plataforma de despacho de taxis en producción en Colombia — cada issue con su causa, su arreglo y cómo verificarlo.
+role: QA y arreglos, dentro de Galactic AIMA
+year: '2026'
+stack: [PostgreSQL, Supabase, SQL, Playwright, PWA, Capacitor]
+metrics:
+  - { value: '28', label: 'Issues con causa, arreglo y verificación' }
+  - { value: '97 + 38', label: 'Pruebas SQL y de navegador, en verde' }
+  - { value: '4/4', label: 'Bloqueantes corregidos en producción' }
+  - { value: '7', label: 'Circuitos de prueba cubiertos' }
+links: []
+draft: false
+order: 3
+---
+
+import Pipeline from '../../components/Pipeline.astro';
+
+> La plataforma no se nombra aquí a petición del cliente. Cifras al 29 de septiembre de 2026.
+
+## El encargo
+
+Una plataforma de despacho de taxis ya estaba en producción en Colombia: una sola app web que
+cambia de cara según quién entre —pasajero, conductor o la central— y que se instala como PWA
+desde el navegador. Antes de abrirla a una flota real, el equipo quería que alguien la
+recorriera sin el sesgo de quien la construyó.
+
+Lo asumí dentro de Galactic AIMA. El entregable no era "funciona" o "no funciona": eran issues
+de GitHub, cada uno con su causa, un arreglo propuesto y la forma de comprobar que el arreglo
+se sostiene. Una semana después el encargo creció: corregir esos mismos issues pasó a ser
+también mi trabajo.
+
+## Cómo probé
+
+El plan de pruebas se organizó en siete circuitos, cada uno un camino real del negocio. El que
+más importa es el del dinero, del registro al cargo:
+
+<Pipeline
+  caption="El circuito completo, ejecutado en producción el 27 de septiembre con dos teléfonos delante. Todos los pasos en verde."
+  steps={[
+    { n: '01', title: 'Registro', detail: 'Un conductor se registra desde el teléfono, como lo haría uno real.' },
+    { n: '02', title: 'Aprobación', detail: 'La central aprueba la cuenta. Nadie se autoriza a sí mismo.' },
+    { n: '03', title: 'Recarga', detail: 'Se carga el saldo del conductor antes de que haya trabajo.' },
+    { n: '04', title: 'Viaje', detail: 'Un pasajero pide, el conductor lo toma y lo lleva por todos sus estados.' },
+    { n: '05', title: 'Cargo', detail: 'El viaje terminado genera su cargo, y el saldo se mueve con él.' },
+    { n: '06', title: 'Cancelación y limpieza', detail: 'Una cancelación del pasajero y, al final, cada rastro de prueba en un estado que no cobra nada.' },
+  ]}
+/>
+
+Casi todo corre sin teléfono. Construí un arnés que prueba directamente la capa de base de
+datos —las reglas viven en funciones y triggers de PostgreSQL, así que es ahí donde se
+comprueban— más una suite de navegador para lo que solo las pantallas pueden mostrar. Al
+empezar, la capa SQL tenía **11 pruebas en rojo a propósito y 44 en verde**: cada roja era un
+defecto conocido esperando su arreglo. Hoy son **97 pruebas SQL y 38 de navegador, todas en
+verde**.
+
+## Reglas para arreglar un sistema que ya está vivo
+
+Arreglar datos de producción no es lo mismo que arreglar código, así que sumé tres reglas a las
+del equipo:
+
+- **Cada migración termina comprobándose a sí misma.** Si lo que debía instalar no está, falla
+  en voz alta en vez de reportar éxito.
+- **Cada migración lleva su reversión.** `git revert` no revierte una base de datos.
+- **Actualizar el arnés es parte del arreglo,** no una tarea para después. Un arreglo sin una
+  prueba que lo demuestre es una promesa.
+
+Las reglas se pagaron solas: el arnés cazó una regresión que introduje yo mismo, antes de que
+llegara a producción.
+
+## Lo que encontré
+
+Los issues que más pesaban no eran caídas. Eran lugares donde la app le decía a alguien algo que
+no era cierto:
+
+- La app le prometía a un conductor con el GPS desactivado que no recibiría servicios —**y se
+  los seguía ofreciendo.**
+- Un conductor con la app en segundo plano dejaba de reportar posición pero **seguía "en turno"
+  para siempre**, así que la central le podía despachar.
+- Al cancelar un servicio, el conductor quedaba encerrado como **"ocupado" mientras su pantalla
+  le decía que estaba disponible.** Eso ya le había pasado a un conductor real.
+
+## La medición que cambió la arquitectura
+
+Debajo del issue del GPS en segundo plano había un límite, no un defecto: **una PWA no puede
+reportar posición en segundo plano.** Lo medí en lugar de suponerlo. En pantalla, una posición
+cada 60 segundos, clavados. Instalada y en segundo plano: **50 minutos sin una sola escritura**,
+con el corte inmediato.
+
+Eso convirtió un reporte de bug en una decisión de arquitectura. El equipo lo confirmó con sus
+propias fuentes y decidió envolver de forma nativa solo la app del conductor con Capacitor,
+dejando los demás roles como PWA.
+
+## Estado actual
+
+- **Los cuatro issues bloqueantes están corregidos y verificados en producción,** uno por uno,
+  con constancia escrita de cada comprobación.
+- **El circuito completo corrió de punta a punta en producción** el 27 de septiembre.
+- **28 issues documentados; los arreglos siguen** en el orden que priorizó el equipo —primero
+  los que ya le estaban costando plata a una persona real.
+
+El piloto con una flota real todavía no ha arrancado. Lo que muestra este caso no es un
+lanzamiento: es el trabajo que tiene que ser cierto antes de uno.
