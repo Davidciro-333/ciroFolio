@@ -5,12 +5,12 @@ title: beBetterStudio
 summary: Pipeline de contenido que genera video corto, lo publica programado en cuatro redes y mide qué decisiones funcionaron de verdad.
 role: Diseño, construcción y operación
 year: '2026'
-stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, SQLite, AWS S3]
+stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, PostgreSQL, AWS EC2, Docker]
 metrics:
-  - { value: '4', label: 'Redes con publicación automática' }
-  - { value: '60', label: 'Posts cruzados con su receta' }
+  - { value: '755K', label: 'Reproducciones en 124 piezas' }
+  - { value: '127K', label: 'Reproducciones de la mejor pieza' }
+  - { value: '4,9s → 6,6s', label: 'Watch time mediano tras el cambio' }
   - { value: '39/40', label: 'Publicaciones huérfanas recuperadas' }
-  - { value: '238', label: 'Imágenes indexadas y vectorizadas' }
 links:
   - { label: 'La cuenta donde publica', url: 'https://www.instagram.com/bebetter.path/' }
   - { label: 'Un carrusel que produjo', url: 'https://www.instagram.com/p/DbRZ5MgD9Rx/' }
@@ -113,15 +113,53 @@ Vi los diez extremos — las cinco mejores y las cinco peores. Las que viajan se
 alguien reconocible y rematan con un giro. Las planas son citas de filósofos entre
 comillas.
 
-Eso es una hipótesis con evidencia detrás, no una conclusión. Ahora es un test
-controlado: diez piezas nuevas escritas con la voz propia de la cuenta, etiquetadas como
-grupo aparte, intercaladas con citas — y medidas por **skip rate y watch time**, no por
-alcance, porque el alcance es el número que miente.
+Eso era una hipótesis con evidencia detrás, no una conclusión. Así que se convirtió en un
+test controlado: diez piezas nuevas escritas con la voz propia de la cuenta, etiquetadas
+como grupo aparte, intercaladas con citas — y medidas por **skip rate y watch time**, no
+por alcance, porque el alcance es el número que miente.
+
+## El resultado — después de arreglar el instrumento
+
+Antes de leer el resultado tuve que reparar la medición. Una de las vías de inserción no
+pasaba el tipo de medio, así que las publicaciones del test se consultaban con el juego de
+métricas de las imágenes, el que no trae ni skip rate ni watch time. Ningún error en ninguna
+parte: los números simplemente no estaban. Se pudo recuperar solo porque esas dos métricas
+son acumuladas del lado de la plataforma: recogerlas tarde sigue dando la cifra real.
+
+| | n | Skip rate (mediana) | Watch time (mediana) |
+|---|---|---|---|
+| Control, 1–27 de julio | 16 | 51,5% | 4,88s |
+| Voz propia | 10 | **47,1%** | **6,64s** |
+
+Un test de permutación da **p = 0,019 para el skip rate y p = 0,003 para el watch time.**
+El watch time volvió al nivel de abril, cuando la cuenta funcionaba, y la mediana de
+reproducciones se multiplicó por algo más de tres la semana siguiente.
+
+La salvedad honesta: las diez frases del test compartían además una estructura en dos
+tiempos —un planteamiento y un giro—, así que el test no puede separar *quién habla* de
+*cómo está construida la frase*. Separarlas habría exigido publicar diez piezas peores a
+propósito durante la única semana en que la cuenta volvía a crecer. Decidí no hacerlo, dejé
+los dos tiempos como norma de marca y dejé escrita la pregunta abierta como abierta.
+
+## De mi máquina a su propio servidor
+
+En agosto la app salió de mi portátil. Ahora corre en su propia instancia de AWS con Docker
+detrás de Caddy y TLS, sobre PostgreSQL en lugar de SQLite, con login de Google restringido a
+una lista de correos y sin puerto SSH abierto: se entra por AWS Systems Manager.
+
+El servidor además genera lotes enteros por su cuenta. Para hacerlo sin navegador mide el
+texto con el mismo archivo de fuente con el que pinta FFmpeg, de modo que los cortes de línea
+coinciden con la vista previa del editor en **705 de 708 casos** (118 frases × 6 presets), y
+en todos los del preset de marca. Las reglas de marca —dos tiempos, tercera persona— son
+columnas que consulta el planificador de lotes, así que el bot no puede proponer una frase que
+no se publicaría.
 
 ## Estado actual
 
-Funcionando. Publicando programado en cuatro redes, con panel de analítica propio sobre
-las APIs de las plataformas y recolección diaria de métricas.
+Funcionando, a tres piezas diarias, y cada pieza sigue pasando por aprobación humana antes de
+publicarse. Al 12 de septiembre de 2026: **124 piezas con métricas, 755.151 reproducciones en
+total y 127.404 en la mejor pieza.** El alcance mediano por pieza es 1.687. Cito la mediana y
+no el promedio (4.313) porque dos piezas tiran del promedio hacia arriba.
 
 Lo que vale la pena llevarse no es el renderizador. Es que un pipeline de contenido sin
 medición es una máquina para producir más de aquello que ya estabas haciendo mal — solo

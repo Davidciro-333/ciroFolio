@@ -30,10 +30,10 @@ export const timeline: TimelineEntry[] = [
     org: { en: 'Galactic AIMA', es: 'Galactic AIMA' },
     kind: { en: 'Own company', es: 'Empresa propia' },
     description: {
-      en: 'I lead product development and run the infrastructure: self-hosted n8n on AWS EC2 behind nginx, messaging integrations, and the AI systems the agency sells.',
-      es: 'A cargo del desarrollo de productos y de la infraestructura: n8n self-hosted en AWS EC2 detrás de nginx, integraciones de mensajería y los sistemas de IA que vende la agencia.',
+      en: 'I lead product development and run the infrastructure: the self-hosted n8n on AWS EC2 that the whole team’s automations run on, services provisioned with Terraform and reached through SSM instead of open SSH, and the AI systems the agency sells. I also own QA and fixes on a client platform in production.',
+      es: 'A cargo del desarrollo de productos y de la infraestructura: el n8n self-hosted en AWS EC2 sobre el que corren las automatizaciones de todo el equipo, servicios aprovisionados con Terraform y accesibles por SSM en vez de SSH abierto, y los sistemas de IA que vende la agencia. También llevo el QA y los arreglos de una plataforma de cliente en producción.',
     },
-    tags: ['AWS EC2', 'Docker', 'n8n', 'LLM APIs', 'nginx'],
+    tags: ['AWS', 'Terraform', 'Docker', 'n8n', 'PostgreSQL', 'LLM APIs'],
     active: true,
   },
   {
@@ -96,6 +96,6 @@ export const skills: SkillGroup[] = [
   },
   {
     category: { en: 'Infrastructure', es: 'Infraestructura' },
-    items: ['AWS EC2', 'Docker', 'Vercel', 'SQLite', 'Git'],
+    items: ['AWS EC2', 'Terraform', 'Docker', 'PostgreSQL', 'Git'],
   },
 ];

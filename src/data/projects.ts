@@ -25,11 +25,9 @@ export interface Project {
    * Fecha ISO desde la que el sistema corre en producción. Presente solo en
    * los que de verdad siguen corriendo: enciende el indicador de estado.
    *
-   * ⚠ FECHAS SIN VERIFICAR — puestas para poder ver el componente funcionando.
-   * Hay que sustituirlas por las reales antes de publicar: es exactamente el
-   * tipo de dato que un cliente comprueba, y una fecha inventada tira abajo
-   * todo lo demás. Si de alguna no hay fecha fiable, se borra la línea y el
-   * proyecto simplemente no muestra estado.
+   * Cada fecha sale de la creación del workflow que hoy está activo en n8n,
+   * comprobada por su API el 2026-09-29 — es exactamente el tipo de dato que
+   * un cliente comprueba. Si de alguno no hay fecha fiable, no lleva estado.
    */
   liveSince?: string;
 }
@@ -46,7 +44,7 @@ export const projects: Project[] = [
     },
     tags: ['n8n', 'Gemini', 'Document AI', 'Telegram', 'Google Cloud'],
     hasCase: true,
-    liveSince: '2026-03-02', // ⚠ sin verificar
+    liveSince: '2025-09-24', // [Bills] Lector facturas
   },
   {
     num: '02',
@@ -57,12 +55,27 @@ export const projects: Project[] = [
       en: 'A content pipeline that generates short-form video and carousels, publishes them to four networks on a schedule, and measures what actually worked — with its own analytics panel built on top of the platform APIs.',
       es: 'Pipeline de contenido que genera video corto y carruseles, los publica programados en cuatro redes y mide qué funcionó de verdad — con panel de analítica propio sobre las APIs de las plataformas.',
     },
-    tags: ['Node.js', 'TypeScript', 'FFmpeg', 'Gemini', 'n8n', 'SQLite'],
+    tags: ['Node.js', 'TypeScript', 'FFmpeg', 'Gemini', 'n8n', 'PostgreSQL', 'AWS EC2'],
     hasCase: true,
-    liveSince: '2026-01-15', // ⚠ sin verificar
+    liveSince: '2026-04-18', // bebetter contentPublisher v0, antecesor directo de [Pub] bebetter
   },
   {
+    // Anónimo a petición del socio (Camilo, 2026-09-29): sin nombre, sin
+    // ciudad y sin tamaño de flota, porque juntos identifican el proyecto. El
+    // nombre es marca del cliente y se pedirá después del piloto.
     num: '03',
+    slug: 'dispatch-platform-qa',
+    name: 'Taxi Dispatch Platform',
+    year: '2026',
+    description: {
+      en: 'QA and fixes for a taxi dispatch platform in production in Colombia, within Galactic AIMA. Seven test circuits, an automated SQL and browser test harness, and every issue filed with its cause, its fix and how to verify it.',
+      es: 'QA y arreglos de una plataforma de despacho de taxis en producción en Colombia, dentro de Galactic AIMA. Siete circuitos de prueba, un arnés automatizado de pruebas SQL y de navegador, y cada issue con su causa, su arreglo y cómo verificarlo.',
+    },
+    tags: ['PostgreSQL', 'Supabase', 'Playwright', 'PWA', 'QA'],
+    hasCase: true,
+  },
+  {
+    num: '04',
     slug: 'conversational-commerce',
     name: 'Conversational Commerce Engine',
     year: '2026',
@@ -72,10 +85,23 @@ export const projects: Project[] = [
     },
     tags: ['n8n', 'Claude', 'WhatsApp API', 'Redis', 'AWS EC2'],
     hasCase: false,
-    liveSince: '2025-11-08', // ⚠ sin verificar
+    liveSince: '2026-07-16', // [Devocional] Agent Volver al Altar
   },
   {
-    num: '04',
+    num: '05',
+    slug: 'linkedin-publisher',
+    name: 'LinkedIn Publisher',
+    year: '2026',
+    description: {
+      en: 'The editorial pipeline behind my own LinkedIn: curates AI news from 14 sources, drafts the post in a defined voice, adds an illustration only when it earns its place, and waits for my approval on Telegram before publishing through the official API. Adapted from a team template; the deploy tooling is mine.',
+      es: 'El pipeline editorial detrás de mi propio LinkedIn: cura noticias de IA de 14 fuentes, redacta el post con una voz definida, añade ilustración solo cuando aporta y espera mi aprobación en Telegram antes de publicar por la API oficial. Adaptado de una plantilla del equipo; las herramientas de despliegue son mías.',
+    },
+    tags: ['n8n', 'LLM APIs', 'Redis', 'Telegram', 'LinkedIn API'],
+    hasCase: false,
+    liveSince: '2026-07-30', // [ciro] LinkedIn Curador y Borrador
+  },
+  {
+    num: '06',
     slug: 'signal-factory',
     name: 'SignalFactory',
     year: '2026',
@@ -87,13 +113,13 @@ export const projects: Project[] = [
     hasCase: false,
   },
   {
-    num: '05',
+    num: '07',
     slug: 'ciro-finanzas',
     name: 'ciro_finanzas',
     year: '2026',
     description: {
-      en: 'A local-first personal finance app that answers one question: how much money will I have on a given date. Cash-flow projection engine with credit cards, recurring rules and goals — pure Dart domain, 91 tests green.',
-      es: 'App de finanzas personales local-first que responde una sola pregunta: cuánto dinero tendré en la fecha X. Motor de proyección de flujo de caja con tarjetas, recurrentes y metas — dominio en Dart puro, 91 tests en verde.',
+      en: 'A local-first personal finance app that answers one question: how much money will I have on a given date. Cash-flow projection engine with credit cards, recurring rules and goals — pure Dart domain, 182 tests green.',
+      es: 'App de finanzas personales local-first que responde una sola pregunta: cuánto dinero tendré en la fecha X. Motor de proyección de flujo de caja con tarjetas, recurrentes y metas — dominio en Dart puro, 182 tests en verde.',
     },
     tags: ['Flutter', 'Dart', 'Drift', 'Riverpod', 'SQLite'],
     hasCase: false,

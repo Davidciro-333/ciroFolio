@@ -13,7 +13,7 @@ export const ui = {
     work:       { en: 'Systems',      es: 'Sistemas' },
     experience: { en: 'Experience',   es: 'Experiencia' },
     contact:    { en: 'Contact',      es: 'Contacto' },
-    openMenu:   { en: 'Open menu',    es: 'Abrir menú' },
+    home:       { en: 'Home',         es: 'Inicio' },
     mainNav:    { en: 'Main navigation', es: 'Navegación principal' },
     switchLang: { en: 'Ver en español',  es: 'View in English' },
   },

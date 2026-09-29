@@ -1,0 +1,103 @@
+---
+slug: dispatch-platform-qa
+lang: en
+title: Taxi Dispatch Platform
+summary: QA and fixes for a taxi dispatch platform in production in Colombia — every issue filed with its cause, its fix and how to verify it.
+role: QA and fixes, within Galactic AIMA
+year: '2026'
+stack: [PostgreSQL, Supabase, SQL, Playwright, PWA, Capacitor]
+metrics:
+  - { value: '28', label: 'Issues filed, each with cause, fix and verification' }
+  - { value: '97 + 38', label: 'SQL and browser tests, all green' }
+  - { value: '4/4', label: 'Blocking issues fixed in production' }
+  - { value: '7', label: 'Test circuits covered end to end' }
+links: []
+draft: false
+order: 3
+---
+
+import Pipeline from '../../components/Pipeline.astro';
+
+> The platform is not named here at the client's request. Figures as of September 29, 2026.
+
+## The brief
+
+A taxi dispatch platform was already in production in Colombia: one web app that changes
+face depending on who signs in — passenger, driver or the dispatch centre — installed as a
+PWA straight from the browser. Before opening it to a real fleet, the team wanted someone to
+go through it without the bias of whoever built it.
+
+I took that on within Galactic AIMA. The deliverable was not "it works" or "it doesn't": it
+was GitHub issues, each one with its cause, a proposed fix and a way to check the fix held.
+A week later the brief grew — fixing those same issues became my job too.
+
+## How I tested
+
+The test plan was organised as seven circuits, each one a real path through the business.
+The one that matters most is the money path, from sign-up to the charge:
+
+<Pipeline
+  caption="The full circuit, run in production on September 27 with two phones side by side. Every step green."
+  steps={[
+    { n: '01', title: 'Sign-up', detail: 'A driver registers from the phone, the way a real one would.' },
+    { n: '02', title: 'Approval', detail: 'Dispatch approves the account. Nobody can approve themselves.' },
+    { n: '03', title: 'Top-up', detail: 'The driver’s balance is loaded before any work happens.' },
+    { n: '04', title: 'Trip', detail: 'A passenger requests, the driver takes it and moves it through every state.' },
+    { n: '05', title: 'Charge', detail: 'The completed trip generates its charge, and the balance moves with it.' },
+    { n: '06', title: 'Cancel and clean up', detail: 'A passenger cancellation, then every test trace left in a state that bills nothing.' },
+  ]}
+/>
+
+Most of it runs without a phone. I built a harness that tests the database layer directly —
+the rules live in PostgreSQL functions and triggers, so that is where they are checked —
+plus a browser suite for what only the screens can show. When I started, the SQL layer had
+**11 tests red on purpose and 44 green**: every red one was a known defect waiting for its
+fix. Today it is **97 SQL tests and 38 browser tests, all green**.
+
+## Rules for fixing a system that is already live
+
+Fixing production data is not the same as fixing code, so I added three rules to the team's
+own:
+
+- **Every migration ends by checking itself.** If what it was meant to install is not there,
+  it fails loudly instead of reporting success.
+- **Every migration carries its rollback.** `git revert` does not revert a database.
+- **Updating the harness is part of the fix,** not a task for later. A fix without a test
+  that proves it is a promise.
+
+The rules paid for themselves: the harness caught a regression I introduced myself, before it
+reached production.
+
+## What I found
+
+The issues that weighed most were not crashes. They were places where the app told someone
+something that was not true:
+
+- The app promised a driver with GPS disabled that they would not receive trips — **and kept
+  offering them trips.**
+- A driver with the app in the background stopped reporting position but **stayed "on shift"
+  forever**, so dispatch could still send them work.
+- When a trip was cancelled, the driver stayed locked as **"busy" while their screen said they
+  were available.** That one had already happened to a real driver.
+
+## The measurement that changed the architecture
+
+Under the background-GPS issue there was a limit, not a defect: **a PWA cannot report
+position while it is in the background.** I measured it instead of assuming it. On screen, a
+position every 60 seconds, like clockwork. Installed and sent to the background: **50 minutes
+without a single write**, cut off immediately.
+
+That turned a bug report into an architecture decision. The team confirmed it against their
+own sources and chose to wrap only the driver app natively with Capacitor, keeping the other
+roles as a PWA.
+
+## Where it stands
+
+- **The four blocking issues are fixed and verified in production,** one by one, with a
+  written record of each check.
+- **The full circuit ran end to end in production** on September 27.
+- **28 issues filed; the fixes continue** in the order the team prioritised — the ones
+  already costing a real person money first.
+
+The pilot with a real fleet has not started yet. What this case shows is not a launch — it is
+the work that has to be true before one.

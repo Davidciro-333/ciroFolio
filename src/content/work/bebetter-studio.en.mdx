@@ -5,12 +5,12 @@ title: beBetterStudio
 summary: A content pipeline that generates short-form video, publishes it across four networks on a schedule, and measures which decisions actually worked.
 role: Design, build and operations
 year: '2026'
-stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, SQLite, AWS S3]
+stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, PostgreSQL, AWS EC2, Docker]
 metrics:
-  - { value: '4', label: 'Networks published to automatically' }
-  - { value: '60', label: 'Posts reconciled to their recipe' }
+  - { value: '755K', label: 'Views across 124 pieces' }
+  - { value: '127K', label: 'Views on the best single piece' }
+  - { value: '4.9s → 6.6s', label: 'Median watch time after the fix' }
   - { value: '39/40', label: 'Orphan posts recovered' }
-  - { value: '238', label: 'Images indexed and vectorised' }
 links:
   - { label: 'The account it publishes to', url: 'https://www.instagram.com/bebetter.path/' }
   - { label: 'A carousel it produced', url: 'https://www.instagram.com/p/DbRZ5MgD9Rx/' }
@@ -112,15 +112,52 @@ I watched the ten extremes — five best, five worst. The ones that traveled nam
 somebody recognisable and land on a turn. The flat ones are quoted philosophers in
 quotation marks.
 
-That is a hypothesis with evidence behind it, not a conclusion. It is now a controlled
+That was a hypothesis with evidence behind it, not a conclusion. So it became a controlled
 test: ten new pieces written in the account's own voice, tagged as a distinct cohort,
 interleaved with quotes — and measured on **skip rate and watch time**, not on reach,
 because reach is the number that lies.
 
+## The result — after fixing the instrument
+
+Before reading the result I had to repair the measurement. One insert path was not passing
+the media type, so the test posts were being queried with the metric set for images — the
+one without skip rate or watch time. No error anywhere; the numbers were simply not there.
+It was recoverable only because those two metrics are lifetime values on the platform side:
+collecting them late still gives the real figure.
+
+| | n | Skip rate (median) | Watch time (median) |
+|---|---|---|---|
+| Control, July 1–27 | 16 | 51.5% | 4.88s |
+| Own voice | 10 | **47.1%** | **6.64s** |
+
+A permutation test gives **p = 0.019 for skip rate and p = 0.003 for watch time.** Watch
+time went back to April's level, when the account was working, and median views roughly
+tripled the following week.
+
+The honest caveat: the ten test phrases also shared a two-beat structure — a setup and a
+turn — so the test cannot separate *who is speaking* from *how the line is built*. Splitting
+them would have meant publishing ten deliberately weaker pieces during the only week the
+account was growing again. I chose not to, made the two-beat structure a brand rule, and
+wrote the open question down as open.
+
+## From my machine to its own server
+
+In August the app left my laptop. It now runs on its own AWS instance with Docker behind
+Caddy and TLS, on PostgreSQL instead of SQLite, with Google sign-in restricted to an
+allowlist and no SSH port open — access goes through AWS Systems Manager.
+
+The server also generates whole batches on its own. To do that without a browser it measures
+text with the same font file FFmpeg renders with, so line breaks match the editor's preview
+in **705 of 708 cases** (118 phrases × 6 presets), and in every one of the brand preset. The
+brand rules — two-beat structure, third person — are columns the batch planner queries, so
+the bot cannot propose a line that would not get published.
+
 ## Where it stands
 
-Running. Publishing on schedule across four networks, with its own analytics panel
-built on the platform APIs, collecting daily snapshots.
+Running, at three pieces a day, and every piece still goes through human approval before it
+is published. As of September 12, 2026: **124 pieces with metrics, 755,151 views in total,
+and 127,404 on the best single piece.** Median reach per piece is 1,687. I quote the median
+rather than the average (4,313) because two pieces pull the average up.
 
 The part worth taking away is not the renderer. It is that a content pipeline without
 measurement is a machine for producing more of whatever you were already doing wrong —

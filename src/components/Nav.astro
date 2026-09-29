@@ -3,7 +3,7 @@
 // Barra de navegación — sticky con blur backdrop
 
 import { ui } from '../i18n/ui';
-import { useTranslations, getAlternates } from '../i18n/utils';
+import { useTranslations, getAlternates, localePath } from '../i18n/utils';
 import { LOCALES, LOCALE_LABELS, type Lang } from '../i18n/config';
 
 interface Props {
@@ -13,11 +13,15 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
+// Las secciones viven en la home. Con la ruta delante, los enlaces también
+// funcionan desde un caso de estudio; en la home el navegador solo hace scroll.
+const home = localePath(lang, '/');
+
 const links = [
-  { label: t(ui.nav.services),   href: '#engagements' },
-  { label: t(ui.nav.about),      href: '#about' },
-  { label: t(ui.nav.work),       href: '#systems' },
-  { label: t(ui.nav.experience), href: '#experience' },
+  { label: t(ui.nav.services),   href: `${home}#engagements` },
+  { label: t(ui.nav.about),      href: `${home}#about` },
+  { label: t(ui.nav.work),       href: `${home}#systems` },
+  { label: t(ui.nav.experience), href: `${home}#experience` },
 ];
 
 // Conmutador de idioma: enlaza a esta misma página en el otro idioma.
@@ -34,15 +38,14 @@ const otherLangs = LOCALES.filter((locale) => locale !== lang);
   style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
          background: rgba(10,10,12,0.75);"
 >
-  <!-- Logo / Menú -->
-  <button
-    id="nav-menu-btn"
+  <!-- Marca: vuelve al inicio. Era un botón de menú sin menú detrás. -->
+  <a
+    href={home}
     class="btn-nav-circle"
-    aria-label={t(ui.nav.openMenu)}
-    aria-expanded="false"
+    aria-label={t(ui.nav.home)}
   >
     <span aria-hidden="true" class="leading-none select-none">+</span>
-  </button>
+  </a>
 
   <!-- Links de navegación -->
   <nav class="hidden md:flex items-center gap-8" aria-label={t(ui.nav.mainNav)}>
@@ -70,7 +73,7 @@ const otherLangs = LOCALES.filter((locale) => locale !== lang);
       </a>
     ))}
 
-    <a href="#contact" class="btn-primary md:hidden text-xs px-4 py-2">
+    <a href={`${home}#contact`} class="btn-primary md:hidden text-xs px-4 py-2">
       {t(ui.nav.contact)}
     </a>
   </div>
