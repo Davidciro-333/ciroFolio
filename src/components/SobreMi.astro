@@ -1,5 +1,7 @@
 ---
 // src/components/SobreMi.astro
+// Una frase grande que se lee de lejos, con el segundo y último subrayador de
+// la página. Debajo, tres columnas cortas y las cifras (DESIGN.md §5).
 
 import { ui } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
@@ -14,105 +16,94 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---
 
-<section id="about" class="card-light relative overflow-hidden px-8 md:px-12 lg:px-16 pt-10 pb-12 md:pt-12 md:pb-14">
+<section id="about" class="section wrap">
+  <!-- La frase ES el título de la sección: no es una cita, así que va como h2 -->
+  <h2 class="statement reveal">
+    {t(ui.about.statementStart)} <mark class="hl">{t(ui.about.statementMark)}</mark> {t(ui.about.statementEnd)}
+  </h2>
 
-  <div class="relative z-10">
-
-    <!-- Header -->
-    <div class="flex items-end justify-between mb-8 md:mb-10">
-      <div>
-        <p class="type-label mb-2" style="color: var(--color-on-light-muted);">{t(ui.about.eyebrow)}</p>
-        <h2 class="type-section" style="color: #0a0a0c;">{t(ui.about.title)}</h2>
+  <div class="cols">
+    {profile.aboutColumns.map((col) => (
+      <div class="reveal">
+        <h3>{t(col.title)}</h3>
+        <p>{t(col.body)}</p>
       </div>
-      <!-- Año decorativo. Usa el token de superficie clara, igual que su gemelo
-           sobre fondo oscuro en Proyectos.astro: antes era rgba(0,0,0,0.08),
-           que sobre blanco daba 1.08:1 y no se veía. -->
-      <span
-        class="type-year hidden md:block"
-        style="color: var(--color-on-light-faint); line-height:1;"
-      >2020—</span>
-    </div>
-
-    <div class="sep-light mb-8 md:mb-10"></div>
-
-    <!-- Layout principal: bio izquierda / stats + stack derecha -->
-    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px] lg:grid-cols-[1fr_320px] gap-10 md:gap-14">
-
-      <!-- ── Bio ──────────────────────────────────────────── -->
-      <div class="flex flex-col gap-6">
-
-        {profile.aboutParagraphs.map((paragraph, index) => (
-          index === 0 ? (
-            <p class="type-body-strong" style="color: #0a0a0c; font-size: 15px; line-height: 1.65;">
-              {t(paragraph)}
-            </p>
-          ) : (
-            <p class="type-body" style="color: #555560;">{t(paragraph)}</p>
-          )
-        ))}
-
-        <!-- Stack -->
-        <div class="mt-2">
-          <p class="type-label mb-3" style="color: var(--color-on-light-muted);">{t(ui.about.stack)}</p>
-          <div class="flex flex-wrap gap-2">
-            {profile.stack.map(item => (
-              <span
-                class="inline-flex items-center px-3 py-1.5 rounded-[6px] text-[11px] font-medium"
-                style="background: rgba(0,0,0,0.05); color: #333340; border: 1px solid rgba(0,0,0,0.08);"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── Stats + CTA ──────────────────────────────────── -->
-      <div class="flex flex-col gap-6">
-
-        <!-- Stats -->
-        <div class="flex flex-col gap-px rounded-[14px] overflow-hidden"
-             style="border: 1px solid rgba(0,0,0,0.07);">
-          {profile.stats.map((s, i) => (
-            <div
-              class="flex flex-col gap-1 px-5 py-4"
-              style={`background: ${i % 2 === 0 ? 'rgba(0,0,0,0.025)' : 'rgba(0,0,0,0.01)'};`}
-            >
-              <span
-                class="font-extrabold text-[32px] leading-none tracking-tight"
-                style="font-family: var(--font-display); color: #0a0a0c;"
-              >{s.value}</span>
-              <span class="type-label" style="color: var(--color-on-light-muted);">{t(s.label)}</span>
-            </div>
-          ))}
-        </div>
-
-        <!-- CTA -->
-        <div class="flex flex-col gap-3">
-          <!-- El CV en inglés llega en una fase posterior. Hasta entonces el
-               CTA principal es el contacto, que es la conversión del sitio. -->
-          <a
-            href="#contact"
-            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-[99px] font-semibold text-[13px]
-                   bg-[#0a0a0c] text-white hover:bg-[#222230] transition-colors duration-250"
-          >
-            {t(ui.about.ctaTalk)}
-          </a>
-          <a
-            href={`mailto:${profile.email}`}
-            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-[99px] font-medium text-[13px]
-                   text-[#555560] hover:text-[#0a0a0c]
-                   border border-black/[0.12] hover:border-black/[0.25]
-                   transition-colors duration-250"
-          >
-            {profile.email}
-          </a>
-        </div>
-
-      </div>
-
-    </div>
-
+    ))}
   </div>
+
+  <dl class="stats">
+    {profile.stats.map((s) => (
+      <div class="reveal">
+        <dt>{t(s.label)}</dt>
+        <dd>{s.value}</dd>
+      </div>
+    ))}
+  </dl>
+
+  <p class="stack reveal"><span>{t(ui.about.stack)}:</span> {profile.stack.join(', ')}</p>
 </section>
+
+<style>
+  .statement {
+    max-width: 860px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: clamp(30px, 3.8vw, 46px);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .cols {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .cols p {
+    font-size: 16px;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+  .stats {
+    margin-top: 72px;
+    display: flex;
+    justify-content: center;
+    gap: 88px;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+  /* El número va arriba aunque en el HTML el término vaya primero:
+     así un lector de pantalla oye "Building since: 2020", no "2020: Building since". */
+  .stats div { display: flex; flex-direction: column-reverse; }
+  dd {
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+  dt {
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+  .stack {
+    margin: 48px auto 0;
+    max-width: 70ch;
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+  .stack span { color: var(--ink-2); font-weight: 600; }
+
+  @media (max-width: 859px) {
+    .cols { grid-template-columns: 1fr; gap: 28px; margin-top: 48px; }
+    .stats { gap: 40px; margin-top: 56px; }
+    dd { font-size: 44px; }
+  }
+</style>

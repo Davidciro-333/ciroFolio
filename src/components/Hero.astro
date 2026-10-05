@@ -1,10 +1,12 @@
 ---
 // src/components/Hero.astro
+// El único bloque centrado del sitio: aquí el mensaje es el diseño.
+// Máximo cuatro elementos de texto (DESIGN.md §5): kicker, titular, lede, CTAs.
+// Debajo, el retrato: la persona detrás de los sistemas.
 
 import { Image } from 'astro:assets';
 import { ui } from '../i18n/ui';
-import { useTranslations } from '../i18n/utils';
-import { profile } from '../data/profile';
+import { useTranslations, localePath } from '../i18n/utils';
 import profilePhoto from '../assets/photoProfile.png';
 import type { Lang } from '../i18n/config';
 
@@ -14,88 +16,103 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-
-const [firstName, lastName] = profile.name.toUpperCase().split(' ');
+const home = localePath(lang, '/');
 ---
 
-<section
-  id="top"
-  class="card-dark relative overflow-hidden
-         px-8 md:px-12 lg:px-16
-         pt-12 pb-14 md:pt-14 md:pb-16
-         min-h-[88vh] flex flex-col"
->
-
-  <!-- Orbs de luz ambiental -->
-  <div
-    class="orb orb-neon animate-neon-pulse"
-    style="width:640px;height:640px;top:-180px;left:-160px;"
-    aria-hidden="true"
-  ></div>
-  <div
-    class="orb orb-warm"
-    style="width:500px;height:500px;bottom:-100px;right:60px;"
-    aria-hidden="true"
-  ></div>
-
-  <!-- Grid principal — empuja el contenido hacia abajo -->
-  <div class="relative z-10 flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 lg:gap-24 items-end">
-
-    <!-- ── Columna izquierda: año + nombre + foto ─────────── -->
-    <div>
-
-      <!-- Año decorativo, alineado a la derecha dentro de la columna -->
-      <p class="type-year text-neon text-right animate-fade-up delay-100">(20/26)</p>
-
-      <!-- Nombre masivo -->
-      <div class="mt-1 leading-none">
-        <p class="type-hero animate-fade-up delay-200">{firstName}</p>
-
-        <!-- Apellido + foto circular inline -->
-        <div class="flex items-center gap-4 md:gap-5 animate-fade-up delay-300">
-          <span class="type-hero">{lastName}</span>
-
-          <!-- Foto de perfil — optimizada por Astro (el original es un PNG de 1 MB) -->
-          <div
-            class="w-[72px] h-[72px] md:w-[88px] md:h-[88px]
-                   rounded-full border border-white/10 overflow-hidden
-                   flex-shrink-0 flex items-center justify-center
-                   bg-[var(--color-surface-2)]"
-          >
-            <Image
-              src={profilePhoto}
-              alt={profile.name}
-              width={176}
-              height={176}
-              densities={[1, 2]}
-              loading="eager"
-              class="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Columna derecha: bio + separador + botones ──────── -->
-    <div class="max-w-[320px] flex flex-col gap-5 pb-1 animate-fade-up delay-400">
-
-      <div>
-        <p class="type-label mb-3">{t(ui.hero.role)}</p>
-        <p class="type-body">{t(profile.heroBio)}</p>
-      </div>
-
-      <div class="sep-dark"></div>
-
-      <div class="flex items-center gap-3 flex-wrap">
-        <a href="#systems" class="btn-primary">
-          {t(ui.hero.ctaWork)} <span aria-hidden="true">↗</span>
-        </a>
-        <a href="#contact" class="btn-ghost">
-          {t(ui.hero.ctaContact)}
-        </a>
-      </div>
-
-    </div>
-
+<section id="top" class="hero wrap">
+  <p class="kicker reveal">{t(ui.hero.kicker)}</p>
+  <h1 class="display reveal">{t(ui.hero.title)}</h1>
+  <p class="lede reveal">
+    {t(ui.hero.lede)} <mark class="hl">{t(ui.hero.ledeMark)}</mark>
+  </p>
+  <div class="ctas reveal">
+    <a href={`${home}#systems`} class="pill">{t(ui.hero.ctaWork)}</a>
+    <a href={`${home}#contact`} class="text-link more">{t(ui.hero.ctaContact)}</a>
   </div>
 </section>
+
+<div class="portrait wrap">
+  <figure>
+    <div class="frame">
+      <!-- El original es un PNG de 4096 px y 1 MB: Astro lo sirve a la medida -->
+      <Image
+        src={profilePhoto}
+        alt={t(ui.hero.photoAlt)}
+        widths={[480, 720, 960, 1440, 1920]}
+        sizes="(max-width: 1008px) calc(100vw - 32px), 960px"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+    <figcaption>{t(ui.hero.caption)}</figcaption>
+  </figure>
+</div>
+
+<style>
+  .hero {
+    text-align: center;
+    padding-top: 88px;
+    padding-bottom: 56px;
+  }
+  .display {
+    margin: 12px auto 0;
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+  .lede {
+    margin: 22px auto 0;
+    max-width: 40ch;
+  }
+  .ctas {
+    margin-top: 32px;
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 17px;
+  }
+
+  .portrait { max-width: calc(960px + 2 * var(--gutter)); }
+  .frame {
+    border-radius: 32px;
+    overflow: hidden;
+    aspect-ratio: 3 / 2;
+    background: var(--parch);
+  }
+  .frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 42%;
+    filter: brightness(var(--photo-dim));
+    transition: filter 0.4s ease;
+  }
+  figcaption {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+
+  /* La foto crece con el scroll: CSS puro, sin JavaScript. Donde no hay
+     soporte se queda quieta, que también está bien. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .frame {
+        animation: portrait-grow linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 45%;
+      }
+    }
+  }
+  @keyframes portrait-grow {
+    from { transform: scale(0.88); border-radius: 48px; }
+    to   { transform: scale(1);    border-radius: 32px; }
+  }
+
+  @media (max-width: 859px) {
+    .hero { padding-top: 56px; padding-bottom: 40px; }
+    .frame { aspect-ratio: 4 / 5; border-radius: 24px; }
+  }
+</style>

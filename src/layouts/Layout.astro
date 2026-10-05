@@ -2,6 +2,7 @@
 // src/layouts/Layout.astro
 // Layout base — envuelve todas las páginas
 
+import '@fontsource-variable/plus-jakarta-sans';
 import '../styles/global.css';
 import { withBase } from '../lib/url';
 import { getAlternates } from '../i18n/utils';
@@ -98,30 +99,73 @@ const alternates = getAlternates(Astro.url.pathname);
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
 
-    <!-- Fuentes: Inter desde Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Plus Jakarta Sans se sirve desde el propio sitio (@fontsource), sin
+         pedir nada a Google: una petición de terceros menos en cada visita. -->
 
-    <!-- Nohemi se sirve desde src/assets/fonts vía @font-face en global.css -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: dark)" />
+
+    <!-- Tema, ANTES de pintar: si el visitante eligió uno, se aplica ya; si no,
+         manda el del sistema (CSS). Hacerlo después daría un fogonazo blanco
+         a quien navega en oscuro. La clase .js habilita las entradas animadas:
+         sin JavaScript nada queda oculto. -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      try {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme;
+      } catch (e) {}
+    </script>
 
     <title>{title}</title>
+
   </head>
 
   <body>
-    <!-- Ruido de fondo sutil (opcional, mejora la textura) -->
-    <div
-      aria-hidden="true"
-      class="pointer-events-none fixed inset-0 z-0 opacity-[0.025]"
-      style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/></filter><rect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%221%22/></svg>'); background-size: 200px;"
-    ></div>
+    <slot />
 
-    <!-- Contenido de la página -->
-    <div class="relative z-10">
-      <slot />
-    </div>
+    <script>
+      // Entradas al ver: cada .reveal aparece al entrar en pantalla, escalonado
+      // respecto a sus hermanos (70 ms, máximo 5 pasos). Una sola vez.
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            const el = entry.target as HTMLElement;
+            const siblings = [...(el.parentElement?.children ?? [])].filter((c) =>
+              c.classList.contains('reveal'),
+            );
+            const index = siblings.indexOf(el);
+            if (index > 0) el.style.transitionDelay = `${Math.min(index, 5) * 70}ms`;
+            el.classList.add('is-in');
+            observer.unobserve(el);
+          }
+        },
+        { threshold: 0.12 },
+      );
+      document.querySelectorAll('.reveal, .hl').forEach((el) => observer.observe(el));
+    </script>
+
+    <script>
+      // Vercel Analytics. El sitio vive detrás del rewrite de BioLink
+      // (itsciro.com/cirofolio/* → ciro-folio.vercel.app/*), así que el script y
+      // el endpoint llevan la base delante: sin ella irían a
+      // itsciro.com/_vercel/insights y las visitas se contarían en el proyecto
+      // de BioLink, no en este. Solo en producción: en local no hay endpoint.
+      //
+      // Se usa inject() y no el componente <Analytics /> del paquete: ese
+      // componente reescribe import.meta.env y en `astro dev` rompe Vite
+      // ("Cannot split a chunk that has already been edited").
+      import { inject } from '@vercel/analytics';
+
+      if (import.meta.env.PROD) {
+        const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+        inject({
+          framework: 'astro',
+          scriptSrc: `${base}/_vercel/insights/script.js`,
+          endpoint: `${base}/_vercel/insights`,
+        });
+      }
+    </script>
   </body>
 </html>

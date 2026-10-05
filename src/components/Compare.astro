@@ -1,0 +1,151 @@
+---
+// src/components/Compare.astro
+// Resultado de una prueba controlada: grupo de control frente a grupo de
+// prueba, una columna por métrica, con el valor p escrito. Para los casos.
+//
+// Igual que Bars: el gráfico es aria-hidden y los datos van en una <table>
+// oculta a la vista, que es lo que lee el lector de pantalla.
+
+interface Metric {
+  name: string;
+  /** Valores numéricos para dibujar las barras. */
+  control: number;
+  test: number;
+  /** Cómo se escribe cada valor (unidad y separadores del idioma). */
+  controlDisplay: string;
+  testDisplay: string;
+  /** Significancia y sentido, ya formateados: "p = 0.019, lower is better". */
+  p?: string;
+}
+
+interface Props {
+  controlLabel: string;
+  testLabel: string;
+  metrics: Metric[];
+  /** Encabezado de la tabla accesible. */
+  title: string;
+  caption?: string;
+}
+
+const { controlLabel, testLabel, metrics, title, caption } = Astro.props;
+---
+
+<figure class="compare reveal">
+  <div class="cards" aria-hidden="true">
+    {metrics.map((m) => {
+      const max = Math.max(m.control, m.test);
+      return (
+        <div class="card">
+          <p class="name">{m.name}</p>
+          <p class="delta">
+            <span class="from">{m.controlDisplay}</span>
+            <span class="arrow">→</span>
+            <span class="to">{m.testDisplay}</span>
+          </p>
+          <div class="rows">
+            <div class="row">
+              <span class="who">{controlLabel}</span>
+              <span class="track"><span class="fill ctl" style={`--w: ${(m.control / max).toFixed(3)}`}></span></span>
+            </div>
+            <div class="row">
+              <span class="who strong">{testLabel}</span>
+              <span class="track"><span class="fill tst" style={`--w: ${(m.test / max).toFixed(3)}`}></span></span>
+            </div>
+          </div>
+          {m.p && <p class="p">{m.p}</p>}
+        </div>
+      );
+    })}
+  </div>
+
+  <table class="sr-only">
+    <caption>{title}</caption>
+    <tr>
+      <th scope="col"></th>
+      {metrics.map((m) => <th scope="col">{m.name}</th>)}
+    </tr>
+    <tr>
+      <th scope="row">{controlLabel}</th>
+      {metrics.map((m) => <td>{m.controlDisplay}</td>)}
+    </tr>
+    <tr>
+      <th scope="row">{testLabel}</th>
+      {metrics.map((m) => <td>{m.testDisplay}</td>)}
+    </tr>
+    <tr>
+      <th scope="row">p</th>
+      {metrics.map((m) => <td>{m.p ?? ''}</td>)}
+    </tr>
+  </table>
+
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  figure.compare { margin: 32px 0 36px; }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--parch);
+    border-radius: 28px;
+    padding: 28px;
+    transition: background-color 0.4s ease;
+  }
+  .card p { margin: 0 !important; }
+  .name {
+    font-size: 15px !important;
+    font-weight: 600;
+    color: var(--ink-2) !important;
+  }
+  .delta {
+    margin-top: 10px !important;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .from { font-size: 22px; color: var(--ink-3); font-weight: 600; }
+  .arrow { font-size: 22px; color: var(--ink-3); }
+  .to {
+    font-size: clamp(36px, 4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .rows { margin-top: 22px; display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; }
+  .who { font-size: 14px; color: var(--ink-3); }
+  .who.strong { color: var(--ink); font-weight: 600; }
+  .track { display: block; height: 10px; }
+  .fill {
+    display: block;
+    height: 100%;
+    width: calc(var(--w) * 100%);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .ctl { background: var(--ink-3); opacity: 0.35; }
+  .tst { background: var(--ink); }
+  .p { margin-top: 16px !important; font-size: 14px !important; color: var(--ink-3) !important; font-variant-numeric: tabular-nums; }
+
+  figcaption {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--ink-3);
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .compare .fill {
+      transform: scaleX(0);
+      transition: transform 0.9s var(--spring) 0.3s;
+    }
+    :global(.js) .compare .tst { transition-delay: 0.45s; }
+    :global(.js) .compare.is-in .fill { transform: scaleX(1); }
+  }
+</style>

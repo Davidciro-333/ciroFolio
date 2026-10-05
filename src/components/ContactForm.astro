@@ -21,16 +21,13 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const fieldClass =
-  'w-full bg-white/[0.03] border border-white/[0.10] rounded-[10px] px-4 py-3 ' +
-  'text-[14px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] ' +
-  'focus:outline-none focus:border-[var(--color-neon)] focus:bg-white/[0.05] ' +
-  'transition-colors duration-250';
+// Etiqueta encima, 16 px (evita el zoom de iOS al enfocar), radio 8, foco azul.
+const fieldClass = 'field';
 ---
 
 <form
   id="contact-form"
-  class="flex flex-col gap-5 max-w-xl"
+  class="flex flex-col gap-5"
   data-endpoint={contactForm.endpoint}
   data-access-key={contactForm.accessKey}
   data-subject={contactForm.subject}
@@ -41,32 +38,30 @@ const fieldClass =
 >
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
     <div class="flex flex-col gap-2">
-      <label for="cf-name" class="type-label">{t(ui.form.name)} *</label>
+      <label for="cf-name" class="label">{t(ui.form.name)} <span class="req">({t(ui.form.required)})</span></label>
       <input id="cf-name" name="name" type="text" required autocomplete="name" class={fieldClass} />
     </div>
 
     <div class="flex flex-col gap-2">
-      <label for="cf-company" class="type-label">{t(ui.form.company)}</label>
+      <label for="cf-company" class="label">{t(ui.form.company)}</label>
       <input id="cf-company" name="company" type="text" autocomplete="organization" class={fieldClass} />
     </div>
   </div>
 
   <div class="flex flex-col gap-2">
-    <label for="cf-email" class="type-label">{t(ui.form.email)} *</label>
+    <label for="cf-email" class="label">{t(ui.form.email)} <span class="req">({t(ui.form.required)})</span></label>
     <input id="cf-email" name="email" type="email" required autocomplete="email" class={fieldClass} />
   </div>
 
   <div class="flex flex-col gap-2">
-    <label for="cf-project" class="type-label">{t(ui.form.project)} *</label>
+    <label for="cf-project" class="label">{t(ui.form.project)} <span class="req">({t(ui.form.required)})</span></label>
     <textarea id="cf-project" name="project" required rows="4" class={fieldClass}></textarea>
-    <p class="type-label" style="color: var(--color-text-muted); text-transform: none; letter-spacing: 0;">
-      {t(ui.form.projectHint)}
-    </p>
+    <p class="hint">{t(ui.form.projectHint)}</p>
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
     <div class="flex flex-col gap-2">
-      <label for="cf-timeline" class="type-label">{t(ui.form.timeline)}</label>
+      <label for="cf-timeline" class="label">{t(ui.form.timeline)}</label>
       <select id="cf-timeline" name="timeline" class={fieldClass}>
         <option value="">{t(ui.form.select)}</option>
         {t(ui.form.timelineOptions).map((option) => (
@@ -76,7 +71,7 @@ const fieldClass =
     </div>
 
     <div class="flex flex-col gap-2">
-      <label for="cf-budget" class="type-label">{t(ui.form.budget)}</label>
+      <label for="cf-budget" class="label">{t(ui.form.budget)}</label>
       <select id="cf-budget" name="budget" class={fieldClass}>
         <option value="">{t(ui.form.select)}</option>
         {t(ui.form.budgetOptions).map((option) => (
@@ -97,16 +92,15 @@ const fieldClass =
   />
 
   <div class="flex items-center gap-4 flex-wrap">
-    <button type="submit" class="btn-primary" data-sending={t(ui.form.sending)}>
-      {t(ui.form.submit)} <span aria-hidden="true">↗</span>
+    <button type="submit" class="pill" data-sending={t(ui.form.sending)}>
+      {t(ui.form.submit)}
     </button>
 
     <p
       id="cf-status"
       role="status"
       aria-live="polite"
-      class="type-label"
-      style="color: var(--color-text-muted); text-transform: none; letter-spacing: 0;"
+      class="status"
       data-success={t(ui.form.success)}
       data-error={t(ui.form.error)}
     ></p>
@@ -114,20 +108,44 @@ const fieldClass =
 </form>
 
 <style>
-  /* El desplegable de un <select> lo pinta el sistema operativo, no la página:
-     hereda el color de texto del campo (blanco) pero abre sobre fondo claro,
-     así que las opciones quedaban blanco sobre blanco.
-
-     color-scheme le dice al navegador que dibuje el widget nativo en oscuro
-     —popup, flecha y scrollbar—, y los colores explícitos en option cubren a
-     los navegadores que no lo aplican al desplegable. */
-  select {
-    color-scheme: dark;
+  .label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
   }
+  .req { font-weight: 400; color: var(--ink-3); }
+  .hint,
+  .status {
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+  .field {
+    width: 100%;
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--ink-3);
+    border-radius: 8px;
+    padding: 11px 14px;
+    transition: border-color 0.2s ease, background-color 0.4s ease;
+  }
+  .field:hover { border-color: var(--ink-2); }
+  .field:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: 1px;
+    border-color: var(--blue);
+  }
+  textarea.field { resize: vertical; min-height: 112px; }
 
-  select option {
-    background-color: var(--color-surface-2);
-    color: var(--color-text-primary);
+  /* El desplegable nativo de un <select> lo pinta el sistema operativo, no la
+     página. color-scheme ya lo fija el :root según el tema (claro u oscuro),
+     así que el popup sigue al tema; los colores explícitos en option cubren a
+     los navegadores que no lo aplican al desplegable (el bug "blanco sobre
+     blanco" de la v1). */
+  select.field option {
+    background-color: var(--bg);
+    color: var(--ink);
   }
 </style>
 

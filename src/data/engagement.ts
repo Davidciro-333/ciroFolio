@@ -27,8 +27,8 @@ export const engagements: Engagement[] = [
       es: 'Proyecto cerrado',
     },
     description: {
-      en: 'You have a system in mind and want it delivered. I scope it, build it, deploy it and hand it over documented — with the automation, the integrations and the infrastructure it needs to run without me.',
-      es: 'Tienes un sistema en mente y quieres que quede entregado. Lo dimensiono, lo construyo, lo despliego y lo entrego documentado — con la automatización, las integraciones y la infraestructura que necesita para funcionar sin mí.',
+      en: 'You have a system in mind and want it delivered. I scope it, build it, deploy it and hand it over documented, with the automation, the integrations and the infrastructure it needs to run without me.',
+      es: 'Tienes un sistema en mente y quieres que quede entregado. Lo dimensiono, lo construyo, lo despliego y lo entrego documentado, con la automatización, las integraciones y la infraestructura que necesita para funcionar sin mí.',
     },
     tags: {
       en: ['Defined scope', 'End-to-end delivery', 'Documented handover'],
@@ -42,8 +42,8 @@ export const engagements: Engagement[] = [
       es: 'Retainer mensual',
     },
     description: {
-      en: 'Ongoing capacity for teams running automation in production: new workflows, integrations, incident triage and the maintenance nobody has time for — expiring tokens, provider API changes, silent failures.',
-      es: 'Capacidad continua para equipos con automatización en producción: workflows nuevos, integraciones, diagnóstico de incidentes y el mantenimiento que nadie tiene tiempo de hacer — tokens que caducan, APIs de proveedores que cambian, fallos silenciosos.',
+      en: 'Ongoing capacity for teams running automation in production: new workflows, integrations, incident triage and the maintenance nobody has time for: expiring tokens, provider API changes, silent failures.',
+      es: 'Capacidad continua para equipos con automatización en producción: workflows nuevos, integraciones, diagnóstico de incidentes y el mantenimiento que nadie tiene tiempo de hacer: tokens que caducan, APIs de proveedores que cambian, fallos silenciosos.',
     },
     tags: {
       en: ['Monthly hours', 'Operations included', 'Async communication'],
@@ -57,8 +57,8 @@ export const engagements: Engagement[] = [
       es: 'Refuerzo a tu equipo',
     },
     description: {
-      en: 'I join your team for a sprint or a quarter and work inside your process — your repo, your board, your review flow. Useful when the automation or AI-integration work is real but doesn’t justify a full-time hire yet.',
-      es: 'Me sumo a tu equipo por un sprint o un trimestre y trabajo dentro de tu proceso — tu repo, tu tablero, tu flujo de revisión. Útil cuando el trabajo de automatización o integración de IA es real pero todavía no justifica una contratación a tiempo completo.',
+      en: 'I join your team for a sprint or a quarter and work inside your process: your repo, your board, your review flow. Useful when the automation or AI-integration work is real but doesn’t justify a full-time hire yet.',
+      es: 'Me sumo a tu equipo por un sprint o un trimestre y trabajo dentro de tu proceso: tu repo, tu tablero, tu flujo de revisión. Útil cuando el trabajo de automatización o integración de IA es real pero todavía no justifica una contratación a tiempo completo.',
     },
     tags: {
       en: ['Your process', 'UTC-5 overlap', 'Weekly or sprint-based'],

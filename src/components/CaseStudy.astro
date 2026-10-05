@@ -1,18 +1,16 @@
 ---
 // src/components/CaseStudy.astro
-// Plantilla de caso de estudio — registro SOBRIO.
-//
-// La home es el registro expresivo (Nohemi masiva, acid green, orbs). Aquí no:
-// misma marca y misma paleta, pero sin glow y con densidad de información,
-// porque detrás de un diagrama o una tabla de métricas el neón cansa y estorba
-// la lectura.
+// Plantilla de caso de estudio en el lenguaje de la galería:
+// cabecera centrada con su estado, las métricas como cifras protagonistas,
+// la prosa a ancho de lectura (720 px) y el diagrama vivo rompiendo ese ancho.
 
 import { render } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import Nav from './Nav.astro';
 import { ui } from '../i18n/ui';
 import { useTranslations, localePath } from '../i18n/utils';
-import type { Lang } from '../i18n/config';
+import { projects } from '../data/projects';
+import { LOCALE_TAGS, type Lang } from '../i18n/config';
 import type { WorkEntry } from '../lib/work';
 import { ogRoute, ogImagePath } from '../lib/og-routes';
 
@@ -25,11 +23,22 @@ const { lang, entry } = Astro.props;
 const t = useTranslations(lang);
 const { data } = entry;
 const { Content } = await render(entry);
+const home = localePath(lang, '/');
+
+// El estado sale de los mismos datos que la home: un solo sitio para liveSince.
+const liveSince = projects.find((p) => p.slug === data.slug)?.liveSince;
+const sinceLabel = liveSince
+  ? new Date(`${liveSince}T00:00:00Z`).toLocaleDateString(LOCALE_TAGS[lang], {
+      year: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    })
+  : undefined;
 ---
 
 <Layout
   lang={lang}
-  title={`${data.title} — David Ciro`}
+  title={`${data.title} · David Ciro`}
   description={data.summary}
   ogImage={ogImagePath(ogRoute.work(lang, data.slug))}
   ogImageHeading={data.title}
@@ -37,164 +46,239 @@ const { Content } = await render(entry);
 >
   <Nav lang={lang} />
 
-  <main class="px-[var(--section-pad-x)] pb-[var(--section-gap)]">
-    <article class="card-dark px-8 md:px-12 lg:px-16 pt-10 pb-12 md:pt-12 md:pb-16">
+  <main>
+    <header class="head wrap">
+      <a href={`${home}#systems`} class="back text-link">{t(ui.caseStudy.back)}</a>
 
-      <!-- Volver -->
-      <a
-        href={`${localePath(lang, '/')}#systems`}
-        class="type-ui text-text-muted hover:text-text-primary transition-colors duration-250"
-      >
-        <span aria-hidden="true">←</span> {t(ui.caseStudy.back)}
-      </a>
+      {data.draft && <p class="draft">{t(ui.caseStudy.draft)}</p>}
 
-      {data.draft && (
-        <p class="type-label mt-6 inline-flex items-center gap-2 px-3 py-1 rounded-[6px]"
-           style="background: rgba(255,255,255,0.06); color: var(--color-text-muted);">
-          {t(ui.caseStudy.draft)}
-        </p>
-      )}
+      <p class="kicker reveal">
+        {liveSince ? (
+          <span class="status" data-since={liveSince} data-days={t(ui.status.days)}>
+            <span class="live-dot" aria-hidden="true"></span>
+            {t(ui.status.live)} ·{' '}
+            <span class="detail">{t(ui.status.since)} <time datetime={liveSince}>{sinceLabel}</time></span>
+          </span>
+        ) : (
+          t(ui.work.caseStudy)
+        )}
+      </p>
+      <h1 class="display reveal">{data.title}</h1>
+      <p class="lede reveal">{data.summary}</p>
+      <p class="meta reveal">{data.role} · {data.year} · {data.stack.join(', ')}</p>
+    </header>
 
-      <!-- Cabecera -->
-      <header class="mt-8 md:mt-10 max-w-3xl">
-        <h1 class="type-section">{data.title}</h1>
-        <p class="type-body mt-4 text-[15px] leading-relaxed">{data.summary}</p>
-      </header>
+    {data.metrics.length > 0 && (
+      <ul class="figures wrap">
+        {data.metrics.map((metric) => (
+          <li class="fig reveal">
+            <span class="v">{metric.value}</span>
+            <span class="l">{metric.label}</span>
+          </li>
+        ))}
+      </ul>
+    )}
 
-      <div class="sep-dark my-8 md:my-10"></div>
+    <article class="case-prose">
+      <Content />
 
-      <!-- Ficha: rol, año, stack -->
-      <dl class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-        <div>
-          <dt class="type-label mb-2">{t(ui.caseStudy.role)}</dt>
-          <dd class="type-body">{data.role}</dd>
-        </div>
-        <div>
-          <dt class="type-label mb-2">{t(ui.caseStudy.year)}</dt>
-          <dd class="type-body tabular-nums">{data.year}</dd>
-        </div>
-        <div>
-          <dt class="type-label mb-2">{t(ui.caseStudy.stack)}</dt>
-          <dd class="flex flex-wrap gap-2 mt-1">
-            {data.stack.map((item) => <span class="tag">{item}</span>)}
-          </dd>
-        </div>
-      </dl>
-
-      <!-- Métricas de sistema — verificables, nunca infladas -->
-      {data.metrics.length > 0 && (
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-[14px] overflow-hidden mb-10">
-          {data.metrics.map((metric) => (
-            <div class="bg-[var(--color-surface)] px-5 py-5 flex flex-col gap-1">
-              <span
-                class="font-extrabold text-[26px] leading-none tracking-tight text-neon"
-                style="font-family: var(--font-display);"
-              >{metric.value}</span>
-              <span class="type-label">{metric.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <!-- Cuerpo del caso -->
-      <div class="case-prose max-w-3xl">
-        <Content />
-      </div>
-
-      <!-- Artefactos públicos: la prueba que cualquiera puede comprobar solo -->
       {data.links.length > 0 && (
-        <>
-          <div class="sep-dark my-8 md:my-10"></div>
-          <p class="type-label mb-3">{t(ui.caseStudy.links)}</p>
-          <ul class="flex flex-wrap gap-4">
+        <aside class="proof">
+          <h2>{t(ui.caseStudy.links)}</h2>
+          <ul>
             {data.links.map((link) => (
               <li>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="type-ui hover:text-neon transition-colors duration-250"
-                >
+                <a href={link.url} target="_blank" rel="noopener noreferrer" class="text-link">
                   {link.label} <span aria-hidden="true">↗</span>
                 </a>
               </li>
             ))}
           </ul>
-        </>
+        </aside>
       )}
-
     </article>
+
+    <section class="cta">
+      <h2 class="sec-title reveal">{t(ui.caseStudy.ctaTitle)}</h2>
+      <p class="reveal">{t(ui.contact.body)}</p>
+      <div class="ctas reveal">
+        <a href={`${home}#contact`} class="pill">{t(ui.nav.contact)}</a>
+        <a href={`${home}#systems`} class="text-link more">{t(ui.hero.ctaWork)}</a>
+      </div>
+    </section>
   </main>
 </Layout>
 
 <style>
-  /* Registro sobrio: legibilidad por encima de espectáculo. */
+  .head {
+    text-align: center;
+    padding-top: 72px;
+    padding-bottom: 48px;
+  }
+  .back { font-size: 15px; }
+  .back::before { content: '‹\00a0'; }
+  .draft {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: var(--parch);
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+  .kicker { margin-top: 28px; }
+  .status { display: inline-flex; align-items: center; gap: 10px; }
+  .display { margin-top: 10px; text-wrap: balance; }
+  .lede { margin: 20px auto 0; max-width: 42ch; }
+  .meta {
+    margin: 20px auto 0;
+    max-width: 70ch;
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+
+  .figures {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .fig {
+    background: var(--parch);
+    border-radius: 28px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.4s ease;
+  }
+  .v {
+    font-size: clamp(40px, 4.4vw, 60px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+  .l { margin-top: 10px; font-size: 15px; color: var(--ink-3); text-wrap: pretty; }
+
+  /* Prosa a ancho de lectura */
+  .case-prose {
+    max-width: calc(720px + 2 * var(--gutter));
+    margin: 0 auto;
+    padding: 24px var(--gutter) 0;
+  }
   .case-prose :global(h2) {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(20px, 3vw, 28px);
-    line-height: 1.15;
-    margin: 2.5rem 0 0.75rem;
-    color: var(--color-text-primary);
+    margin: 80px 0 18px;
+    font-size: clamp(30px, 3.6vw, 40px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
   }
   .case-prose :global(h3) {
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 16px;
-    margin: 2rem 0 0.5rem;
-    color: var(--color-text-primary);
+    margin: 40px 0 10px;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
   .case-prose :global(p),
   .case-prose :global(li) {
-    font-family: var(--font-body);
-    font-size: 15px;
-    line-height: 1.7;
-    color: var(--color-text-secondary);
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink-2);
+    text-wrap: pretty;
   }
-  .case-prose :global(p) { margin-bottom: 1rem; }
+  .case-prose :global(p) { margin-bottom: 16px; }
+  .case-prose :global(strong) { color: var(--ink); font-weight: 600; }
   .case-prose :global(ul),
-  .case-prose :global(ol) { margin: 0 0 1rem 1.25rem; }
+  .case-prose :global(ol) { margin: 0 0 16px 22px; }
   .case-prose :global(ul) { list-style: disc; }
   .case-prose :global(ol) { list-style: decimal; }
-  .case-prose :global(li) { margin-bottom: 0.35rem; }
-  .case-prose :global(a) {
-    color: var(--color-neon);
+  .case-prose :global(li) { margin-bottom: 6px; }
+  .case-prose :global(a:not(.text-link)) {
+    color: var(--blue);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
   .case-prose :global(blockquote) {
-    border-left: 2px solid var(--color-neon);
-    padding-left: 1rem;
-    margin: 1.5rem 0;
-    color: var(--color-text-muted);
+    margin: 28px 0;
+    padding-left: 18px;
+    border-left: 2px solid var(--ink);
   }
   .case-prose :global(pre) {
-    background: var(--color-surface-2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 1rem;
+    background: var(--parch);
+    border-radius: 12px;
+    padding: 16px;
     overflow-x: auto;
-    margin-bottom: 1.25rem;
-    font-size: 13px;
+    margin-bottom: 20px;
+    font-size: 14px;
   }
-  .case-prose :global(code) {
-    font-size: 13px;
-  }
+  .case-prose :global(code) { font-size: 0.9em; }
   .case-prose :global(table) {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 1.5rem;
-    font-size: 14px;
+    margin: 8px 0 28px;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
   }
   .case-prose :global(th),
   .case-prose :global(td) {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 0.6rem 0.5rem;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--line);
     text-align: left;
-    color: var(--color-text-secondary);
+    color: var(--ink-2);
   }
-  .case-prose :global(th) {
-    color: var(--color-text-primary);
-    font-weight: 600;
+  .case-prose :global(th) { color: var(--ink); font-weight: 600; }
+  .case-prose :global(td strong) { color: var(--ink); }
+
+  .proof {
+    margin-top: 64px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .proof h2 {
+    margin: 0 0 12px !important;
+    font-size: 21px !important;
+    letter-spacing: -0.02em !important;
+  }
+  .proof ul { list-style: none !important; margin: 0 !important; }
+
+  .cta {
+    margin-top: var(--section);
+    background: var(--parch);
+    padding: 96px var(--gutter);
+    text-align: center;
+    transition: background-color 0.4s ease;
+  }
+  .cta p {
+    margin: 16px auto 0;
+    max-width: 46ch;
+    font-size: 19px;
+    color: var(--ink-2);
+  }
+  .ctas {
+    margin-top: 28px;
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 859px) {
+    .head { padding-top: 48px; }
+    .figures { grid-template-columns: 1fr 1fr; }
+    .fig { padding: 24px 20px; border-radius: 22px; }
+    .case-prose :global(table) { font-size: 14px; }
+    .case-prose :global(h2) { margin-top: 56px; }
   }
 </style>
+
+<script>
+  // Mismo criterio que la home: los días se calculan al cargar, nunca en el build.
+  const status = document.querySelector<HTMLElement>('.status[data-since]');
+  const detail = status?.querySelector('.detail');
+  if (status && detail) {
+    const days = Math.floor((Date.now() - Date.parse(`${status.dataset.since}T00:00:00-05:00`)) / 86_400_000);
+    if (days > 0) detail.textContent = `${days.toLocaleString()} ${status.dataset.days}`;
+  }
+</script>

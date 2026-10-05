@@ -19,6 +19,8 @@ order: 2
 ---
 
 import Pipeline from '../../components/Pipeline.astro';
+import Bars from '../../components/Bars.astro';
+import Compare from '../../components/Compare.astro';
 
 ## The problem I thought I had
 
@@ -26,7 +28,7 @@ Publishing short-form content by hand does not scale. Pick an image, pick a line
 out the text, render, upload to four networks, write four captions, schedule. Twenty
 minutes per post, every day, forever.
 
-So I built the machine. It worked. And then the account started dying anyway — which
+So I built the machine. It worked. And then the account started dying anyway, which
 turned out to be the actually interesting problem.
 
 ## The system
@@ -38,7 +40,7 @@ similarity query, not a judgement call I have to make at 11pm.
 From there: the composition renders through FFmpeg into a 9:16 video, an audio track
 is picked by matching mood and energy tags, and the piece goes into a queue with its
 own publishing cadence. n8n drains that queue and posts to **YouTube Shorts, Instagram
-Reels, Facebook Reels and TikTok** — with the platform-specific dance each one demands,
+Reels, Facebook Reels and TikTok**, with the platform-specific dance each one demands,
 including Facebook's three-phase upload and tokens that expire and have to rotate
 themselves.
 
@@ -46,15 +48,16 @@ There is also a carousel mode: a script is drafted, slides are generated in seri
 the cover first as a style reference for the rest, and the whole set publishes natively.
 
 <Pipeline
-  caption="Step 07 is the one that did not exist for the first three months — and it is the reason this case study has a plot."
+  caption="Step 07 is the one that did not exist for the first three months, and it is the reason this case study has a plot."
+  flagLegend="Did not exist for the first three months."
   steps={[
     { n: '01', title: 'Banks', detail: 'Images and phrases are analysed and vectorised on the way in.' },
     { n: '02', title: 'Pairing', detail: 'Matching an image to a line is a similarity query, not a decision I make at 11pm.' },
     { n: '03', title: 'Render', detail: 'FFmpeg composes the 9:16 video with the text burned into the frame.' },
     { n: '04', title: 'Audio', detail: 'A track is picked by matching mood and energy tags against the phrase.' },
     { n: '05', title: 'Queue', detail: 'The piece waits its turn under a cadence I control, not a posting spree.' },
-    { n: '06', title: 'Publish', detail: 'n8n drains the queue and handles the specific dance each platform demands — including Facebook’s three-phase upload and tokens that rotate themselves.', outputs: ['YouTube Shorts', 'Instagram Reels', 'Facebook Reels', 'TikTok'] },
-    { n: '07', title: 'Measure', detail: 'Daily insight snapshots are joined back to the recipe that produced each post.' },
+    { n: '06', title: 'Publish', detail: 'n8n drains the queue and handles the specific dance each platform demands, including Facebook’s three-phase upload and tokens that rotate themselves.', outputs: ['YouTube Shorts', 'Instagram Reels', 'Facebook Reels', 'TikTok'] },
+    { n: '07', title: 'Measure', detail: 'Daily insight snapshots are joined back to the recipe that produced each post.', flag: 'The missing step' },
   ]}
 />
 
@@ -62,9 +65,15 @@ the cover first as a style reference for the rest, and the whole set publishes n
 
 The pipeline was producing. The account was not.
 
-| | April | May | June | July |
-|---|---|---|---|---|
-| Median reach | 3,840 | 2,310 | 1,138 | **385** |
+<Bars
+  title="Median reach per piece"
+  items={[
+    { label: 'April', value: 3840, display: '3,840' },
+    { label: 'May', value: 2310, display: '2,310' },
+    { label: 'June', value: 1138, display: '1,138' },
+    { label: 'July', value: 385, display: '385' },
+  ]}
+/>
 
 The easy explanation is the algorithm, and it is the explanation I wanted. Two other
 numbers said otherwise:
@@ -84,12 +93,12 @@ time. That recipe lived in my database. The performance lived in the platform's 
 Nothing connected them.
 
 Building the link for new posts was easy. The problem was the 40 posts published before
-any of this existed — the ones covering the entire decline. The plan assumed they were
+any of this existed: the ones covering the entire decline. The plan assumed they were
 lost.
 
 They were not. **The videos have the phrase burned into the frame**, which means the
-thumbnail literally contains it. The caption does not — the caption is a rewrite, which
-is exactly why matching by lexical overlap kept landing at 25–50% even for posts that
+thumbnail literally contains it. The caption does not: the caption is a rewrite, which
+is exactly why matching by lexical overlap kept landing at 25-50% even for posts that
 did correspond.
 
 So I read the thumbnails with vision and compared phrase against phrase. **Of 40 orphan
@@ -108,34 +117,40 @@ decline. Phrases attributed to a named author:
 
 **April 17% → May 32% → June 91% → July 83%**
 
-I watched the ten extremes — five best, five worst. The ones that traveled name
+I watched the ten extremes: five best, five worst. The ones that traveled name
 somebody recognisable and land on a turn. The flat ones are quoted philosophers in
 quotation marks.
 
 That was a hypothesis with evidence behind it, not a conclusion. So it became a controlled
 test: ten new pieces written in the account's own voice, tagged as a distinct cohort,
-interleaved with quotes — and measured on **skip rate and watch time**, not on reach,
-because reach is the number that lies.
+interleaved with quotes, and measured on **skip rate and watch time**, not on reach,
+because <mark class="hl">reach is the number that lies</mark>.
 
-## The result — after fixing the instrument
+## The result, after fixing the instrument
 
 Before reading the result I had to repair the measurement. One insert path was not passing
-the media type, so the test posts were being queried with the metric set for images — the
+the media type, so the test posts were being queried with the metric set for images: the
 one without skip rate or watch time. No error anywhere; the numbers were simply not there.
 It was recoverable only because those two metrics are lifetime values on the platform side:
 collecting them late still gives the real figure.
 
-| | n | Skip rate (median) | Watch time (median) |
-|---|---|---|---|
-| Control, July 1–27 | 16 | 51.5% | 4.88s |
-| Own voice | 10 | **47.1%** | **6.64s** |
+<Compare
+  title="Controlled test: control against own voice"
+  controlLabel="Control"
+  testLabel="Own voice"
+  caption="Control: 16 posts, July 1-27. Own voice: 10 posts. Medians, with a permutation test."
+  metrics={[
+    { name: 'Skip rate (median)', control: 51.5, test: 47.1, controlDisplay: '51.5%', testDisplay: '47.1%', p: 'p = 0.019, lower is better' },
+    { name: 'Watch time (median)', control: 4.88, test: 6.64, controlDisplay: '4.88s', testDisplay: '6.64s', p: 'p = 0.003, higher is better' },
+  ]}
+/>
 
 A permutation test gives **p = 0.019 for skip rate and p = 0.003 for watch time.** Watch
 time went back to April's level, when the account was working, and median views roughly
 tripled the following week.
 
-The honest caveat: the ten test phrases also shared a two-beat structure — a setup and a
-turn — so the test cannot separate *who is speaking* from *how the line is built*. Splitting
+The honest caveat: the ten test phrases also shared a two-beat structure (a setup and a
+turn), so the test cannot separate *who is speaking* from *how the line is built*. Splitting
 them would have meant publishing ten deliberately weaker pieces during the only week the
 account was growing again. I chose not to, made the two-beat structure a brand rule, and
 wrote the open question down as open.
@@ -144,12 +159,12 @@ wrote the open question down as open.
 
 In August the app left my laptop. It now runs on its own AWS instance with Docker behind
 Caddy and TLS, on PostgreSQL instead of SQLite, with Google sign-in restricted to an
-allowlist and no SSH port open — access goes through AWS Systems Manager.
+allowlist and no SSH port open: access goes through AWS Systems Manager.
 
 The server also generates whole batches on its own. To do that without a browser it measures
 text with the same font file FFmpeg renders with, so line breaks match the editor's preview
 in **705 of 708 cases** (118 phrases × 6 presets), and in every one of the brand preset. The
-brand rules — two-beat structure, third person — are columns the batch planner queries, so
+brand rules (two-beat structure, third person) are columns the batch planner queries, so
 the bot cannot propose a line that would not get published.
 
 ## Where it stands
@@ -160,5 +175,5 @@ and 127,404 on the best single piece.** Median reach per piece is 1,687. I quote
 rather than the average (4,313) because two pieces pull the average up.
 
 The part worth taking away is not the renderer. It is that a content pipeline without
-measurement is a machine for producing more of whatever you were already doing wrong —
+measurement is a machine for producing more of whatever you were already doing wrong,
 faster.

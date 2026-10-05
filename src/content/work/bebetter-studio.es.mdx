@@ -19,6 +19,8 @@ order: 2
 ---
 
 import Pipeline from '../../components/Pipeline.astro';
+import Bars from '../../components/Bars.astro';
+import Compare from '../../components/Compare.astro';
 
 ## El problema que creía tener
 
@@ -26,7 +28,7 @@ Publicar contenido corto a mano no escala. Elegir imagen, elegir frase, maquetar
 texto, renderizar, subir a cuatro redes, escribir cuatro copies, programar. Veinte
 minutos por pieza, todos los días, para siempre.
 
-Así que construí la máquina. Funcionó. Y aun así la cuenta se empezó a caer — que
+Así que construí la máquina. Funcionó. Y aun así la cuenta se empezó a caer, que
 resultó ser el problema realmente interesante.
 
 ## El sistema
@@ -39,7 +41,7 @@ de la noche.
 De ahí en adelante: la composición se renderiza con FFmpeg a un video 9:16, se elige
 pista de audio cruzando etiquetas de mood y energía, y la pieza entra en una cola con su
 propia cadencia. n8n drena esa cola y publica en **YouTube Shorts, Instagram Reels,
-Facebook Reels y TikTok** — con el baile particular que exige cada uno, incluida la
+Facebook Reels y TikTok**, con el baile particular que exige cada uno, incluida la
 subida en tres fases de Facebook y los tokens que caducan y tienen que rotarse solos.
 
 También hay modo carrusel: se redacta un guion, las slides se generan en serie con la
@@ -47,15 +49,16 @@ portada primero como referencia de estilo para las demás, y el conjunto se publ
 forma nativa.
 
 <Pipeline
-  caption="El paso 07 es el que no existió durante los tres primeros meses — y es la razón por la que este caso tiene trama."
+  caption="El paso 07 es el que no existió durante los tres primeros meses, y es la razón por la que este caso tiene trama."
+  flagLegend="No existió durante los tres primeros meses."
   steps={[
     { n: '01', title: 'Bancos', detail: 'Las imágenes y las frases se analizan y se vectorizan al entrar.' },
     { n: '02', title: 'Emparejamiento', detail: 'Cruzar una imagen con una frase es una consulta por similitud, no una decisión que tome yo a las once de la noche.' },
     { n: '03', title: 'Render', detail: 'FFmpeg compone el video 9:16 con el texto quemado en el fotograma.' },
     { n: '04', title: 'Audio', detail: 'Se elige pista cruzando etiquetas de mood y energía contra la frase.' },
     { n: '05', title: 'Cola', detail: 'La pieza espera su turno bajo una cadencia que controlo, no una ráfaga de publicaciones.' },
-    { n: '06', title: 'Publicación', detail: 'n8n drena la cola y resuelve el baile particular de cada plataforma — incluida la subida en tres fases de Facebook y los tokens que se rotan solos.', outputs: ['YouTube Shorts', 'Instagram Reels', 'Facebook Reels', 'TikTok'] },
-    { n: '07', title: 'Medición', detail: 'Cada día se recogen métricas y se cruzan con la receta que produjo cada publicación.' },
+    { n: '06', title: 'Publicación', detail: 'n8n drena la cola y resuelve el baile particular de cada plataforma, incluida la subida en tres fases de Facebook y los tokens que se rotan solos.', outputs: ['YouTube Shorts', 'Instagram Reels', 'Facebook Reels', 'TikTok'] },
+    { n: '07', title: 'Medición', detail: 'Cada día se recogen métricas y se cruzan con la receta que produjo cada publicación.', flag: 'El paso que faltaba' },
   ]}
 />
 
@@ -63,9 +66,15 @@ forma nativa.
 
 El pipeline producía. La cuenta no.
 
-| | Abril | Mayo | Junio | Julio |
-|---|---|---|---|---|
-| Alcance mediano | 3.840 | 2.310 | 1.138 | **385** |
+<Bars
+  title="Alcance mediano por pieza"
+  items={[
+    { label: 'Abril', value: 3840, display: '3.840' },
+    { label: 'Mayo', value: 2310, display: '2.310' },
+    { label: 'Junio', value: 1138, display: '1.138' },
+    { label: 'Julio', value: 385, display: '385' },
+  ]}
+/>
 
 La explicación fácil es el algoritmo, y es la explicación que yo quería. Otros dos
 números decían lo contrario:
@@ -85,12 +94,12 @@ hora. Esa receta vivía en mi base de datos. El rendimiento vivía en la API de 
 plataforma. Nada los unía.
 
 Construir el vínculo para las publicaciones nuevas fue fácil. El problema eran las 40
-anteriores a que todo esto existiera — justo las que cubren toda la caída. El plan las
+anteriores a que todo esto existiera: justo las que cubren toda la caída. El plan las
 daba por perdidas.
 
 No lo estaban. **Los videos llevan la frase quemada en el fotograma**, lo que significa
 que la miniatura la contiene literal. El caption no: el caption es una reescritura, que
-es exactamente por lo que cruzar por solapamiento léxico se quedaba en 25–50% incluso
+es exactamente por lo que cruzar por solapamiento léxico se quedaba en 25-50% incluso
 para publicaciones que sí correspondían.
 
 Así que leí las miniaturas con visión y comparé frase contra frase. **De 40 huérfanas,
@@ -109,16 +118,16 @@ la caída. Las frases atribuidas a un autor con nombre:
 
 **Abril 17% → Mayo 32% → Junio 91% → Julio 83%**
 
-Vi los diez extremos — las cinco mejores y las cinco peores. Las que viajan señalan a
+Vi los diez extremos: las cinco mejores y las cinco peores. Las que viajan señalan a
 alguien reconocible y rematan con un giro. Las planas son citas de filósofos entre
 comillas.
 
 Eso era una hipótesis con evidencia detrás, no una conclusión. Así que se convirtió en un
 test controlado: diez piezas nuevas escritas con la voz propia de la cuenta, etiquetadas
-como grupo aparte, intercaladas con citas — y medidas por **skip rate y watch time**, no
-por alcance, porque el alcance es el número que miente.
+como grupo aparte, intercaladas con citas, y medidas por **skip rate y watch time**, no
+por alcance, porque <mark class="hl">el alcance es el número que miente</mark>.
 
-## El resultado — después de arreglar el instrumento
+## El resultado, después de arreglar el instrumento
 
 Antes de leer el resultado tuve que reparar la medición. Una de las vías de inserción no
 pasaba el tipo de medio, así que las publicaciones del test se consultaban con el juego de
@@ -126,17 +135,23 @@ métricas de las imágenes, el que no trae ni skip rate ni watch time. Ningún e
 parte: los números simplemente no estaban. Se pudo recuperar solo porque esas dos métricas
 son acumuladas del lado de la plataforma: recogerlas tarde sigue dando la cifra real.
 
-| | n | Skip rate (mediana) | Watch time (mediana) |
-|---|---|---|---|
-| Control, 1–27 de julio | 16 | 51,5% | 4,88s |
-| Voz propia | 10 | **47,1%** | **6,64s** |
+<Compare
+  title="Prueba controlada: control frente a voz propia"
+  controlLabel="Control"
+  testLabel="Voz propia"
+  caption="Control: 16 publicaciones, 1-27 de julio. Voz propia: 10 publicaciones. Medianas, con un test de permutación."
+  metrics={[
+    { name: 'Skip rate (mediana)', control: 51.5, test: 47.1, controlDisplay: '51,5%', testDisplay: '47,1%', p: 'p = 0,019, menos es mejor' },
+    { name: 'Watch time (mediana)', control: 4.88, test: 6.64, controlDisplay: '4,88s', testDisplay: '6,64s', p: 'p = 0,003, más es mejor' },
+  ]}
+/>
 
 Un test de permutación da **p = 0,019 para el skip rate y p = 0,003 para el watch time.**
 El watch time volvió al nivel de abril, cuando la cuenta funcionaba, y la mediana de
 reproducciones se multiplicó por algo más de tres la semana siguiente.
 
 La salvedad honesta: las diez frases del test compartían además una estructura en dos
-tiempos —un planteamiento y un giro—, así que el test no puede separar *quién habla* de
+tiempos (un planteamiento y un giro), así que el test no puede separar *quién habla* de
 *cómo está construida la frase*. Separarlas habría exigido publicar diez piezas peores a
 propósito durante la única semana en que la cuenta volvía a crecer. Decidí no hacerlo, dejé
 los dos tiempos como norma de marca y dejé escrita la pregunta abierta como abierta.
@@ -150,7 +165,7 @@ una lista de correos y sin puerto SSH abierto: se entra por AWS Systems Manager.
 El servidor además genera lotes enteros por su cuenta. Para hacerlo sin navegador mide el
 texto con el mismo archivo de fuente con el que pinta FFmpeg, de modo que los cortes de línea
 coinciden con la vista previa del editor en **705 de 708 casos** (118 frases × 6 presets), y
-en todos los del preset de marca. Las reglas de marca —dos tiempos, tercera persona— son
+en todos los del preset de marca. Las reglas de marca (dos tiempos, tercera persona) son
 columnas que consulta el planificador de lotes, así que el bot no puede proponer una frase que
 no se publicaría.
 
@@ -162,5 +177,5 @@ total y 127.404 en la mejor pieza.** El alcance mediano por pieza es 1.687. Cito
 no el promedio (4.313) porque dos piezas tiran del promedio hacia arriba.
 
 Lo que vale la pena llevarse no es el renderizador. Es que un pipeline de contenido sin
-medición es una máquina para producir más de aquello que ya estabas haciendo mal — solo
+medición es una máquina para producir más de aquello que ya estabas haciendo mal, solo
 que más rápido.

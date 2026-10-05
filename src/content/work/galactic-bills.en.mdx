@@ -2,7 +2,7 @@
 slug: galactic-bills
 lang: en
 title: galacticBills
-summary: Invoice capture and bookkeeping for small businesses, powered by an LLM — no manual data entry.
+summary: Invoice capture and bookkeeping for small businesses, powered by an LLM. No manual data entry.
 role: Design, build and operations
 year: '2026'
 stack: [n8n, Gemini, Telegram, Google Drive, Google Sheets, AWS EC2, Docker]
@@ -26,7 +26,7 @@ asks for it.
 
 The obvious answer is OCR. The real answer is not: an invoice is not a form. Every
 supplier lays it out differently, half of them are photographed at an angle, and the
-numbers that matter — taxable base, VAT rate, VAT amount, total — have to be
+numbers that matter (taxable base, VAT rate, VAT amount, total) have to be
 *consistent with each other* or the row is worse than useless. A wrong number filed
 silently costs more than no number at all.
 
@@ -37,19 +37,21 @@ folder. From there it runs on its own:
 
 <Pipeline
   branchLabel="else"
+  flagLegend="Fixed by design. Never per-client configuration."
+  config={{ label: 'Next phase, not built yet: one configuration row per client (tax id, channel, folder, chart of accounts, currency)', targets: ['01', '06', '07'] }}
   caption="Two checks decide everything: one before the model runs, one after. Neither of them existed in the first version."
   steps={[
     { n: '01', title: 'Ingest', detail: 'A photo or PDF arrives through the Telegram bot, or is dropped into the shared Drive folder.' },
     { n: '02', title: 'Pick up', detail: 'The file is stored and the pipeline detects it in under a minute.' },
-    { n: '03', title: 'Classify', detail: 'Is this actually an invoice?', branch: 'it is not — rejected here, before it can pollute the books.' },
+    { n: '03', title: 'Classify', detail: 'Is this actually an invoice?', branch: 'it is not: rejected here, before it can pollute the books.', branchNode: 'Rejected', flag: 'Fixed by design' },
     { n: '04', title: 'Extract', detail: 'Gemini reads the fiscal fields against a fixed schema, at temperature 0, with a strict JSON response type.' },
-    { n: '05', title: 'Validate', detail: 'Taxable base plus VAT has to equal the total.', branch: 'the numbers do not add up — goes to a human review queue over Telegram, never to the spreadsheet.' },
+    { n: '05', title: 'Validate', detail: 'Taxable base plus VAT has to equal the total.', branch: 'the numbers do not add up: it goes to a human review queue over Telegram, never to the spreadsheet.', branchNode: 'Human review', flag: 'Fixed by design' },
     { n: '06', title: 'File', detail: 'The row is written and deduplicated by a hash of the file itself.' },
     { n: '07', title: 'Confirm', detail: 'The client hears back on the same channel they used.' },
   ]}
 />
 
-It runs on self-hosted n8n — AWS EC2, Docker Compose, nginx — infrastructure I manage
+It runs on self-hosted n8n (AWS EC2, Docker Compose, nginx), infrastructure I manage
 myself.
 
 ## What I got wrong the first time
@@ -60,7 +62,7 @@ selling it, and the findings were uncomfortable.
 **It failed in silence.** No error workflow, no try/catch around the model's output. If
 Gemini returned something that was not valid JSON, or the spreadsheet rejected the row,
 the invoice simply vanished. The client would never know. That is the worst possible
-failure mode for bookkeeping — worse than crashing, because nobody investigates a crash
+failure mode for bookkeeping, worse than crashing, because nobody investigates a crash
 that never happened.
 
 **Deduplication was fake.** When an invoice had no number, the system generated a
@@ -86,7 +88,7 @@ The tempting path is to clone the workflow per client and edit the hardcoded val
 works for the second client and collapses by the fifth: every fix has to be applied by
 hand, N times, and the copies drift until nobody knows which client is running what.
 
-The alternative is a shared installation with a configuration layer — each client is a
+The alternative is a shared installation with a configuration layer: each client is a
 row: their tax id, their channel, their folder, their chart of accounts, their currency.
 One workflow, N configurations.
 
@@ -96,7 +98,7 @@ installation makes that a property you have to actively enforce. Separate instal
 make it true by construction, at the cost of operational load that grows with every sale.
 
 Where that line sits depends on who the clients are, not on which architecture reads
-better. The decision is documented and still open — which is the honest state of a
+better. The decision is documented and still open, which is the honest state of a
 product with one pilot running and a second one being scoped.
 
 ## Where it stands

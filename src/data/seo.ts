@@ -15,8 +15,8 @@ export const SITE_NAME = 'David Ciro';
 /** Título y descripción por defecto de la home. */
 export const meta = {
   title: {
-    en: 'David Ciro — AI Automation Engineer',
-    es: 'David Ciro — Ingeniero de Automatización con IA',
+    en: 'David Ciro · AI Automation Engineer',
+    es: 'David Ciro · Ingeniero de Automatización con IA',
   },
   description: {
     en: 'I build AI automation systems that run in production: conversational commerce, document extraction and content pipelines. Available for freelance work. Based in Colombia, UTC-5.',
@@ -42,7 +42,7 @@ export const ogCard = {
     es: 'David Ciro',
   },
   homeSummary: {
-    en: 'AI automation systems that run in production — conversational commerce, document extraction and content pipelines.',
+    en: 'AI automation systems that run in production: conversational commerce, document extraction and content pipelines.',
     es: 'Sistemas de automatización con IA que corren en producción: comercio conversacional, extracción de documentos y pipelines de contenido.',
   },
   homeSignature: {
@@ -77,6 +77,6 @@ export const ogCard = {
  * `og:title` por separado.
  */
 export const ogImageAlt: Localized<(heading: string) => string> = {
-  en: (heading) => `Dark card with a lime accent bar reading “${heading}”, signed David Ciro`,
-  es: (heading) => `Tarjeta oscura con una franja lima que dice «${heading}», firmada David Ciro`,
+  en: (heading) => `Light card reading “${heading}”, with a portrait of David Ciro on the right`,
+  es: (heading) => `Tarjeta clara que dice «${heading}», con un retrato de David Ciro a la derecha`,
 };

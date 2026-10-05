@@ -14,27 +14,34 @@ export const profile = {
   location: { en: 'Medellín, Colombia', es: 'Medellín, Colombia' } as Localized,
   timezone: 'UTC-5',
 
-  /** Bio corta del hero. Tiene que dejar claro el diferencial en 5 segundos. */
-  heroBio: {
-    en: 'I build AI automation systems that run in production — conversational commerce, document extraction and content pipelines. I design them, deploy them on my own infrastructure, and keep them running.',
-    es: 'Construyo sistemas de automatización con IA que corren en producción — comercio conversacional, extracción de documentos y pipelines de contenido. Los diseño, los despliego en infraestructura propia y los mantengo funcionando.',
-  } as Localized,
-
-  /** Párrafos de la sección "Sobre mí". */
-  aboutParagraphs: [
+  /**
+   * Las tres columnas de "Sobre mí", bajo la frase grande (ui.about.statement*).
+   * Antes eran tres párrafos largos; la frontera entre lo configurable y lo
+   * fijo ahora la cuenta la frase y, con detalle, el diagrama de cada caso.
+   */
+  aboutColumns: [
     {
-      en: 'I design, build and operate AI automation systems. Not prototypes — systems that run on their own: bots handling conversations over an official WhatsApp provider, pipelines publishing to four networks on a schedule, workflows reading invoices and filing them every day.',
-      es: 'Diseño, construyo y opero sistemas de automatización con IA. No prototipos — sistemas que funcionan solos: bots atendiendo conversaciones vía un proveedor oficial de WhatsApp, pipelines publicando programados en cuatro redes, workflows que leen facturas y las archivan a diario.',
+      title: { en: 'Systems, not prototypes', es: 'Sistemas, no prototipos' },
+      body: {
+        en: 'Bots handling conversations over an official WhatsApp provider, pipelines publishing on a schedule, workflows filing invoices every day.',
+        es: 'Bots que atienden conversaciones vía un proveedor oficial de WhatsApp, pipelines que publican en calendario, workflows que archivan facturas a diario.',
+      },
     },
     {
-      en: 'Most of what I’ve built started as a pilot for one case and became a configurable platform. That transition is where the interesting decisions are — what becomes configuration and what stays put. Sales safeguards and payment validation don’t belong in a config file, and knowing where that line sits is the part nobody can improvise.',
-      es: 'Casi todo lo que he construido empezó como un piloto para un solo caso y terminó siendo una plataforma configurable. Esa transición es donde están las decisiones interesantes — qué pasa a ser configuración y qué se queda quieto. Las salvaguardas de venta y la validación de pagos no van en un archivo de config, y saber dónde está esa frontera es lo que no se improvisa.',
+      title: { en: 'Async-first', es: 'Async-first' },
+      body: {
+        en: 'Slack, Notion, pull requests and written documentation. UTC-5 overlaps the entire US working day.',
+        es: 'Slack, Notion, pull requests y documentación escrita. UTC-5 se solapa con toda la jornada laboral de EE.UU.',
+      },
     },
     {
-      en: 'I work async-first: Slack, Notion, pull requests and written documentation. I’m on UTC-5, which overlaps the entire US working day. And I run my own infrastructure — AWS EC2 behind nginx, Docker, self-hosted n8n — so I don’t need anyone else to deploy what I build.',
-      es: 'Trabajo async-first: Slack, Notion, pull requests y documentación escrita. Estoy en UTC-5, con solape completo con la jornada laboral de EE.UU. Y gestiono mi propia infraestructura — AWS EC2 detrás de nginx, Docker, n8n self-hosted — así que no dependo de nadie para desplegar lo que construyo.',
+      title: { en: 'My own infrastructure', es: 'Infraestructura propia' },
+      body: {
+        en: 'AWS EC2 behind nginx, Docker and self-hosted n8n. I don’t need anyone else to deploy what I build.',
+        es: 'AWS EC2 detrás de nginx, Docker y n8n self-hosted. No dependo de nadie para desplegar lo que construyo.',
+      },
     },
-  ] as Localized[],
+  ] as { title: Localized; body: Localized }[],
 
   /**
    * Cifras de la sección "Sobre mí".

@@ -34,13 +34,31 @@ const sources = [
 
 const css = sources.map((f) => readFileSync(f, 'utf8')).join('\n');
 
-const token = (name) => {
-  const match = css.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`));
+// El CSS compilado trae los tokens dos veces (claro en `:root`, oscuro en
+// `[data-theme=dark]`), así que se leen por bloque. El minificador puede acortar
+// #ffffff a #fff: se expande antes de comparar.
+const expand = (hex) =>
+  hex.length === 4 ? `#${[...hex.slice(1)].map((c) => c + c).join('')}` : hex.toLowerCase();
+
+const blocks = [...css.matchAll(/([^{}]+)\{([^{}]*--bg:[^{}]*)\}/g)].map(([, selector, body]) => ({
+  selector: selector.trim(),
+  body,
+}));
+const light = blocks.find((b) => /(^|[\s,]):root$/.test(b.selector));
+const dark = blocks.find((b) => /data-theme=["']?dark/.test(b.selector));
+
+if (!light || !dark) {
+  console.error('No se encontraron los bloques de tokens claro y oscuro en el CSS compilado.');
+  process.exit(1);
+}
+
+const tokenIn = (block, name) => {
+  const match = block.body.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{3,6})\\b`));
   if (!match) {
-    console.error(`Token --color-${name} no encontrado en el CSS compilado.`);
+    console.error(`Token --${name} no encontrado en ${block.selector}.`);
     process.exit(1);
   }
-  return match[1];
+  return expand(match[1]);
 };
 
 const srgbToLinear = (channel) => {
@@ -63,21 +81,29 @@ const ratio = (a, b) => {
 };
 
 const WHITE = '#ffffff';
-const surface = token('surface');
+
+// [nombre, texto, fondo, mínimo, uso] por tema. Los pares salen de DESIGN.md §2.
+const pairs = (block) => {
+  const t = (name) => tokenIn(block, name);
+  return [
+    ['ink / bg',            t('ink'),     t('bg'),     4.5, 'titulares y texto principal'],
+    ['ink-2 / parch',       t('ink-2'),   t('parch'),  4.5, 'texto de lectura secundario'],
+    ['ink-3 / parch',       t('ink-3'),   t('parch'),  4.5, 'pies, etiquetas'],
+    ['ink-3 / bg',          t('ink-3'),   t('bg'),     4.5, 'pies, etiquetas, bordes de campo'],
+    ['blue / bg',           t('blue'),    t('bg'),     4.5, 'enlaces'],
+    ['blue / parch',        t('blue'),    t('parch'),  4.5, 'enlaces dentro de tiles'],
+    ['blanco / pill-bg',    WHITE,        t('pill-bg'), 4.5, 'texto del botón primario'],
+    ['ink / mark',          t('ink'),     t('mark'),   4.5, 'texto con subrayador'],
+    ['inv-ink / inv-bg',    t('inv-ink'), t('inv-bg'), 4.5, 'tile invertido'],
+    ['inv-link / inv-bg',   t('inv-link'), t('inv-bg'), 4.5, 'enlace en el tile invertido'],
+    ['live / parch',        t('live'),    t('parch'),  3.0, 'punto de estado (gráfico, no texto)'],
+  ];
+};
 
 const checks = [
-  ['text-primary',       token('text-primary'),       surface, 4.5, 'texto sobre superficie oscura'],
-  ['text-secondary',     token('text-secondary'),     surface, 4.5, 'texto sobre superficie oscura'],
-  ['text-muted',         token('text-muted'),         surface, 4.5, 'texto sobre superficie oscura'],
-  ['text-faint',         token('text-faint'),         surface, 3.0, 'SOLO decorativo grande / UI'],
-  ['neon',               token('neon'),               surface, 4.5, 'acento sobre superficie oscura'],
-  ['on-light-primary',   token('on-light-primary'),   WHITE,   4.5, 'texto sobre tarjeta blanca'],
-  ['on-light-secondary', token('on-light-secondary'), WHITE,   4.5, 'texto sobre tarjeta blanca'],
-  ['on-light-muted',     token('on-light-muted'),     WHITE,   4.5, 'texto sobre tarjeta blanca'],
-  ['on-light-faint',     token('on-light-faint'),     WHITE,   3.0, 'SOLO decorativo grande / UI'],
+  ...pairs(light).map((c) => ['claro  ' + c[0], ...c.slice(1)]),
+  ...pairs(dark).map((c) => ['oscuro ' + c[0], ...c.slice(1)]),
 ];
-
-console.log(`Superficie oscura: ${surface}\n`);
 
 let failed = 0;
 for (const [name, hex, bg, min, use] of checks) {
@@ -85,7 +111,7 @@ for (const [name, hex, bg, min, use] of checks) {
   const ok = r >= min;
   if (!ok) failed += 1;
   console.log(
-    `${ok ? 'OK   ' : 'FALLA'} ${name.padEnd(19)} ${hex}  ${r.toFixed(2).padStart(6)}:1  (mín ${min})  ${use}`,
+    `${ok ? 'OK   ' : 'FALLA'} ${name.padEnd(30)} ${hex}  ${r.toFixed(2).padStart(6)}:1  (mín ${min})  ${use}`,
   );
 }
 

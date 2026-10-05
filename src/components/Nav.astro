@@ -1,6 +1,7 @@
 ---
 // src/components/Nav.astro
-// Barra de navegación — sticky con blur backdrop
+// Barra translúcida: el contenido pasa por debajo (DESIGN.md §6).
+// Marca a la izquierda, secciones al centro, tema + idioma + contacto a la derecha.
 
 import { ui } from '../i18n/ui';
 import { useTranslations, getAlternates, localePath } from '../i18n/utils';
@@ -18,79 +19,131 @@ const t = useTranslations(lang);
 const home = localePath(lang, '/');
 
 const links = [
+  { label: t(ui.nav.work),       href: `${home}#systems` },
   { label: t(ui.nav.services),   href: `${home}#engagements` },
   { label: t(ui.nav.about),      href: `${home}#about` },
-  { label: t(ui.nav.work),       href: `${home}#systems` },
   { label: t(ui.nav.experience), href: `${home}#experience` },
 ];
 
 // Conmutador de idioma: enlaza a esta misma página en el otro idioma.
-// Sin redirección automática — el visitante elige y los enlaces compartidos
+// Sin redirección automática: el visitante elige y los enlaces compartidos
 // no cambian de idioma por su cuenta.
 const alternates = getAlternates(Astro.url.pathname);
 const otherLangs = LOCALES.filter((locale) => locale !== lang);
 ---
 
-<header
-  id="nav"
-  class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 h-[60px]
-         border-b border-white/[0.05] transition-all duration-400"
-  style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-         background: rgba(10,10,12,0.75);"
->
-  <!-- Marca: vuelve al inicio. Era un botón de menú sin menú detrás. -->
-  <a
-    href={home}
-    class="btn-nav-circle"
-    aria-label={t(ui.nav.home)}
-  >
-    <span aria-hidden="true" class="leading-none select-none">+</span>
-  </a>
+<header class="site-nav">
+  <div class="wrap nav-row">
+    <a href={home} class="brand">David Ciro</a>
 
-  <!-- Links de navegación -->
-  <nav class="hidden md:flex items-center gap-8" aria-label={t(ui.nav.mainNav)}>
-    {links.map(link => (
-      <a
-        href={link.href}
-        class="type-ui text-text-muted hover:text-text-primary transition-colors duration-250"
-      >
-        {link.label}
-      </a>
-    ))}
-  </nav>
+    <nav class="links" aria-label={t(ui.nav.mainNav)}>
+      {links.map((link) => <a href={link.href}>{link.label}</a>)}
+    </nav>
 
-  <!-- Conmutador de idioma + CTA -->
-  <div class="flex items-center gap-3">
-    {otherLangs.map((locale) => (
-      <a
-        href={alternates[locale]}
-        hreflang={locale}
-        class="type-ui text-text-muted hover:text-text-primary transition-colors duration-250
-               border border-white/[0.12] rounded-[99px] px-3 py-1"
-        aria-label={t(ui.nav.switchLang)}
-      >
-        {LOCALE_LABELS[locale]}
-      </a>
-    ))}
-
-    <a href={`${home}#contact`} class="btn-primary md:hidden text-xs px-4 py-2">
-      {t(ui.nav.contact)}
-    </a>
+    <div class="actions">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label={t(ui.nav.theme)} title={t(ui.nav.theme)}>
+        <!-- Medio círculo: sirve para los dos estados, no miente en ninguno -->
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+          <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3" />
+          <path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor" />
+        </svg>
+      </button>
+      {otherLangs.map((locale) => (
+        <a href={alternates[locale]} hreflang={locale} lang={locale} class="lang" title={t(ui.nav.switchLang)}>
+          {LOCALE_LABELS[locale]}<span class="sr-only">, {t(ui.nav.switchLang)}</span>
+        </a>
+      ))}
+      <a href={`${home}#contact`} class="text-link more contact">{t(ui.nav.contact)}</a>
+    </div>
   </div>
 </header>
 
-<!-- Spacer para que el contenido no quede bajo el nav fijo -->
-<div class="h-[60px]" aria-hidden="true"></div>
+<style>
+  .site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--nav-bg);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    transition: background-color 0.4s ease;
+  }
+  .nav-row {
+    height: 52px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    font-size: 13px;
+  }
+  .brand {
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.015em;
+  }
+  .links {
+    display: flex;
+    gap: 32px;
+    color: var(--ink-2);
+  }
+  .links a:hover,
+  .lang:hover,
+  .theme-toggle:hover { color: var(--ink); }
+  .actions {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    color: var(--ink-2);
+  }
+  .theme-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    display: inline-grid;
+    place-items: center;
+    color: var(--ink-2);
+    transition: color 0.2s ease, transform 0.2s var(--spring);
+  }
+  .theme-toggle:active { transform: scale(0.96); }
+  /* 32 px visibles, 44 px tocables */
+  .theme-toggle,
+  .lang { position: relative; }
+  .theme-toggle::after,
+  .lang::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+  .lang::after { inset: -14px -10px; }
+
+  /* Por debajo de 860 px las secciones salen del nav: cabe la marca y las acciones */
+  @media (max-width: 859px) {
+    .links { display: none; }
+    .nav-row { grid-template-columns: 1fr auto; }
+  }
+  @media (max-width: 420px) {
+    .contact { display: none; }
+  }
+</style>
 
 <script>
-  // Comportamiento suave del nav al hacer scroll
-  const nav = document.getElementById('nav');
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 60) {
-      nav?.classList.add('shadow-card-dark');
-    } else {
-      nav?.classList.remove('shadow-card-dark');
+  // Alterna respecto a lo que se ve ahora (elegido o del sistema) y lo recuerda.
+  // El script inline del <head> lo vuelve a aplicar antes de pintar la próxima vez.
+  document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme
+      ? root.dataset.theme === 'dark'
+      : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    // La barra del navegador móvil acompaña al tema elegido, no solo al del sistema
+    for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+      meta.setAttribute('content', isDark ? '#ffffff' : '#0a0a0b');
     }
-  }, { passive: true });
+    try {
+      localStorage.setItem('theme', root.dataset.theme);
+    } catch {
+      // Sin almacenamiento (modo privado): el tema dura lo que dure la página.
+    }
+  });
 </script>

@@ -72,7 +72,7 @@ export const timeline: TimelineEntry[] = [
     },
     kind: { en: 'Education', es: 'Formación' },
     description: {
-      en: 'Software engineering fundamentals, databases, networking and systems architecture — plus continuous self-teaching in modern web development and automation.',
+      en: 'Software engineering fundamentals, databases, networking and systems architecture, plus continuous self-teaching in modern web development and automation.',
       es: 'Fundamentos de ingeniería de software, bases de datos, redes y arquitectura de sistemas. Complementado con aprendizaje autodidacta continuo en desarrollo web moderno y automatización.',
     },
     tags: ['Software Engineering', 'Databases', 'Networking'],
