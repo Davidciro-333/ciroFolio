@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  try { const t = new URLSearchParams(location.search).get('theme') || localStorage.getItem('theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<title>D2 · 404</title>
+<!--
+  MOCKUP · 404 redibujada en la dirección "Galería".
+  Conserva la idea de PixelServer (un rack con una bahía que no responde) sin pixel art:
+  las bahías que funcionan son los 4 sistemas reales en producción; la que falla es la ruta pedida.
+  Copy real de src/i18n/ui.ts (notFound).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff; --parch: #f5f5f7; --ink: #1d1d1f; --ink-2: #424245; --ink-3: #6e6e73; --blue: #0066cc;
+    --line: #e0e0e3; --nav-bg: rgba(255,255,255,.72); --pill-bg: #0066cc; --pill-hover: #0071e3; --live: #1f9d55;
+    --spring: cubic-bezier(0.32, 0.72, 0, 1);
+    --sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a0a0b; --parch: #1c1c1e; --ink: #f5f5f7; --ink-2: #c7c7cc; --ink-3: #98989d; --blue: #2997ff;
+    --line: #2c2c2e; --nav-bg: rgba(10,10,11,.72); --pill-bg: #0071e3; --pill-hover: #0077ed; --live: #30d158; color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0a0a0b; --parch: #1c1c1e; --ink: #f5f5f7; --ink-2: #c7c7cc; --ink-3: #98989d; --blue: #2997ff;
+      --line: #2c2c2e; --nav-bg: rgba(10,10,11,.72); --pill-bg: #0071e3; --pill-hover: #0077ed; --live: #30d158; color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { background: var(--bg); color: var(--ink); font: 400 17px/1.5 var(--sans); letter-spacing: -0.01em; min-height: 100dvh; display: flex; flex-direction: column; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: 24px; padding-right: 24px; width: 100%; }
+
+  nav { position: sticky; top: 0; z-index: 10; background: var(--nav-bg); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
+  nav .wrap { height: 52px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  nav .brand { font-weight: 600; font-size: 15px; }
+  nav .right { display: flex; gap: 20px; align-items: center; color: var(--ink-2); }
+  .link { color: var(--blue); }
+  .link:hover { text-decoration: underline; }
+  .theme { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: none; color: var(--ink-2); cursor: pointer; display: inline-grid; place-items: center; font-size: 15px; }
+
+  main { flex: 1; display: grid; align-items: center; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; padding-top: 64px; padding-bottom: 96px; }
+  .code { font-size: clamp(88px, 12vw, 152px); font-weight: 700; letter-spacing: -0.06em; line-height: .9; font-variant-numeric: tabular-nums; }
+  h1 { margin-top: 20px; font-size: clamp(32px, 3.8vw, 44px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.1; }
+  .body { margin-top: 14px; font-size: 19px; color: var(--ink-2); max-width: 36ch; }
+  .ctas { margin-top: 32px; display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .pill { background: var(--pill-bg); color: #fff; padding: 12px 24px; border-radius: 980px; font-weight: 500; transition: transform .2s var(--spring), background .2s; }
+  .pill:hover { background: var(--pill-hover); }
+  .pill:active { transform: scale(.97); }
+  .link.more::after { content: " ›"; }
+
+  /* El rack: un tile con bahías. Cuatro sistemas vivos y la ruta que no responde. */
+  .rack { background: var(--parch); border-radius: 28px; padding: 14px; }
+  .rack header { display: flex; justify-content: space-between; padding: 12px 14px 14px; font-size: 14px; color: var(--ink-3); }
+  .rack header b { color: var(--ink); font-weight: 600; }
+  .bay { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; background: var(--bg);
+         border-radius: 16px; padding: 16px 18px; }
+  .bay + .bay { margin-top: 8px; }
+  .bay .name { font-weight: 600; letter-spacing: -0.015em; }
+  .bay .state { font-size: 14px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); }
+  .bay.down { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .bay.down .dot { background: none; border: 1.5px solid var(--ink); }
+  .bay.down .name { font-weight: 600; word-break: break-all; }
+  .bay.down .state { color: var(--ink); font-weight: 600; }
+
+  .rise { opacity: 0; transform: translateY(24px); transition: opacity .9s var(--spring), transform .9s var(--spring); }
+  .rise.in { opacity: 1; transform: none; }
+  /* La bahía caída entra la última y con un pequeño retraso: es la noticia */
+  .bay.down.rise { transform: translateY(0) scale(.97); transition-duration: .7s; }
+  .bay.down.rise.in { transform: none; }
+  @media (prefers-reduced-motion: reduce) { .rise, .bay.down.rise { opacity: 1; transform: none; transition: none; } }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; }
+  }
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <a href="d2-galeria.html" class="brand">David Ciro</a>
+  <div class="right"><button class="theme" type="button" id="theme" aria-label="Toggle dark mode">◐</button><a href="#">ES</a><a href="d2-galeria.html#contact" class="link">Start a conversation ›</a></div>
+</div></nav>
+
+<main><div class="wrap grid">
+  <div>
+    <p class="code rise" aria-hidden="true">404</p>
+    <h1 class="rise">Process not found</h1>
+    <p class="body rise">Nothing is bound to this path. It was moved, renamed, or it never ran here in the first place.</p>
+    <div class="ctas rise">
+      <a href="d2-galeria.html#systems" class="pill">Back to the systems</a>
+      <a href="d2-galeria.html#contact" class="link more">Report it to me</a>
+    </div>
+  </div>
+
+  <section class="rack" aria-label="System status">
+    <header class="rise"><b>Status</b><span>right now</span></header>
+    <div id="bays"></div>
+  </section>
+</div></main>
+
+<script>
+  // Datos reales: los mismos liveSince que hay en producción.
+  const live = [
+    ['galacticBills', '2025-09-24'], ['beBetterStudio', '2026-04-18'],
+    ['Commerce Engine', '2026-07-16'], ['LinkedIn Publisher', '2026-07-30'],
+  ];
+  const days = iso => Math.floor((Date.now() - new Date(iso + 'T00:00:00-05:00')) / 864e5);
+  // El sitio es estático: la ruta pedida la rellena el cliente. Sin JS queda un texto neutro.
+  const path = location.pathname.endsWith('d2-404.html') ? '/cirofolio/old-page' : location.pathname;
+  document.getElementById('bays').innerHTML =
+    live.map(([n, d]) => `<div class="bay rise"><span class="dot" aria-hidden="true"></span><span class="name">${n}</span><span class="state">Live · ${days(d)} days</span></div>`).join('') +
+    `<div class="bay down rise"><span class="dot" aria-hidden="true"></span><span class="name"></span><span class="state">Not responding</span></div>`;
+  document.querySelector('.bay.down .name').textContent = path;
+
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const sibs = [...e.target.parentElement.children];
+    const i = sibs.indexOf(e.target);
+    e.target.style.transitionDelay = (e.target.classList.contains('down') ? 700 : Math.min(i, 5) * 80) + 'ms';
+    e.target.classList.add('in'); io.unobserve(e.target);
+  }), { threshold: .1 });
+  document.querySelectorAll('.rise').forEach(x => io.observe(x));
+
+  document.getElementById('theme').addEventListener('click', () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+  });
+</script>
+</body>
+</html>

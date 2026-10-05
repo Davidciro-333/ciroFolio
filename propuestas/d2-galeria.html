@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  // Antes de pintar: aplica el tema elegido por el visitante, si eligió uno. Si no, manda el sistema.
+  try { const t = new URLSearchParams(location.search).get('theme') || localStorage.getItem('theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<title>D2 · Galería</title>
+<!--
+  DIRECCIÓN 2 · GALERÍA
+  Referencias: Apple (lienzo blanco/pergamino, un solo azul de acción, tiles tipo museo, la foto como protagonista),
+  Notion (tono cercano en el copy).
+  Motivo propio: cada sistema es una "pieza de exposición" con UNA cifra real como protagonista.
+  Mockup estático: no forma parte del sitio Astro.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --parch: #f5f5f7;
+    --ink: #1d1d1f;      /* 16.8:1 */
+    --ink-2: #424245;    /*  9.2:1 sobre pergamino */
+    --ink-3: #6e6e73;    /*  4.7:1 sobre pergamino */
+    --blue: #0066cc;     /*  5.6:1 · único color de acción */
+    --line: #e0e0e3;
+    --nav-bg: rgba(255,255,255,.72);
+    --pill-bg: #0066cc;  /* blanco encima 5.6:1 */
+    --pill-hover: #0071e3;
+    --tint: #e8f1fb;     /* degradado del tile principal */
+    --live: #1f9d55;
+    --mark: #cfe3fa;     /* subrayador · --ink encima 12.8:1 */
+    /* Tile destacado: siempre el polo opuesto de la página */
+    --inv-bg: #1d1d1f;
+    --inv-ink: #f5f5f7;  /* 15.5:1 */
+    --inv-ink-2: #c7c7cc;
+    --inv-ink-3: #a1a1a6;
+    --inv-link: #2997ff; /* 5.6:1 */
+    --spring: cubic-bezier(0.32, 0.72, 0, 1);
+    --sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    color-scheme: light;
+  }
+
+  /* Modo oscuro: sigue al sistema salvo que el visitante elija otra cosa */
+
+
+  :root[data-theme="dark"] {
+    --bg: #0a0a0b;
+    --parch: #1c1c1e;
+    --ink: #f5f5f7;      /* 18.2:1 */
+    --ink-2: #c7c7cc;    /* 10.1:1 sobre tile */
+    --ink-3: #98989d;    /*  5.9:1 sobre tile */
+    --blue: #2997ff;     /*  6.6:1 */
+    --line: #2c2c2e;
+    --nav-bg: rgba(10,10,11,.72);
+    --pill-bg: #0071e3;  /* blanco encima 4.7:1 */
+    --pill-hover: #0077ed;
+    --tint: #10223a;
+    --live: #30d158;     /* 8.4:1 */
+    --mark: #173a63;     /* --ink encima 10.6:1 */
+    --inv-bg: #f5f5f7;
+    --inv-ink: #1d1d1f;
+    --inv-ink-2: #424245;
+    --inv-ink-3: #6e6e73;
+    --inv-link: #0066cc; /* 5.1:1 */
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0a0a0b; --parch: #1c1c1e; --ink: #f5f5f7; --ink-2: #c7c7cc; --ink-3: #98989d; --blue: #2997ff;
+      --line: #2c2c2e; --nav-bg: rgba(10,10,11,.72); --pill-bg: #0071e3; --pill-hover: #0077ed; --tint: #10223a;
+      --live: #30d158; --mark: #173a63; --inv-bg: #f5f5f7; --inv-ink: #1d1d1f; --inv-ink-2: #424245; --inv-ink-3: #6e6e73; --inv-link: #0066cc;
+      color-scheme: dark;
+    }
+  }
+  /* En oscuro la foto (tomada a pleno día) baja un punto de brillo para no deslumbrar */
+  :root[data-theme="dark"] .portrait img { filter: brightness(.88); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .portrait img { filter: brightness(.88); } }
+  /* El cambio de tema no da un golpe de brillo */
+  body, nav, .tile, .contact, footer { transition: background-color .4s ease, color .4s ease; }
+  .theme { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: none; color: var(--ink-2);
+           cursor: pointer; display: inline-grid; place-items: center; font-size: 15px; }
+  .theme:hover { color: var(--ink); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { background: var(--bg); color: var(--ink); font: 400 17px/1.5 var(--sans); letter-spacing: -0.01em; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+
+  /* Nav translúcida: el contenido pasa por debajo */
+  nav { position: sticky; top: 0; z-index: 10; background: var(--nav-bg);
+        backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
+  nav .wrap { height: 52px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; font-size: 13px; }
+  nav .brand { font-weight: 600; font-size: 15px; }
+  nav .links { display: flex; gap: 32px; color: var(--ink-2); }
+  nav .links a:hover { color: var(--ink); }
+  nav .right { justify-self: end; display: flex; gap: 20px; align-items: center; color: var(--ink-2); }
+  .link { color: var(--blue); }
+  .link:hover { text-decoration: underline; }
+  .link::after { content: " ›"; }
+
+  /* Hero centrado: aquí el mensaje es el diseño */
+  .hero { text-align: center; padding: 88px 0 56px; }
+  .kicker { font-size: 19px; font-weight: 600; color: var(--ink-3); }
+  h1 { margin: 12px auto 0; font-size: clamp(44px, 6.4vw, 80px); line-height: 1.04; letter-spacing: -0.045em; font-weight: 700; max-width: 14ch; }
+  .lede { margin: 22px auto 0; max-width: 40ch; font-size: 21px; line-height: 1.45; color: var(--ink-2); }
+  .ctas { margin-top: 32px; display: flex; gap: 28px; justify-content: center; align-items: center; flex-wrap: wrap; font-size: 17px; }
+  .pill { background: var(--pill-bg); color: #fff; padding: 12px 24px; border-radius: 980px; font-weight: 500;
+          transition: transform .2s var(--spring), background .2s; }
+  .pill:hover { background: var(--pill-hover); }
+  .pill:active { transform: scale(.97); }
+
+  /* Foto: entra creciendo con el scroll */
+  .portrait { margin: 24px auto 0; max-width: 960px; padding: 0 24px; }
+  .portrait figure { border-radius: 32px; overflow: hidden; aspect-ratio: 3 / 2; background: var(--parch); }
+  .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; display: block; }
+  .portrait figcaption { text-align: center; margin-top: 16px; font-size: 14px; color: var(--ink-3); }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .portrait figure { animation: grow linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+      @keyframes grow { from { transform: scale(.88); border-radius: 48px; } to { transform: scale(1); border-radius: 32px; } }
+    }
+  }
+
+  section { padding: 120px 0 0; }
+  .sec-title { text-align: center; font-size: clamp(36px, 4.6vw, 56px); font-weight: 700; letter-spacing: -0.04em; line-height: 1.06; }
+  .sec-sub { text-align: center; margin: 14px auto 0; max-width: 44ch; color: var(--ink-3); font-size: 19px; }
+
+  /* Bento: 7 sistemas = 7 celdas, tamaños con ritmo */
+  .bento { margin-top: 56px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .tile { background: var(--parch); border-radius: 28px; padding: 36px; display: flex; flex-direction: column; min-height: 360px;
+          position: relative; overflow: hidden; transition: transform .5s var(--spring); }
+  .tile:hover { transform: translateY(-4px); }
+  .tile .eyebrow { font-size: 14px; font-weight: 600; color: var(--ink-3); display: flex; align-items: center; gap: 8px; }
+  .tile h3 { margin-top: 8px; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+  .tile p { margin-top: 12px; color: var(--ink-2); font-size: 16px; max-width: 42ch; }
+  .tile .figure { margin-top: auto; padding-top: 32px; }
+  .tile .big { font-size: clamp(48px, 6vw, 80px); font-weight: 700; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .tile .big-l { margin-top: 6px; font-size: 14px; color: var(--ink-3); }
+  .tile .more { margin-top: 18px; font-size: 16px; }
+  .t-a { grid-column: span 4; }
+  .t-b { grid-column: span 2; }
+  .t-c { grid-column: span 3; }
+  .t-d { grid-column: span 3; background: var(--inv-bg); color: var(--inv-ink); }
+  .t-d p { color: var(--inv-ink-2); }
+  .t-d .eyebrow, .t-d .big-l { color: var(--inv-ink-3); }
+  .t-d .link { color: var(--inv-link); }
+  .t-e, .t-f, .t-g { grid-column: span 2; min-height: 320px; }
+  .t-a { background: linear-gradient(160deg, var(--parch) 55%, var(--tint)); }
+  .live { width: 8px; height: 8px; border-radius: 50%; background: var(--live); }
+
+  /* Modalidades: comparación en 4 columnas, sin tarjetas */
+  .modes { margin-top: 56px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+  .mode { padding: 32px 24px 8px 0; }
+  .mode + .mode { padding-left: 24px; border-left: 1px solid var(--line); }
+  .mode h3 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
+  .mode p { margin-top: 10px; font-size: 15px; color: var(--ink-2); }
+  .mode ul { list-style: none; margin-top: 18px; font-size: 14px; color: var(--ink-3); }
+  .mode li { padding: 6px 0; border-top: 1px solid var(--line); }
+  .note { text-align: center; margin-top: 36px; font-size: 15px; color: var(--ink-3); }
+
+  /* Sobre mí: una frase grande que se lee de lejos */
+  .statement { max-width: 860px; margin: 0 auto; text-align: center; }
+  .statement blockquote { font-size: clamp(30px, 3.8vw, 46px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.15; }
+  /* Subrayador (de D4): barre la frase clave cuando el bloque entra en pantalla. Máximo 2 por página. */
+  mark { color: inherit; padding: 0 .08em; border-radius: 4px;
+         background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 88% / 0% 62%;
+         transition: background-size 1s var(--spring) .25s; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .in mark { background-size: 100% 62%; }
+  .about-cols { margin-top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .about-cols p { font-size: 16px; color: var(--ink-2); }
+  .about-cols h4 { font-size: 17px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+  .stats { margin-top: 72px; display: flex; justify-content: center; gap: 88px; flex-wrap: wrap; text-align: center; }
+  .stats .v { font-size: 56px; font-weight: 700; letter-spacing: -0.05em; }
+  .stats .l { font-size: 14px; color: var(--ink-3); }
+
+  /* Trayectoria */
+  .tl { margin: 56px auto 0; max-width: 820px; }
+  .tl-row { display: grid; grid-template-columns: 130px 1fr; gap: 24px; padding: 22px 0; border-top: 1px solid var(--line); }
+  .tl-row .when { font-size: 15px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .tl-row h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+  .tl-row .org { color: var(--ink-3); font-size: 15px; }
+  .tl-row p { margin-top: 6px; font-size: 15px; color: var(--ink-2); }
+
+  /* Contacto */
+  .contact { margin-top: 120px; background: var(--parch); padding: 112px 24px; text-align: center; }
+  .contact h2 { font-size: clamp(40px, 5.4vw, 64px); font-weight: 700; letter-spacing: -0.045em; line-height: 1.04; }
+  .contact p { margin: 18px auto 0; max-width: 46ch; font-size: 19px; color: var(--ink-2); }
+  footer { background: var(--parch); border-top: 1px solid var(--line); padding: 20px 24px 36px; font-size: 12px; color: var(--ink-3); }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0; }
+
+  /* Entradas con muelle, sin rebote: la página es tranquila */
+  .rise { opacity: 0; transform: translateY(32px); transition: opacity .9s var(--spring), transform .9s var(--spring); }
+  .rise.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .rise { opacity: 1; transform: none; transition: none; } .tile { transition: none; } mark { background-size: 100% 62%; transition: none; } }
+
+  @media (max-width: 860px) {
+    nav .links { display: none; }
+    nav .wrap { grid-template-columns: 1fr auto; }
+    .portrait figure { aspect-ratio: 4 / 5; }
+    .bento { grid-template-columns: 1fr; }
+    .tile[class*="t-"] { grid-column: auto; min-height: 0; padding: 28px; }
+    .modes { grid-template-columns: 1fr; }
+    .mode, .mode + .mode { padding: 24px 0; border-left: 0; border-top: 1px solid var(--line); }
+    .about-cols { grid-template-columns: 1fr; }
+    .stats { gap: 40px; }
+    .tl-row { grid-template-columns: 1fr; gap: 4px; }
+    section { padding-top: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="brand">David Ciro</a>
+    <div class="links"><a href="#systems">Systems</a><a href="#work">Work with me</a><a href="#about">About</a><a href="#experience">Experience</a></div>
+    <div class="right"><button class="theme" type="button" id="theme" aria-label="Toggle dark mode">◐</button><a href="#">ES</a><a href="#contact" class="link">Start a conversation</a></div>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <p class="kicker rise">AI automation engineer</p>
+  <h1 class="rise">Systems that keep running. On their own.</h1>
+  <p class="lede rise">I design, deploy and operate AI automation on my own infrastructure. Then I keep it running.</p>
+  <div class="ctas rise">
+    <a href="#systems" class="pill">See the systems</a>
+    <a href="#contact" class="link">Start a conversation</a>
+  </div>
+</header>
+
+<div class="portrait">
+  <figure><img src="assets/david-lg.jpg" alt="Portrait of David Ciro"></figure>
+  <figcaption>David Ciro. Medellín, Colombia. UTC-5, full overlap with US hours.</figcaption>
+</div>
+
+<section id="systems" class="wrap">
+  <h2 class="sec-title rise">Seven systems.<br>Four running right now.</h2>
+  <p class="sec-sub rise">Built, deployed and operated by me. No one watching them overnight.</p>
+
+  <div class="bento">
+    <article class="tile t-a rise">
+      <span class="eyebrow"><span class="live" aria-hidden="true"></span>Live · Case study</span>
+      <h3>galacticBills</h3>
+      <p>Send a photo or PDF of an invoice over a messaging channel. An LLM extracts the tax fields, validates the totals and files them. No manual data entry.</p>
+      <div class="figure"><div class="big" data-days="2025-09-24">0</div><div class="big-l">days in production</div><a href="d2-caso.html" class="link more">Read the case</a></div>
+    </article>
+    <article class="tile t-b rise">
+      <span class="eyebrow"><span class="live" aria-hidden="true"></span>Live · Case study</span>
+      <h3>beBetterStudio</h3>
+      <p>Generates short video and carousels, publishes them and measures what worked.</p>
+      <div class="figure"><div class="big">4</div><div class="big-l">networks, published on a schedule</div><a href="#" class="link more">Read the case</a></div>
+    </article>
+    <article class="tile t-c rise">
+      <span class="eyebrow">Case study</span>
+      <h3>Taxi Dispatch Platform</h3>
+      <p>QA and fixes for a dispatch platform in production in Colombia. Every issue filed with its cause, its fix and how to verify it.</p>
+      <div class="figure"><div class="big">7</div><div class="big-l">test circuits, automated SQL and browser harness</div><a href="#" class="link more">Read the case</a></div>
+    </article>
+    <article class="tile t-d rise">
+      <span class="eyebrow"><span class="live" aria-hidden="true"></span>Live</span>
+      <h3>Conversational Commerce Engine</h3>
+      <p>A multi-product sales engine over an official WhatsApp BSP. Conversational AI, voice transcription, payment-receipt validation and follow-up windows.</p>
+      <div class="figure"><div class="big" style="font-size:clamp(36px,4vw,52px);letter-spacing:-0.04em">Configuration,<br>not a rewrite.</div><div class="big-l">How a new product launches on the engine</div></div>
+    </article>
+    <article class="tile t-e rise">
+      <span class="eyebrow"><span class="live" aria-hidden="true"></span>Live</span>
+      <h3>LinkedIn Publisher</h3>
+      <p>Curates AI news, drafts the post, waits for my approval on Telegram.</p>
+      <div class="figure"><div class="big">14</div><div class="big-l">sources curated</div></div>
+    </article>
+    <article class="tile t-f rise">
+      <span class="eyebrow">Programmatic video</span>
+      <h3>SignalFactory</h3>
+      <p>Renders vertical videos from a database with Remotion and headless Chrome.</p>
+      <div class="figure"><div class="big">2×2</div><div class="big-l">YouTube channels, two languages</div></div>
+    </article>
+    <article class="tile t-g rise">
+      <span class="eyebrow">Local-first app</span>
+      <h3>ciro_finanzas</h3>
+      <p>How much money will I have on a given date. Pure Dart domain.</p>
+      <div class="figure"><div class="big">182</div><div class="big-l">tests green</div></div>
+    </article>
+  </div>
+</section>
+
+<section id="work" class="wrap">
+  <h2 class="sec-title rise">Four ways to work together.</h2>
+  <div class="modes">
+    <div class="mode rise"><h3>Fixed-scope project</h3><p>A system you have in mind, delivered and documented, ready to run without me.</p><ul><li>Defined scope</li><li>End-to-end delivery</li><li>Documented handover</li></ul></div>
+    <div class="mode rise"><h3>Monthly retainer</h3><p>Ongoing capacity for automation already in production, including the maintenance nobody has time for.</p><ul><li>Monthly hours</li><li>Operations included</li><li>Async communication</li></ul></div>
+    <div class="mode rise"><h3>Team augmentation</h3><p>I join your team for a sprint or a quarter, inside your repo, board and review flow.</p><ul><li>Your process</li><li>UTC-5 overlap</li><li>Sprint-based</li></ul></div>
+    <div class="mode rise"><h3>Technical audit</h3><p>Evidence-backed findings on what breaks silently and what won’t survive a second client.</p><ul><li>Evidence-backed</li><li>Prioritised report</li><li>Short turnaround</li></ul></div>
+  </div>
+  <p class="note rise">No public rates. You get a number in my first reply.</p>
+</section>
+
+<section id="about" class="wrap">
+  <div class="statement">
+    <blockquote class="rise">Most of what I build starts as a pilot and becomes a platform. <mark>Knowing what not to make configurable</mark> is the part nobody can improvise.</blockquote>
+  </div>
+  <div class="about-cols">
+    <div class="rise"><h4>Systems, not prototypes</h4><p>Bots handling conversations over an official WhatsApp provider, pipelines publishing on a schedule, workflows filing invoices every day.</p></div>
+    <div class="rise"><h4>Async-first</h4><p>Slack, Notion, pull requests and written documentation. UTC-5 overlaps the entire US working day.</p></div>
+    <div class="rise"><h4>My own infrastructure</h4><p>AWS EC2 behind nginx, Docker and self-hosted n8n. I don’t need anyone else to deploy what I build.</p></div>
+  </div>
+  <div class="stats">
+    <div class="rise"><div class="v">5</div><div class="l">systems shipped to production</div></div>
+    <div class="rise"><div class="v">2020</div><div class="l">building since</div></div>
+    <div class="rise"><div class="v">UTC-5</div><div class="l">full overlap with US hours</div></div>
+  </div>
+</section>
+
+<section id="experience" class="wrap">
+  <h2 class="sec-title rise">Experience</h2>
+  <div class="tl">
+    <div class="tl-row rise"><span class="when">Since 2025</span><div><h3>Co-founder, Product &amp; Infrastructure</h3><span class="org">Galactic AIMA</span><p>The self-hosted n8n on AWS EC2 the whole team runs on, provisioned with Terraform and reached through SSM.</p></div></div>
+    <div class="tl-row rise"><span class="when">Since 2022</span><div><h3>Freelance Developer &amp; UI Designer</h3><span class="org">Independent</span><p>Digital products for clients in Latin America and Spain.</p></div></div>
+    <div class="tl-row rise"><span class="when">Since 2020</span><div><h3>Visual &amp; Motion Designer</h3><span class="org">Own projects</span><p>Identities and motion graphics. Where my design judgement comes from.</p></div></div>
+    <div class="tl-row rise"><span class="when">2020-2024</span><div><h3>Software Development Degree</h3><span class="org">Institución Universitaria Pascual Bravo</span></div></div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <h2 class="rise">Let’s build the next one.</h2>
+  <p class="rise">Tell me what you need running. I reply in writing, with questions, a rough plan and a number.</p>
+  <div class="ctas rise">
+    <a href="mailto:davidcirortiz06@gmail.com" class="pill">Start a conversation</a>
+    <a href="https://www.linkedin.com/in/david-ciro" class="link">LinkedIn</a>
+  </div>
+</section>
+<footer><div class="wrap"><span>David Ciro · davidcirortiz06@gmail.com</span><span>English · Español</span></div></footer>
+
+<script>
+  // Botón de tema: alterna respecto a lo que se ve ahora y lo recuerda
+  document.getElementById('theme').addEventListener('click', () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+  });
+
+  // Entradas al ver la sección
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const sibs = [...e.target.parentElement.children];
+    e.target.style.transitionDelay = Math.min(sibs.indexOf(e.target), 5) * 70 + 'ms';
+    e.target.classList.add('in'); io.unobserve(e.target);
+  }), { threshold: 0.12 });
+  document.querySelectorAll('.rise').forEach(el => io.observe(el));
+
+  // Los días en producción cuentan hasta el valor real cuando el tile aparece
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-days]').forEach(el => {
+    const target = Math.floor((Date.now() - new Date(el.dataset.days + 'T00:00:00-05:00')) / 864e5);
+    if (reduce) { el.textContent = target; return; }
+    new IntersectionObserver(([e], o) => {
+      if (!e.isIntersecting) return; o.disconnect();
+      const t0 = performance.now(), dur = 1400;
+      const step = t => { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4)));
+                          if (p < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }, { threshold: 0.5 }).observe(el);
+  });
+</script>
+</body>
+</html>

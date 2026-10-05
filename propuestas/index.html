@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ciroFolio · Propuestas de dirección</title>
+<style>
+  :root { --bg:#f4f4f2; --ink:#1c1c1c; --ink-2:#555; --line:#ddd; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font: 400 15px/1.55 system-ui, sans-serif; padding: 48px 24px 80px; }
+  .wrap { max-width: 1320px; margin: 0 auto; }
+  h1 { font-size: 30px; letter-spacing: -0.02em; }
+  .brief { margin-top: 12px; color: var(--ink-2); max-width: 90ch; }
+  .grid { margin-top: 36px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .preview { position: relative; height: 380px; overflow: hidden; border-bottom: 1px solid var(--line); background: #eee; }
+  .preview iframe { width: 1440px; height: 1400px; border: 0; transform: scale(.44); transform-origin: 0 0; pointer-events: none; }
+  .body { padding: 22px 24px 24px; display: grid; gap: 12px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  h2 { font-size: 20px; letter-spacing: -0.01em; }
+  .open { font-weight: 600; color: #0b57d0; text-decoration: none; white-space: nowrap; }
+  .open:hover { text-decoration: underline; }
+  .concept { font-size: 16px; }
+  dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; font-size: 14px; }
+  dt { color: var(--ink-2); }
+  .sw { display: inline-flex; gap: 4px; vertical-align: middle; margin-right: 6px; }
+  .sw i { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(0,0,0,.12); display: inline-block; }
+  .fit { font-size: 14px; padding: 10px 12px; background: #f7f7f5; border-radius: 8px; }
+  .fit b { display: block; margin-bottom: 2px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .preview { height: 260px; } .preview iframe { transform: scale(.26); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ciroFolio · cuatro direcciones</h1>
+  <p class="brief">Brief: <b>fiable y sobrio, una persona que disfruta su trabajo y lo hace bien</b>. Lector de negocio y técnico por igual. Familias elegidas: producto tech pulido y luminoso premium. Movimiento con intención. Se conserva solo la foto. Todo el contenido es real (src/data), en inglés porque es la versión que ve el cliente, y sin rayas largas en el copy.</p>
+
+  <div class="grid">
+    <article class="card">
+      <div class="preview"><iframe src="d1-sala-de-maquinas.html" title="Vista previa D1" loading="lazy"></iframe></div>
+      <div class="body">
+        <div class="head"><h2>D1 · Sala de máquinas</h2><a class="open" href="d1-sala-de-maquinas.html">Abrir →</a></div>
+        <p class="concept">El sitio es un panel de operación: cada sistema vivo cuenta su tiempo en producción en tiempo real.</p>
+        <dl>
+          <dt>Referencias</dt><dd>Linear (casi negro, hairlines, un acento), Raycast/Vercel (mono para datos)</dd>
+          <dt>Paleta</dt><dd><span class="sw"><i style="background:#0c0d10"></i><i style="background:#14161a"></i><i style="background:#eef0f3"></i><i style="background:#a3a9b4"></i><i style="background:#3ecf8e"></i></span>verde solo para "en producción" · 9.7:1</dd>
+          <dt>Tipografía</dt><dd>Geist + Geist Mono</dd>
+          <dt>Movimiento</dt><dd>Reloj de uptime que avanza cada segundo, ping solo en el punto de estado, líneas que se trazan</dd>
+        </dl>
+        <p class="fit"><b>Encaja</b>Muy técnico y creíble para el CTO. <b style="margin-top:6px">Riesgo</b>Es la más cercana al sitio actual (oscuro) y la menos cálida; el lado humano queda en segundo plano.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="preview"><iframe src="d2-galeria.html" title="Vista previa D2" loading="lazy"></iframe></div>
+      <div class="body">
+        <div class="head"><h2>D2 · Galería</h2><span><a class="open" href="d2-galeria.html?theme=light">Claro →</a> &nbsp; <a class="open" href="d2-galeria.html?theme=dark">Oscuro →</a> &nbsp; <a class="open" href="d2-caso.html">Caso →</a> &nbsp; <a class="open" href="d2-404.html">404 →</a></span></div>
+        <p class="concept">Cada sistema es una pieza de exposición con una sola cifra real como protagonista; tu foto abre la página.</p>
+        <dl>
+          <dt>Referencias</dt><dd>Apple (blanco y pergamino, azul de acción, tiles de museo, la foto manda)</dd>
+          <dt>Paleta</dt><dd><span class="sw"><i style="background:#fff"></i><i style="background:#f5f5f7"></i><i style="background:#1d1d1f"></i><i style="background:#6e6e73"></i><i style="background:#0066cc"></i></span>azul de acción · 5.6:1</dd>
+          <dt>Tipografía</dt><dd>Plus Jakarta Sans (un solo sistema, tracking por tamaño)</dd>
+          <dt>Movimiento</dt><dd>La foto crece con el scroll, tiles con muelle sin rebote, los días en producción cuentan hasta su valor</dd>
+        </dl>
+        <p class="fit"><b>Encaja</b>La que mejor sirve al lector de negocio: se entiende en 5 segundos y se siente premium. <b style="margin-top:6px">Riesgo</b>El lenguaje Apple es muy reconocible; hay que ganarle identidad propia para que no parezca prestado.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="preview"><iframe src="d3-plano.html" title="Vista previa D3" loading="lazy"></iframe></div>
+      <div class="body">
+        <div class="head"><h2>D3 · Plano</h2><a class="open" href="d3-plano.html">Abrir →</a></div>
+        <p class="concept">La arquitectura es el héroe: un diagrama vivo dibuja la frontera entre lo configurable y lo fijo por diseño.</p>
+        <dl>
+          <dt>Referencias</dt><dd>Stripe (navy, display ligera, cifras tabulares, banda oscura de datos), Vercel (mono técnica)</dd>
+          <dt>Paleta</dt><dd><span class="sw"><i style="background:#f6f8fa"></i><i style="background:#fff"></i><i style="background:#0f1f33"></i><i style="background:#56667b"></i><i style="background:#c2410c"></i></span>naranja quemado · 5.2:1</dd>
+          <dt>Tipografía</dt><dd>Hanken Grotesk (300/500) + JetBrains Mono</dd>
+          <dt>Movimiento</dt><dd>Mensajes recorriendo el diagrama, conexiones que se trazan, contadores en la banda navy</dd>
+        </dl>
+        <p class="fit"><b>Encaja</b>Sirve a los dos lectores a la vez: titular claro arriba, criterio senior en el diagrama. Es la única que muestra tu tesis ("sé dónde está la frontera") en vez de decirla. <b style="margin-top:6px">Riesgo</b>Exige un diagrama por caso, mantenido a mano.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="preview"><iframe src="d4-taller.html" title="Vista previa D4" loading="lazy"></iframe></div>
+      <div class="body">
+        <div class="head"><h2>D4 · Taller</h2><a class="open" href="d4-taller.html">Abrir →</a></div>
+        <p class="concept">Una carta en primera persona y una bitácora: cada sistema es una entrada fechada que sigue encendida.</p>
+        <dl>
+          <dt>Referencias</dt><dd>Notion (documento de una columna, toggles, calma monocroma)</dd>
+          <dt>Paleta</dt><dd><span class="sw"><i style="background:#fbfbfa"></i><i style="background:#f3f2ef"></i><i style="background:#2f3437"></i><i style="background:#6f6e6b"></i><i style="background:#ffe066"></i></span>subrayador · texto encima 9.7:1</dd>
+          <dt>Tipografía</dt><dd>Instrument Sans + IBM Plex Mono</dd>
+          <dt>Movimiento</dt><dd>El subrayador barre las frases clave al leerlas, entradas de la bitácora una a una, toggles</dd>
+        </dl>
+        <p class="fit"><b>Encaja</b>La más humana y honesta, alineada con async-first y escritura. <b style="margin-top:6px">Riesgo</b>La más silenciosa: puede leerse como blog personal y no como proveedor contratable.</p>
+      </div>
+    </article>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D4 · Taller</title>
+<!--
+  DIRECCIÓN 4 · TALLER
+  Referencias: Notion (documento de una columna, toggles, calma monocroma), Apple (tipografía con tracking por tamaño).
+  Motivo propio: el subrayador y la bitácora. Una persona que escribe en primera persona y lleva el registro de lo que pone en marcha.
+  Mockup estático: no forma parte del sitio Astro.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfbfa;
+    --card: #f3f2ef;
+    --ink: #2f3437;      /* 12.2:1 */
+    --ink-2: #4b5054;    /*  7.9:1 */
+    --ink-3: #6f6e6b;    /*  4.9:1 (4.55:1 sobre card) */
+    --line: #e7e5e1;
+    --mark: #ffe066;     /* subrayador · texto encima a 9.7:1 */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { background: var(--bg); color: var(--ink); font: 400 18px/1.65 var(--sans); }
+  a { color: inherit; }
+  .doc { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  nav { max-width: 1080px; margin: 0 auto; padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+  nav .brand { font-weight: 600; text-decoration: none; }
+  nav .r { display: flex; gap: 24px; color: var(--ink-2); }
+  nav .r a { text-decoration: none; }
+  nav .r a:hover { color: var(--ink); }
+
+  /* Subrayador: entra barriendo cuando la frase aparece */
+  mark { background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 85% / 0% 62%; color: inherit;
+         padding: 0 2px; transition: background-size 1s var(--ease) .25s; }
+  .in mark, mark.in { background-size: 100% 62%; }
+
+  header.intro { padding: 72px 0 40px; }
+  .portrait { width: 132px; height: 132px; border-radius: 22px; object-fit: cover; object-position: 50% 35%; display: block;
+              box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 12px 32px -14px rgba(47,52,55,.35); }
+  h1 { margin-top: 36px; font-size: clamp(38px, 5.4vw, 54px); line-height: 1.08; letter-spacing: -0.035em; font-weight: 600; }
+  .intro p.lead { margin-top: 20px; font-size: 21px; line-height: 1.55; color: var(--ink-2); }
+  .meta { margin-top: 18px; font-size: 14px; color: var(--ink-3); }
+  .ctas { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 8px; font: 500 16px var(--sans);
+         text-decoration: none; transition: transform .15s var(--ease), background .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn-ink { background: var(--ink); color: var(--bg); }
+  .btn-ink:hover { background: #1f2325; }
+  .btn-soft { background: var(--card); color: var(--ink); }
+  .btn-soft:hover { background: #ebe9e5; }
+
+  section { padding-top: 72px; }
+  h2 { font-size: 30px; letter-spacing: -0.025em; font-weight: 600; line-height: 1.2; }
+  h2 + p { margin-top: 10px; color: var(--ink-2); }
+  p + p { margin-top: 16px; }
+
+  /* Bitácora: cada sistema vivo es una entrada con fecha */
+  .log { margin-top: 28px; position: relative; }
+  .log::before { content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px; background: var(--line); }
+  .entry { position: relative; padding: 0 0 30px 36px; }
+  .entry::before { content: ""; position: absolute; left: 3px; top: 9px; width: 9px; height: 9px; border-radius: 50%;
+                   background: var(--bg); border: 1.5px solid var(--ink); }
+  .entry.live::before { background: var(--mark); border-color: var(--ink); }
+  .entry .date { font-size: 13px; color: var(--ink-3); }
+  .entry h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin-top: 2px; }
+  .entry p { font-size: 17px; color: var(--ink-2); margin-top: 6px; }
+  .entry .since { display: inline-block; margin-top: 10px; font-size: 13px; background: var(--card); padding: 3px 10px; border-radius: 6px; color: var(--ink-2); }
+  .entry .since b { color: var(--ink); font-weight: 500; }
+
+  /* Casos: enlaces de página, como en un documento */
+  .pages { margin-top: 24px; display: grid; gap: 10px; }
+  .page { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 18px 20px; background: var(--card); border-radius: 12px;
+          text-decoration: none; transition: background .2s, transform .3s var(--ease); }
+  .page:hover { background: #ebe9e5; transform: translateX(4px); }
+  .page b { font-size: 18px; font-weight: 600; }
+  .page span { grid-column: 1; font-size: 15px; color: var(--ink-3); }
+  .page i { grid-row: 1 / 3; grid-column: 2; align-self: center; font-style: normal; color: var(--ink-3); }
+
+  .also { margin-top: 28px; font-size: 16px; color: var(--ink-2); }
+  .also li { list-style: none; padding: 12px 0; border-top: 1px solid var(--line); }
+  .also li b { color: var(--ink); font-weight: 600; }
+
+  /* Modalidades como toggles: se abren si te interesan */
+  details { border-top: 1px solid var(--line); }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary { list-style: none; cursor: pointer; padding: 18px 0; display: flex; justify-content: space-between; align-items: baseline; font-weight: 600; font-size: 19px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font-weight: 400; color: var(--ink-3); transition: transform .3s var(--ease); }
+  details[open] summary::after { transform: rotate(45deg); }
+  summary small { font: 400 13px var(--mono); color: var(--ink-3); margin-left: auto; margin-right: 16px; }
+  details p { padding: 0 0 20px; color: var(--ink-2); font-size: 17px; }
+  .modes { margin-top: 24px; }
+
+  .tl { margin-top: 24px; }
+  .tl div { display: grid; grid-template-columns: 120px 1fr; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 16px; }
+  .tl .when { color: var(--ink-3); font-size: 14px; padding-top: 2px; }
+  .tl b { font-weight: 600; }
+  .tl span.org { color: var(--ink-3); }
+
+  .sign { margin: 96px 0 0; padding: 40px; background: var(--card); border-radius: 18px; }
+  .sign h2 { font-size: 34px; }
+  .sign .ctas { margin-top: 24px; }
+  .sign .who { display: flex; align-items: center; gap: 12px; margin-top: 28px; font-size: 15px; color: var(--ink-3); }
+  .sign .who img { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+  footer { padding: 40px 24px 56px; text-align: center; font-size: 14px; color: var(--ink-3); }
+  footer a { text-decoration: none; margin: 0 10px; }
+  footer a:hover { color: var(--ink); }
+
+  .fade { opacity: 0; transform: translateY(10px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .fade.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .fade { opacity: 1; transform: none; transition: none; }
+    mark { background-size: 100% 62%; transition: none; }
+    .page, summary::after { transition: none; }
+  }
+  @media (max-width: 640px) {
+    nav .r a:not(:last-child) { display: none; }
+    .doc { padding: 0 16px; }
+    .tl div { grid-template-columns: 1fr; gap: 2px; }
+    .sign { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="brand">David Ciro</a>
+  <div class="r"><a href="#running">Running</a><a href="#work">Work with me</a><a href="#about">About</a><a href="#">ES</a></div>
+</nav>
+
+<main class="doc">
+  <header class="intro">
+    <img class="portrait fade" src="assets/david.jpg" alt="David Ciro">
+    <h1 class="fade">Hi, I’m David. I build AI automation that runs in production.</h1>
+    <p class="lead fade">Conversational commerce, document extraction and content pipelines. I design them, deploy them on my own infrastructure, <mark>and I keep them running.</mark></p>
+    <p class="meta mono fade">Medellín, Colombia · UTC-5 · async-first</p>
+    <div class="ctas fade">
+      <a href="#contact" class="btn btn-ink">Start a conversation</a>
+      <a href="#running" class="btn btn-soft">See what’s running</a>
+    </div>
+  </header>
+
+  <section id="running">
+    <h2 class="fade">What’s running right now</h2>
+    <p class="fade">A log of the systems I put into production. Each one is still on, with no one watching it.</p>
+    <div class="log" id="log"></div>
+  </section>
+
+  <section id="cases">
+    <h2 class="fade">Written up in detail</h2>
+    <p class="fade">Architecture, decisions and numbers, including the ones that went wrong.</p>
+    <div class="pages">
+      <a href="#" class="page fade"><b>galacticBills</b><span>Invoices read by an LLM, validated and filed. Data isolation is the red line.</span><i>→</i></a>
+      <a href="#" class="page fade"><b>beBetterStudio</b><span>My own product was sinking. Median reach went from 3,840 to 385. How I found out why.</span><i>→</i></a>
+      <a href="#" class="page fade"><b>Taxi Dispatch Platform</b><span>Seven test circuits on a platform already in production.</span><i>→</i></a>
+    </div>
+    <ul class="also fade">
+      <li><b>SignalFactory.</b> Programmatic vertical video with Remotion, published to two YouTube channels in two languages.</li>
+      <li><b>ciro_finanzas.</b> A local-first app that projects how much money you’ll have on a given date. 182 tests green.</li>
+    </ul>
+  </section>
+
+  <section id="about">
+    <h2 class="fade">How I think about it</h2>
+    <p class="fade">Most of what I’ve built started as a pilot for one case and became a configurable platform. That transition is where the interesting decisions are: what becomes configuration, and what stays put.</p>
+    <p class="fade"><mark>Sales safeguards and payment validation don’t belong in a config file.</mark> Knowing where that line sits is the part nobody can improvise.</p>
+    <p class="fade">I work async-first, in Slack, Notion, pull requests and written docs. UTC-5 overlaps the whole US working day. And I run my own infrastructure, AWS EC2 behind nginx with Docker and self-hosted n8n, so I don’t need anyone else to deploy what I build.</p>
+  </section>
+
+  <section id="work">
+    <h2 class="fade">Ways to work together</h2>
+    <p class="fade">No public rates. You get a number in my first reply.</p>
+    <div class="modes fade">
+      <details open><summary>Fixed-scope project <small>scope · build · handover</small></summary><p>You have a system in mind and want it delivered. I scope it, build it, deploy it and hand it over documented, with everything it needs to run without me.</p></details>
+      <details><summary>Monthly retainer <small>hours · operations</small></summary><p>Ongoing capacity for automation in production: new workflows, integrations, incident triage, and the maintenance nobody has time for. Expiring tokens, provider API changes, silent failures.</p></details>
+      <details><summary>Team augmentation <small>sprint · quarter</small></summary><p>I join your team for a sprint or a quarter and work inside your process: your repo, your board, your review flow.</p></details>
+      <details><summary>Technical audit <small>evidence · report</small></summary><p>A review of the automation you already run, with findings backed by evidence: what breaks silently, what has no error path, what won’t survive a second client.</p></details>
+    </div>
+  </section>
+
+  <section id="experience">
+    <h2 class="fade">Before this</h2>
+    <div class="tl fade">
+      <div><span class="when mono">2025-now</span><span><b>Co-founder, Product &amp; Infrastructure</b> <span class="org">at Galactic AIMA</span></span></div>
+      <div><span class="when mono">2022-now</span><span><b>Freelance developer and UI designer</b> <span class="org">for clients in Latin America and Spain</span></span></div>
+      <div><span class="when mono">2020-now</span><span><b>Visual and motion designer</b> <span class="org">where my eye for detail comes from</span></span></div>
+      <div><span class="when mono">2020-2024</span><span><b>Software Development Degree</b> <span class="org">Pascual Bravo</span></span></div>
+    </div>
+  </section>
+
+  <aside class="sign fade" id="contact">
+    <h2>Tell me what you need running.</h2>
+    <p style="margin-top:10px;color:var(--ink-2)">A short message is enough. I reply in writing, with questions, a rough plan and a number.</p>
+    <div class="ctas">
+      <a href="mailto:davidcirortiz06@gmail.com" class="btn btn-ink">Start a conversation</a>
+      <a href="https://www.linkedin.com/in/david-ciro" class="btn btn-soft">LinkedIn</a>
+    </div>
+    <div class="who"><img src="assets/david.jpg" alt=""><span>David Ciro · davidcirortiz06@gmail.com</span></div>
+  </aside>
+</main>
+
+<footer><a href="https://github.com/Davidciro-333">GitHub</a><a href="https://www.linkedin.com/in/david-ciro">LinkedIn</a><a href="#">Español</a></footer>
+
+<script>
+  const log = [
+    { date:'2026-07-30', name:'LinkedIn Publisher', d:'The editorial pipeline behind my own LinkedIn. Curates AI news from 14 sources, drafts the post and waits for my approval on Telegram before publishing.' },
+    { date:'2026-07-16', name:'Conversational Commerce Engine', d:'A multi-product sales engine over an official WhatsApp BSP. Launching a new product is configuration, not a rewrite.' },
+    { date:'2026-04-18', name:'beBetterStudio', d:'Generates short video and carousels, publishes them to four networks on a schedule and measures what actually worked.' },
+    { date:'2025-09-24', name:'galacticBills', d:'Send a photo or PDF of an invoice. An LLM extracts the tax fields, validates the totals and files them.' },
+  ];
+  const days = iso => Math.floor((Date.now() - new Date(iso + 'T00:00:00-05:00')) / 864e5);
+  const fmt = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  document.getElementById('log').innerHTML = log.map(e => `
+    <div class="entry live fade">
+      <div class="date mono">${fmt(e.date)} · went live</div>
+      <h3>${e.name}</h3>
+      <p>${e.d}</p>
+      <span class="since mono">running for <b>${days(e.date)} days</b></span>
+    </div>`).join('');
+
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const sibs = [...e.target.parentElement.children];
+    e.target.style.transitionDelay = Math.min(sibs.indexOf(e.target), 4) * 80 + 'ms';
+    e.target.classList.add('in'); io.unobserve(e.target);
+  }), { threshold: .2 });
+  document.querySelectorAll('.fade, mark').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
