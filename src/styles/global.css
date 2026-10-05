@@ -1,145 +1,109 @@
 /* ─────────────────────────────────────────────────────────
-   CIROFOLIO — Global Styles
+   CIROFOLIO · "Galería"
    ─────────────────────────────────────────────────────────
-   Estructura:
-   1. @font-face   — Nohemi (en src/assets/fonts, procesada por Vite
-                     con rutas relativas para que respete `base`)
-   2. CSS tokens   — variables globales
-   3. Base reset   — box-model, scroll, selección
-   4. Typography   — clases reutilizables
-   5. Components   — cards, botones, separadores
-   6. Animations   — keyframes globales
+   La dirección visual vive en /DESIGN.md. Este archivo es su
+   traducción a CSS: si algo aquí contradice DESIGN.md, manda
+   DESIGN.md y se corrige aquí.
+
+   1. Tokens       — claro por defecto, oscuro automático o elegido
+   2. Base         — reset, tipografía, foco, selección
+   3. Componentes  — contenedor, botones, enlaces, tiles, subrayador
+   4. Movimiento   — entradas al ver, y su versión reducida
    ───────────────────────────────────────────────────────── */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── 1. FUENTES ─────────────────────────────────────────── */
-@font-face {
-  font-family: 'Nohemi';
-  src: url('../assets/fonts/Nohemi-Thin.woff') format('woff');
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nohemi';
-  src: url('../assets/fonts/Nohemi-Light.woff') format('woff');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nohemi';
-  src: url('../assets/fonts/Nohemi-Regular.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nohemi';
-  src: url('../assets/fonts/Nohemi-Medium.woff2') format('woff2'),
-       url('../assets/fonts/Nohemi-Medium.woff') format('woff');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nohemi';
-  src: url('../assets/fonts/Nohemi-SemiBold.woff') format('woff');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nohemi';
-  src: url('../assets/fonts/Nohemi-Bold.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nohemi';
-  /* Falta el .woff2 de este peso — el que había pesaba 4 bytes y estaba
-     corrupto. Descargar el woff2 real de Fontshare cuando se pueda: es el
-     peso más usado del sitio (display uppercase). */
-  src: url('../assets/fonts/Nohemi-ExtraBold.woff') format('woff');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nohemi';
-  src: url('../assets/fonts/Nohemi-Black.woff') format('woff');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
 
-
-/* Inter desde Google Fonts — añadir en <head> del Layout:
-   <link rel="preconnect" href="https://fonts.googleapis.com">
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-*/
-
-
-/* ── 2. CSS TOKENS ──────────────────────────────────────── */
+/* ── 1. TOKENS ──────────────────────────────────────────────
+   Contrastes WCAG calculados contra su fondo real (no a ojo).
+   `pnpm check:contrast` los vuelve a comprobar en cada build. */
 :root {
-  /* Colores */
-  --color-base:        #0a0a0c;
-  --color-surface:     #111115;
-  --color-surface-2:   #181820;
-  --color-neon:        #c8f135;
-  --color-neon-dim:    #a0c020;
-  --color-white:       #ffffff;
+  --bg:         #ffffff;
+  --parch:      #f5f5f7;
+  --ink:        #1d1d1f;   /* 16.8:1 sobre --bg */
+  --ink-2:      #424245;   /*  9.2:1 sobre --parch */
+  --ink-3:      #6e6e73;   /*  4.7:1 sobre --parch · también líneas del diagrama */
+  --line:       #e0e0e3;   /* hairlines decorativas, nunca portan significado */
+  --blue:       #0066cc;   /*  5.6:1 · el único acento */
+  --pill-bg:    #0066cc;   /* blanco encima 5.6:1 */
+  --pill-hover: #0071e3;
+  --mark:       #cfe3fa;   /* subrayador · --ink encima 12.8:1 */
+  --live:       #1f9d55;   /* solo el punto "Live", siempre con su palabra */
+  --tint:       #e8f1fb;   /* único degradado: la esquina del tile principal */
+  --nav-bg:     rgba(255, 255, 255, 0.72);
+  /* Tile invertido: siempre el polo opuesto de la página */
+  --inv-bg:     #1d1d1f;
+  --inv-ink:    #f5f5f7;   /* 15.5:1 */
+  --inv-ink-2:  #c7c7cc;
+  --inv-ink-3:  #a1a1a6;
+  --inv-link:   #2997ff;   /*  5.6:1 */
+  --photo-dim:  1;
 
-  /* Texto sobre SUPERFICIE OSCURA (--color-surface #111115).
-     Los ratios son contraste WCAG contra ese fondo; el mínimo AA para
-     texto normal es 4.5:1. Verificado por cálculo, no a ojo. */
-  --color-text-primary:   #ffffff;  /* 18.84:1 */
-  --color-text-secondary: #9999a8;  /*  6.71:1 */
-  --color-text-muted:     #7c7c92;  /*  4.62:1 — antes #555560, que daba 2.56:1 y no cumplía */
-  --color-text-faint:     #606070;  /*  3.05:1 — SOLO decorativo grande o UI, nunca texto de lectura */
+  --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --spring: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* Texto sobre SUPERFICIE CLARA (tarjetas blancas de Sobre mí y Experiencia).
-     Los tokens de arriba no sirven aquí: aclarar un gris para que funcione
-     sobre oscuro lo rompe sobre blanco. Un token por superficie, no uno solo
-     estirado hasta que falla en los dos lados. */
-  --color-on-light-primary:   #0a0a0c;  /* 19.78:1 */
-  --color-on-light-secondary: #555560;  /*  7.36:1 */
-  --color-on-light-muted:     #6b6b7a;  /*  5.24:1 */
-  --color-on-light-faint:     #9292a0;  /*  3.07:1 — pareja clara de text-faint:
-                                           decorativo grande (el año de marca de
-                                           agua), nunca texto de lectura. */
+  --wrap: 1120px;
+  --gutter: 24px;
+  --section: 120px;
 
-  /* Bordes */
-  --color-border-dark:  rgba(255, 255, 255, 0.07);
-  --color-border-mid:   rgba(255, 255, 255, 0.12);
-  --color-border-light: rgba(0, 0, 0, 0.08);
+  color-scheme: light;
+}
 
-  /* Tipografía */
-  --font-display: 'Nohemi', 'Arial Black', sans-serif;
-  --font-body:    'Inter', system-ui, sans-serif;
+/* Oscuro elegido a mano. Los mismos valores se repiten abajo para el oscuro
+   del sistema: CSS no deja compartir un bloque entre un selector y una media
+   query, y un mixin de Sass no compensa por un solo bloque. */
+:root[data-theme='dark'] {
+  --bg:         #0a0a0b;
+  --parch:      #1c1c1e;
+  --ink:        #f5f5f7;   /* 18.2:1 */
+  --ink-2:      #c7c7cc;   /* 10.1:1 sobre --parch */
+  --ink-3:      #98989d;   /*  5.9:1 sobre --parch */
+  --line:       #2c2c2e;
+  --blue:       #2997ff;   /*  6.6:1 */
+  --pill-bg:    #0071e3;   /* blanco encima 4.7:1 — #2997ff con blanco da 3.0:1 */
+  --pill-hover: #0077ed;
+  --mark:       #173a63;   /* --ink encima 10.6:1 */
+  --live:       #30d158;
+  --tint:       #10223a;
+  --nav-bg:     rgba(10, 10, 11, 0.72);
+  --inv-bg:     #f5f5f7;
+  --inv-ink:    #1d1d1f;
+  --inv-ink-2:  #424245;
+  --inv-ink-3:  #6e6e73;
+  --inv-link:   #0066cc;   /*  5.1:1 */
+  --photo-dim:  0.88;      /* la foto, tomada a pleno día, no deslumbra */
+  color-scheme: dark;
+}
 
-  /* Espaciado de secciones */
-  --section-gap:    12px;   /* gap entre cards de sección */
-  --section-pad-x:  clamp(16px, 4vw, 40px);
-  --section-pad-y:  clamp(24px, 4vw, 40px);
-
-  /* Radius */
-  --radius-card:    20px;
-  --radius-card-sm: 14px;
-  --radius-btn:     99px;
-  --radius-tag:     6px;
-
-  /* Transiciones */
-  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg:         #0a0a0b;
+    --parch:      #1c1c1e;
+    --ink:        #f5f5f7;
+    --ink-2:      #c7c7cc;
+    --ink-3:      #98989d;
+    --line:       #2c2c2e;
+    --blue:       #2997ff;
+    --pill-bg:    #0071e3;
+    --pill-hover: #0077ed;
+    --mark:       #173a63;
+    --live:       #30d158;
+    --tint:       #10223a;
+    --nav-bg:     rgba(10, 10, 11, 0.72);
+    --inv-bg:     #f5f5f7;
+    --inv-ink:    #1d1d1f;
+    --inv-ink-2:  #424245;
+    --inv-ink-3:  #6e6e73;
+    --inv-link:   #0066cc;
+    --photo-dim:  0.88;
+    color-scheme: dark;
+  }
 }
 
 
-/* ── 3. BASE RESET ──────────────────────────────────────── */
+/* ── 2. BASE ────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -152,359 +116,205 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  text-size-adjust: 100%;
 }
 
 body {
-  background-color: var(--color-base);
-  color: var(--color-text-primary);
-  font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.65;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
   overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* Selección de texto con acento neon */
+/* Las anclas (#systems, #contact…) no quedan tapadas por el nav fijo de 52 px */
+[id] { scroll-margin-top: 72px; }
+
+/* Superficies del navegador que también son diseño */
+html { accent-color: var(--blue); caret-color: var(--blue); }
+
 ::selection {
-  background-color: var(--color-neon);
-  color: #000;
+  background-color: var(--mark);
+  color: var(--ink);
 }
 
-/* Scrollbar sutil */
-::-webkit-scrollbar       { width: 4px; }
-::-webkit-scrollbar-track { background: var(--color-base); }
-::-webkit-scrollbar-thumb { background: var(--color-surface-2); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-text-faint); }
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
 
-img, video { display: block; max-width: 100%; }
+img, video, svg { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
-button { cursor: pointer; background: none; border: none; font: inherit; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
 
-
-/* ── 4. TYPOGRAPHY CLASSES ──────────────────────────────── */
-@layer components {
-
-  /* Display — Nohemi uppercase */
-  .type-hero {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(64px, 10vw, 120px);
-    line-height: 0.88;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-  }
-
-  .type-section {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(36px, 5vw, 56px);
-    line-height: 0.92;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-
-  .type-project {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(28px, 4vw, 48px);
-    line-height: 0.92;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-
-  .type-service {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(18px, 2.5vw, 26px);
-    line-height: 1;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-  }
-
-  .type-year {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(32px, 5vw, 52px);
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-  }
-
-  .type-cta {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(40px, 6vw, 72px);
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-
-  /* Body — Inter */
-  .type-label {
-    font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-
-  .type-body {
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.7;
-    color: var(--color-text-muted);
-  }
-
-  .type-body-strong {
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.5;
-    color: var(--color-text-primary);
-  }
-
-  .type-ui {
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-  }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 
-/* ── 5. COMPONENT CLASSES ───────────────────────────────── */
+/* ── 3. COMPONENTES ─────────────────────────────────────── */
 @layer components {
 
-  /* Cards */
-  .card-dark {
-    background: var(--color-surface);
-    border-radius: var(--radius-card);
-    overflow: hidden;
+  .wrap {
+    width: 100%;
+    max-width: var(--wrap);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
   }
 
-  .card-light {
-    background: var(--color-white);
-    border-radius: var(--radius-card);
-    overflow: hidden;
-  }
+  .section { padding-top: var(--section); }
 
-  /* Botones */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--color-neon);
-    color: #000;
-    font-family: var(--font-body);
-    font-size: 13px;
+  /* Títulos: tracking negativo que crece con el tamaño */
+  .display {
+    font-size: clamp(44px, 6.4vw, 80px);
+    line-height: 1.04;
+    letter-spacing: -0.045em;
     font-weight: 700;
-    padding: 10px 22px;
-    border-radius: var(--radius-btn);
-    transition: all 250ms var(--ease-smooth);
   }
-  .btn-primary:hover {
-    background: var(--color-neon-dim);
-    transform: translateY(-1px);
-  }
-  .btn-primary:active { transform: translateY(0); }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    color: var(--color-text-muted);
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 10px 22px;
-    border-radius: var(--radius-btn);
-    border: 0.5px solid var(--color-border-mid);
-    transition: all 250ms var(--ease-smooth);
-  }
-  .btn-ghost:hover {
-    color: var(--color-text-primary);
-    border-color: rgba(255,255,255,0.25);
-  }
-
-  /* Botón CTA circular */
-  .btn-circle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--color-neon);
-    color: #000;
+  .sec-title {
+    font-size: clamp(36px, 4.6vw, 56px);
+    line-height: 1.06;
+    letter-spacing: -0.04em;
     font-weight: 700;
-    font-size: 15px;
-    transition: transform 250ms var(--ease-spring);
+    text-wrap: balance;
   }
-  .btn-circle:hover { transform: scale(1.1) rotate(15deg); }
-
-  /* Botón nav circle (+ menu) */
-  .btn-nav-circle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.18);
-    color: var(--color-text-primary);
-    font-size: 18px;
+  .sec-sub {
+    margin-top: 14px;
+    font-size: 19px;
+    line-height: 1.45;
+    color: var(--ink-3);
+    text-wrap: pretty;
+  }
+  .kicker {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .lede {
+    font-size: 21px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+  .figure-num {
+    font-size: clamp(48px, 6vw, 80px);
     line-height: 1;
-    transition: all 250ms var(--ease-smooth);
-  }
-  .btn-nav-circle:hover {
-    border-color: var(--color-neon);
-    color: var(--color-neon);
+    letter-spacing: -0.05em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Separador horizontal */
-  .sep-dark  { height: 0.5px; background: var(--color-border-dark); }
-  .sep-light { height: 0.5px; background: var(--color-border-light); }
-
-  /* Tag / pill */
-  .tag {
+  /* Botón primario: pill azul */
+  .pill {
     display: inline-flex;
     align-items: center;
-    padding: 4px 10px;
-    border-radius: var(--radius-tag);
-    border: 1px solid rgba(200, 241, 53, 0.25);
-    color: var(--color-neon);
-    font-family: var(--font-body);
-    font-size: 11px;
+    justify-content: center;
+    gap: 8px;
+    background: var(--pill-bg);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 980px;
+    font-size: 17px;
     font-weight: 500;
-    background: rgba(200, 241, 53, 0.06);
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: transform 0.2s var(--spring), background-color 0.2s ease;
   }
+  .pill:hover { background: var(--pill-hover); }
+  .pill:active { transform: scale(0.97); }
+  .pill:disabled { opacity: 0.6; cursor: progress; }
 
-  /* Ambient orbs (decoración de fondo) */
-  .orb {
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-    filter: blur(80px);
+  /* Enlace de texto azul con › */
+  .text-link {
+    color: var(--blue);
+    text-underline-offset: 3px;
   }
-  .orb-neon   { background: radial-gradient(circle, rgba(200,241,53,0.08) 0%, transparent 70%); }
-  .orb-warm   { background: radial-gradient(circle, rgba(120,90,10,0.07)  0%, transparent 70%); }
+  .text-link:hover { text-decoration: underline; }
+  .text-link.more::after { content: '\00a0›'; }
 
-  /* Browser mockup */
-  .browser-frame {
-    background: #1a1a20;
-    border-radius: 10px;
+  /* Tile de galería */
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+    background: var(--parch);
+    border-radius: 28px;
+    padding: 36px;
+    transition: transform 0.3s var(--spring), background-color 0.4s ease;
   }
-  .browser-bar {
-    background: #222228;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .tile--inverted {
+    background: var(--inv-bg);
+    color: var(--inv-ink);
+    --ink-2: var(--inv-ink-2);
+    --ink-3: var(--inv-ink-3);
+    --blue: var(--inv-link);
   }
-  .browser-dots {
-    display: flex;
-    gap: 5px;
-  }
-  .browser-dot {
+
+  /* Punto de estado: semántico, siempre con la palabra "Live" al lado */
+  .live-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-  }
-  .browser-url {
-    flex: 1;
-    background: #2e2e36;
-    border-radius: 4px;
-    height: 16px;
-    margin-left: 8px;
-    display: flex;
-    align-items: center;
-    padding: 0 8px;
-  }
-  .browser-screen {
-    background: #0c0c10;
-    padding: 16px;
+    background: var(--live);
+    flex-shrink: 0;
   }
 
-  /* Neon text utility */
-  .text-neon { color: var(--color-neon); }
+  /* Subrayador: barre la frase clave cuando su bloque entra en pantalla.
+     Máximo dos por página (DESIGN.md §6). */
+  .hl {
+    color: inherit;
+    padding: 0 0.08em;
+    border-radius: 4px;
+    background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 88% / 0% 62%;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 1s var(--spring) 0.25s;
+  }
+  .is-in .hl,
+  .hl.is-in { background-size: 100% 62%; }
 }
 
 
-/* ── 6. ANIMATIONS / KEYFRAMES ──────────────────────────── */
+/* ── 4. MOVIMIENTO ──────────────────────────────────────────
+   Entradas al ver: las activa el observador de Layout.astro.
+   Sin JavaScript no se oculta nada (la clase .js la pone el script). */
 @layer utilities {
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.9s var(--spring), transform 0.9s var(--spring);
+  }
+  .js .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
 
-  /* Fade up — para elementos al entrar en viewport */
-  @keyframes fade-up {
-    from {
-      opacity: 0;
-      transform: translateY(24px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal,
+  .js .reveal.is-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
+  .hl {
+    background-size: 100% 62%;
+    transition: none;
+  }
+  .tile { transition: none; }
+}
 
-  /* Fade in simple */
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+@media (max-width: 859px) {
+  :root {
+    --gutter: 16px;
+    --section: 80px;
   }
-
-  /* Slide in desde izquierda */
-  @keyframes slide-in-left {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  /* Ticker loop (Logo Loop) */
-  @keyframes ticker {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
-
-  /* Cursor blink (Text Type) */
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0; }
-  }
-
-  /* Neon pulse suave */
-  @keyframes neon-pulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.7; }
-  }
-
-  /* Clases de animación */
-  .animate-fade-up {
-    animation: fade-up 0.6s var(--ease-smooth) both;
-  }
-  .animate-fade-in {
-    animation: fade-in 0.5s var(--ease-smooth) both;
-  }
-  .animate-slide-left {
-    animation: slide-in-left 0.5s var(--ease-smooth) both;
-  }
-  .animate-neon-pulse {
-    animation: neon-pulse 3s ease-in-out infinite;
-  }
-
-  /* Delays encadenables */
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
-  .delay-600 { animation-delay: 600ms; }
-  .delay-700 { animation-delay: 700ms; }
-  .delay-800 { animation-delay: 800ms; }
+  .tile { padding: 28px; }
 }

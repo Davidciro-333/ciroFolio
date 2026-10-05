@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D3 · Plano</title>
+<!--
+  DIRECCIÓN 3 · PLANO
+  Referencias: Stripe (tinta navy, display ligera con tracking negativo, cifras tabulares, banda oscura de datos),
+  Vercel (mono como voz técnica secundaria).
+  Motivo propio: el diagrama de arquitectura con la frontera dibujada. Qué es configuración y qué está fijo por diseño.
+  Mockup estático: no forma parte del sitio Astro.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --canvas: #f6f8fa;
+    --white: #ffffff;
+    --navy: #0f1f33;       /* 15.6:1 */
+    --ink-2: #3b4a5e;      /*  8.5:1 */
+    --ink-3: #56667b;      /*  5.9:1 */
+    --line: #dde3ea;
+    --orange: #c2410c;     /*  5.2:1 · único acento */
+    --orange-on-navy: #fb8c55; /* 7.1:1 sobre navy */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --sans: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { background: var(--canvas); color: var(--navy); font: 400 17px/1.55 var(--sans); }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  nav .wrap { height: 72px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 600; font-size: 18px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+  .brand i { width: 10px; height: 10px; background: var(--orange); display: inline-block; border-radius: 2px; }
+  .links { display: flex; gap: 32px; font-size: 15px; color: var(--ink-2); }
+  .links a:hover { color: var(--navy); }
+  .nav-r { display: flex; gap: 18px; align-items: center; font-size: 15px; color: var(--ink-2); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 20px; border-radius: 6px; font: 500 15px var(--sans);
+         transition: transform .15s var(--ease), background .2s, box-shadow .2s; }
+  .btn:active { transform: translateY(1px); }
+  .btn-o { background: var(--orange); color: #fff; box-shadow: 0 1px 2px rgba(194,65,12,.25), 0 6px 16px -6px rgba(194,65,12,.45); }
+  .btn-o:hover { background: #ad3a0b; }
+  .btn-o .arr { transition: transform .2s var(--ease); }
+  .btn-o:hover .arr { transform: translateX(3px); }
+  .btn-line { color: var(--navy); border: 1px solid var(--line); background: var(--white); }
+  .btn-line:hover { border-color: #b9c3cf; }
+
+  /* Hero dividido: mensaje a la izquierda, la arquitectura a la derecha */
+  .hero { display: grid; grid-template-columns: 1fr 1.08fr; gap: 56px; align-items: center; padding: 72px 0 96px; }
+  h1 { font-weight: 300; font-size: clamp(42px, 5.4vw, 68px); line-height: 1.02; letter-spacing: -0.045em; }
+  h1 b { font-weight: 500; }
+  .lede { margin-top: 24px; font-size: 19px; color: var(--ink-2); max-width: 42ch; }
+  .ctas { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .who { margin-top: 40px; display: flex; gap: 14px; align-items: center; }
+  .who img { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; }
+  .who b { display: block; font-weight: 600; }
+  .who span { font-size: 14px; color: var(--ink-3); }
+
+  .diagram { background: var(--white); border: 1px solid var(--line); border-radius: 16px;
+             box-shadow: 0 30px 60px -30px rgba(15,31,51,.25), 0 12px 24px -12px rgba(15,31,51,.08); }
+  .diagram header { display: flex; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink-3); }
+  .diagram header b { color: var(--navy); font-weight: 600; }
+  .diagram svg { display: block; width: 100%; height: auto; padding: 8px 12px 4px; }
+  .diagram footer { display: flex; gap: 20px; padding: 12px 20px 16px; font-size: 12px; color: var(--ink-3); border-top: 1px solid var(--line); flex-wrap: wrap; }
+  .key { display: inline-flex; align-items: center; gap: 8px; }
+  .key i { width: 18px; height: 0; border-top: 1.5px dashed var(--orange); display: inline-block; }
+  .key em { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); display: inline-block; font-style: normal; }
+  svg .node rect { fill: #fff; stroke: #c9d2dc; }
+  svg .node.hub rect { fill: var(--navy); stroke: var(--navy); }
+  svg .node text { font: 500 11.5px var(--mono); fill: var(--navy); }
+  svg .node.hub text { fill: #fff; }
+  svg .edge { fill: none; stroke: #9fadbd; stroke-width: 1.2; }
+  svg .draw { stroke-dasharray: 400; stroke-dashoffset: 400; animation: draw 1.4s var(--ease) forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  /* Banda navy: lo que corre ahora */
+  .band { background: var(--navy); color: #f6f8fa; }
+  .band .wrap { display: grid; grid-template-columns: 1.1fr repeat(4, 1fr); gap: 32px; padding-top: 48px; padding-bottom: 48px; align-items: end; }
+  .band h2 { font-weight: 300; font-size: 28px; letter-spacing: -0.03em; line-height: 1.15; }
+  .band .cell { border-left: 1px solid rgba(255,255,255,.14); padding-left: 20px; }
+  .band .v { font-size: 40px; font-weight: 300; letter-spacing: -0.04em; color: #fff; }
+  .band .v small { font-size: 16px; color: #aab6c4; margin-left: 4px; letter-spacing: 0; }
+  .band .n { font-size: 14px; color: #c4ceda; }
+  .band .s { font-size: 12px; color: var(--orange-on-navy); margin-top: 2px; }
+
+  section { padding-top: 112px; }
+  h2.t { font-weight: 300; font-size: clamp(34px, 4vw, 48px); letter-spacing: -0.04em; line-height: 1.08; max-width: 18ch; }
+  h2.t b { font-weight: 500; }
+  .intro { margin-top: 16px; color: var(--ink-2); max-width: 56ch; }
+
+  /* Casos: problema / lo que construí / prueba */
+  .case { margin-top: 40px; background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 36px;
+          display: grid; grid-template-columns: 1fr 2.3fr; gap: 40px; transition: box-shadow .3s var(--ease), transform .3s var(--ease); }
+  .case + .case { margin-top: 16px; }
+  .case:hover { box-shadow: 0 24px 48px -28px rgba(15,31,51,.3); transform: translateY(-2px); }
+  .case h3 { font-weight: 500; font-size: 26px; letter-spacing: -0.03em; }
+  .case .tag { font-size: 12px; color: var(--orange); margin-top: 6px; }
+  .case .read { display: inline-block; margin-top: 24px; font-weight: 500; color: var(--orange); }
+  .case .read:hover { text-decoration: underline; }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .cols h4 { font: 500 12px var(--mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .cols p { font-size: 16px; color: var(--ink-2); }
+  .cols .proof { font-size: 30px; font-weight: 300; letter-spacing: -0.04em; color: var(--navy); line-height: 1.1; }
+
+  .more { margin-top: 48px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 48px; }
+  .more article { padding: 24px 0; border-top: 1px solid var(--line); }
+  .more h3 { font-weight: 500; font-size: 19px; letter-spacing: -0.02em; display: flex; justify-content: space-between; gap: 16px; }
+  .more h3 span { font: 400 12px var(--mono); color: var(--orange); white-space: nowrap; }
+  .more h3 span.off { color: var(--ink-3); }
+  .more p { margin-top: 6px; font-size: 15px; color: var(--ink-2); }
+  .more .stack { margin-top: 10px; font-size: 12px; color: var(--ink-3); }
+
+  /* Modalidades */
+  .modes { margin-top: 48px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .mode { background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 28px; }
+  .mode h3 { font-weight: 500; font-size: 20px; letter-spacing: -0.02em; }
+  .mode p { margin-top: 10px; font-size: 15px; color: var(--ink-2); }
+  .mode .terms { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-3); line-height: 1.9; }
+
+  /* Sobre mí + trayectoria */
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 72px; margin-top: 40px; }
+  .split .body p { color: var(--ink-2); }
+  .split .body p + p { margin-top: 16px; }
+  .split .body strong { color: var(--navy); font-weight: 600; }
+  .tl-row { display: grid; grid-template-columns: 110px 1fr; gap: 20px; padding: 18px 0; border-top: 1px solid var(--line); }
+  .tl-row .when { font-size: 13px; color: var(--ink-3); padding-top: 3px; }
+  .tl-row b { font-weight: 600; display: block; }
+  .tl-row span { font-size: 14px; color: var(--ink-3); }
+
+  /* Contacto: el formulario es la conversión */
+  .contact { margin-top: 120px; background: var(--navy); color: #f6f8fa; }
+  .contact .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; padding-top: 96px; padding-bottom: 96px; }
+  .contact h2 { font-weight: 300; font-size: clamp(36px, 4.4vw, 54px); letter-spacing: -0.045em; line-height: 1.04; }
+  .contact p { margin-top: 18px; color: #c4ceda; max-width: 40ch; }
+  .contact .alt { margin-top: 28px; font-size: 15px; color: #c4ceda; }
+  .contact .alt a { color: var(--orange-on-navy); }
+  form { background: #fff; color: var(--navy); border-radius: 14px; padding: 28px; display: grid; gap: 16px; }
+  label { font-size: 14px; font-weight: 500; display: grid; gap: 6px; }
+  input, textarea, select { font: 400 16px var(--sans); color: var(--navy); border: 1px solid #b9c3cf; border-radius: 6px; padding: 10px 12px; background: #fff; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--orange); outline-offset: 1px; border-color: var(--orange); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  body > footer { background: var(--navy); color: #aab6c4; font-size: 13px; border-top: 1px solid rgba(255,255,255,.1); }
+  body > footer .wrap { display: flex; justify-content: space-between; padding-top: 22px; padding-bottom: 32px; flex-wrap: wrap; gap: 12px; }
+
+  .up { opacity: 0; transform: translateY(18px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+  .up.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .up { opacity: 1; transform: none; transition: none; }
+    svg .draw { animation: none; stroke-dashoffset: 0; }
+  }
+
+  @media (max-width: 900px) {
+    .wrap { padding-left: 16px; padding-right: 16px; }
+    .links { display: none; }
+    .hero, .case, .split, .contact .wrap { grid-template-columns: 1fr; gap: 32px; }
+    .cols, .more, .modes, .row2 { grid-template-columns: 1fr; }
+    .band .wrap { grid-template-columns: 1fr 1fr; }
+    .band h2 { grid-column: 1 / -1; }
+    section { padding-top: 72px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="brand"><i aria-hidden="true"></i>David Ciro</a>
+    <div class="links"><a href="#systems">Systems</a><a href="#work">Work with me</a><a href="#about">About</a></div>
+    <div class="nav-r"><a href="#">ES</a><a href="#contact" class="btn btn-line">Start a conversation</a></div>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <div>
+    <h1 class="up">From pilot to platform. <b>I know where the line is.</b></h1>
+    <p class="lede up">I build AI automation that runs in production: conversational commerce, document extraction, content pipelines. Deployed on my own infrastructure.</p>
+    <div class="ctas up">
+      <a href="#systems" class="btn btn-o">See the systems <span class="arr" aria-hidden="true">→</span></a>
+      <a href="#contact" class="btn btn-line">Start a conversation</a>
+    </div>
+    <div class="who up">
+      <img src="assets/david.jpg" alt="David Ciro">
+      <div><b>David Ciro</b><span>AI automation engineer · Medellín, UTC-5</span></div>
+    </div>
+  </div>
+
+  <figure class="diagram up" aria-label="Simplified architecture of the Conversational Commerce Engine">
+    <header><b>Conversational Commerce Engine</b><span class="mono">simplified</span></header>
+    <svg viewBox="0 40 560 360" role="img" aria-label="WhatsApp messages reach an n8n agent on AWS EC2, which calls Claude, voice transcription and Redis. Receipt validation and sales safeguards sit outside the per-product configuration.">
+      <!-- frontera: lo que nunca va en config -->
+      <rect x="190" y="290" width="362" height="72" rx="12" fill="rgba(194,65,12,.04)" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="5 5"/>
+      <text x="198" y="384" style="font:500 11px 'JetBrains Mono',monospace;fill:#c2410c">Fixed by design. Never in a config file.</text>
+
+      <path id="p1" class="edge draw" d="M170 210 H205"/>
+      <path id="p2" class="edge draw" d="M355 200 C 374 200 372 80 390 80"/>
+      <path id="p3" class="edge draw" d="M355 205 C 374 205 372 150 390 150"/>
+      <path id="p4" class="edge draw" d="M355 220 H390"/>
+      <path id="p5" class="edge draw" d="M280 230 V310"/>
+      <path id="p6" class="edge draw" d="M355 330 H390"/>
+      <path id="p7" class="edge draw" d="M95 300 C 95 262 240 266 240 230" stroke-dasharray="4 4"/>
+
+      <g class="node"><rect x="20" y="190" width="150" height="40" rx="8"/><text x="95" y="214" text-anchor="middle">WhatsApp · BSP</text></g>
+      <g class="node hub"><rect x="205" y="190" width="150" height="40" rx="8"/><text x="280" y="214" text-anchor="middle">n8n agent · EC2</text></g>
+      <g class="node"><rect x="390" y="60" width="150" height="40" rx="8"/><text x="465" y="84" text-anchor="middle">Claude · dialogue</text></g>
+      <g class="node"><rect x="390" y="130" width="150" height="40" rx="8"/><text x="465" y="154" text-anchor="middle">Voice → text</text></g>
+      <g class="node"><rect x="390" y="200" width="150" height="40" rx="8"/><text x="465" y="224" text-anchor="middle">Redis · session</text></g>
+      <g class="node"><rect x="20" y="300" width="150" height="40" rx="8" style="stroke-dasharray:4 4"/><text x="95" y="324" text-anchor="middle">Product config</text></g>
+      <g class="node"><rect x="205" y="310" width="150" height="40" rx="8"/><text x="280" y="334" text-anchor="middle">Receipt validation</text></g>
+      <g class="node"><rect x="390" y="310" width="150" height="40" rx="8"/><text x="465" y="334" text-anchor="middle">Sales safeguards</text></g>
+
+      <!-- mensajes recorriendo el sistema: el diagrama está "encendido" -->
+      <g fill="#c2410c">
+        <circle r="3.5" visibility="hidden"><set attributeName="visibility" to="visible" begin="m0.begin"/><animateMotion dur="1.2s" begin="1.4s;m1.end+2.6s" id="m0" fill="freeze"><mpath href="#p1"/></animateMotion></circle>
+        <circle r="3.5" visibility="hidden"><set attributeName="visibility" to="visible" begin="m1.begin"/><animateMotion dur="1.4s" begin="m0.end" id="m1" fill="freeze"><mpath href="#p2"/></animateMotion></circle>
+        <circle r="3.5" visibility="hidden"><set attributeName="visibility" to="visible" begin="m2.begin"/><animateMotion id="m2" dur="1.4s" begin="m0.end+0.3s" fill="freeze"><mpath href="#p4"/></animateMotion></circle>
+        <circle r="3.5" visibility="hidden"><set attributeName="visibility" to="visible" begin="m3.begin"/><animateMotion dur="1.2s" begin="m1.end+0.4s" id="m3" fill="freeze"><mpath href="#p5"/></animateMotion></circle>
+        <circle r="3.5" visibility="hidden"><set attributeName="visibility" to="visible" begin="m4.begin"/><animateMotion id="m4" dur="1s" begin="m3.end" fill="freeze"><mpath href="#p6"/></animateMotion></circle>
+      </g>
+    </svg>
+    <footer>
+      <span class="key"><i></i>Outside per-product configuration</span>
+      <span class="key"><em></em>A message moving through the system</span>
+    </footer>
+  </figure>
+</header>
+
+<div class="band">
+  <div class="wrap">
+    <h2 class="up">Running right now, with no one watching.</h2>
+    <div class="cell up"><div class="v mono" data-days="2025-09-24">0<small>d</small></div><div class="n">galacticBills</div><div class="s mono">live since 2025-09-24</div></div>
+    <div class="cell up"><div class="v mono" data-days="2026-04-18">0<small>d</small></div><div class="n">beBetterStudio</div><div class="s mono">live since 2026-04-18</div></div>
+    <div class="cell up"><div class="v mono" data-days="2026-07-16">0<small>d</small></div><div class="n">Commerce Engine</div><div class="s mono">live since 2026-07-16</div></div>
+    <div class="cell up"><div class="v mono" data-days="2026-07-30">0<small>d</small></div><div class="n">LinkedIn Publisher</div><div class="s mono">live since 2026-07-30</div></div>
+  </div>
+</div>
+
+<section id="systems" class="wrap">
+  <h2 class="t up">Three systems, <b>written up as case studies.</b></h2>
+  <p class="intro up">Architecture, decisions and the numbers, including the ones that went wrong.</p>
+
+  <article class="case up">
+    <div><h3>galacticBills</h3><div class="tag mono">n8n · Gemini · Document AI</div><a href="#" class="read">Read the case →</a></div>
+    <div class="cols">
+      <div><h4>Problem</h4><p>Small businesses typing invoices into their books by hand.</p></div>
+      <div><h4>Built</h4><p>A photo or PDF arrives over a messaging channel. An LLM extracts the tax fields, validates the totals and files them.</p></div>
+      <div><h4>Proof</h4><p class="proof mono" data-days-text="2025-09-24">days</p><p>in production since 2025-09-24</p></div>
+    </div>
+  </article>
+  <article class="case up">
+    <div><h3>beBetterStudio</h3><div class="tag mono">Node.js · FFmpeg · PostgreSQL</div><a href="#" class="read">Read the case →</a></div>
+    <div class="cols">
+      <div><h4>Problem</h4><p>My own content product was sinking, and reach alone couldn’t say why.</p></div>
+      <div><h4>Built</h4><p>The analytics that caught it, then a controlled test measured by skip rate and watch time.</p></div>
+      <div><h4>Proof</h4><p class="proof mono">3,840 → 385</p><p>median reach, April to July. Diagnosed, not hidden.</p></div>
+    </div>
+  </article>
+  <article class="case up">
+    <div><h3>Taxi Dispatch Platform</h3><div class="tag mono">PostgreSQL · Supabase · Playwright</div><a href="#" class="read">Read the case →</a></div>
+    <div class="cols">
+      <div><h4>Problem</h4><p>QA and fixes on a dispatch platform already in production in Colombia.</p></div>
+      <div><h4>Built</h4><p>An automated SQL and browser test harness across seven test circuits.</p></div>
+      <div><h4>Proof</h4><p class="proof mono">7 circuits</p><p>every issue filed with cause, fix and how to verify it.</p></div>
+    </div>
+  </article>
+
+  <div class="more">
+    <article class="up"><h3>Conversational Commerce Engine <span class="mono">live</span></h3><p>Multi-product sales engine over an official WhatsApp BSP. A new product is configuration, not a rewrite.</p><div class="stack mono">n8n · Claude · WhatsApp API · Redis · AWS EC2</div></article>
+    <article class="up"><h3>LinkedIn Publisher <span class="mono">live</span></h3><p>Curates AI news from 14 sources, drafts the post and waits for my approval before publishing.</p><div class="stack mono">n8n · LLM APIs · Redis · Telegram</div></article>
+    <article class="up"><h3>SignalFactory <span class="mono off">not public</span></h3><p>Programmatic vertical video with Remotion and headless Chrome, published to two YouTube channels in two languages.</p><div class="stack mono">Next.js · Remotion · SQLite · Cloudflare R2</div></article>
+    <article class="up"><h3>ciro_finanzas <span class="mono off">not public</span></h3><p>Local-first app that projects how much money you’ll have on a given date. Pure Dart domain, 182 tests green.</p><div class="stack mono">Flutter · Dart · Drift · Riverpod</div></article>
+  </div>
+</section>
+
+<section id="work" class="wrap">
+  <h2 class="t up">How we can <b>work together.</b></h2>
+  <p class="intro up">No public rates. You get a number in my first reply.</p>
+  <div class="modes">
+    <div class="mode up"><h3>Fixed-scope project</h3><p>Scoped, built, deployed and handed over documented, ready to run without me.</p><div class="terms mono">Defined scope<br>End-to-end delivery<br>Documented handover</div></div>
+    <div class="mode up"><h3>Monthly retainer</h3><p>Capacity for automation in production, including expiring tokens and silent failures.</p><div class="terms mono">Monthly hours<br>Operations included<br>Async</div></div>
+    <div class="mode up"><h3>Team augmentation</h3><p>A sprint or a quarter inside your repo, your board and your review flow.</p><div class="terms mono">Your process<br>UTC-5 overlap<br>Sprint-based</div></div>
+    <div class="mode up"><h3>Technical audit</h3><p>Evidence-backed findings on what breaks silently and what has no error path.</p><div class="terms mono">Evidence-backed<br>Prioritised report<br>Short turnaround</div></div>
+  </div>
+</section>
+
+<section id="about" class="wrap">
+  <h2 class="t up">Engineer first. <b>Designer by training.</b></h2>
+  <div class="split">
+    <div class="body">
+      <p class="up">I design, build and operate AI automation systems. Not prototypes: bots handling conversations over an official WhatsApp provider, pipelines publishing on a schedule, workflows that file invoices every day.</p>
+      <p class="up">Most of it started as a pilot for one case and became a configurable platform. <strong>The decisions that matter live in that transition.</strong> Sales safeguards and payment validation don’t belong in a config file, and knowing where that line sits is the part nobody can improvise.</p>
+      <p class="up">I work async-first, on UTC-5, and I run my own infrastructure: AWS EC2 behind nginx, Docker, self-hosted n8n.</p>
+    </div>
+    <div>
+      <div class="tl-row up"><span class="when mono">2025-now</span><div><b>Co-founder, Product &amp; Infrastructure</b><span>Galactic AIMA</span></div></div>
+      <div class="tl-row up"><span class="when mono">2022-now</span><div><b>Freelance Developer &amp; UI Designer</b><span>Clients in Latin America and Spain</span></div></div>
+      <div class="tl-row up"><span class="when mono">2020-now</span><div><b>Visual &amp; Motion Designer</b><span>Identities and motion graphics</span></div></div>
+      <div class="tl-row up"><span class="when mono">2020-2024</span><div><b>Software Development Degree</b><span>Institución Universitaria Pascual Bravo</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div>
+      <h2 class="up">Tell me what you need running.</h2>
+      <p class="up">Async by default. I reply in writing with questions, a rough plan and a number. If a call helps, I’ll offer one then.</p>
+      <p class="alt up">Or write directly: <a href="mailto:davidcirortiz06@gmail.com">davidcirortiz06@gmail.com</a> · <a href="https://www.linkedin.com/in/david-ciro">LinkedIn</a></p>
+    </div>
+    <form class="up" onsubmit="event.preventDefault()">
+      <div class="row2">
+        <label>Name<input type="text" autocomplete="name"></label>
+        <label>Work email<input type="email" autocomplete="email"></label>
+      </div>
+      <label>What do you need built or kept running?<textarea rows="4"></textarea></label>
+      <div class="row2">
+        <label>Timeline<select><option>Within a month</option><option>1 to 3 months</option><option>Exploring</option></select></label>
+        <label>Budget<select><option>Under 2k USD</option><option>2k to 5k USD</option><option>5k+ USD</option></select></label>
+      </div>
+      <button class="btn btn-o" type="submit" style="justify-content:center">Start a conversation <span class="arr" aria-hidden="true">→</span></button>
+    </form>
+  </div>
+</section>
+<footer><div class="wrap"><span>David Ciro · AI automation engineer</span><span>English · Español</span></div></footer>
+
+<script>
+  const days = iso => Math.floor((Date.now() - new Date(iso + 'T00:00:00-05:00')) / 864e5);
+  document.querySelectorAll('[data-days-text]').forEach(el => el.textContent = days(el.dataset.daysText) + ' days');
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) document.querySelectorAll('svg').forEach(s => s.pauseAnimations && s.pauseAnimations());
+
+  // Banda navy: los contadores llegan a su valor real al entrar en pantalla
+  document.querySelectorAll('[data-days]').forEach(el => {
+    const target = days(el.dataset.days), suffix = '<small>d</small>';
+    if (reduce) { el.innerHTML = target + suffix; return; }
+    new IntersectionObserver(([e], o) => {
+      if (!e.isIntersecting) return; o.disconnect();
+      const t0 = performance.now();
+      const step = t => { const p = Math.min(1, (t - t0) / 1200); el.innerHTML = Math.round(target * (1 - Math.pow(1 - p, 3))) + suffix;
+                          if (p < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }, { threshold: .6 }).observe(el);
+  });
+
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const sibs = [...e.target.parentElement.children];
+    e.target.style.transitionDelay = Math.min(sibs.indexOf(e.target), 5) * 60 + 'ms';
+    e.target.classList.add('in'); io.unobserve(e.target);
+  }), { threshold: .12 });
+  document.querySelectorAll('.up').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

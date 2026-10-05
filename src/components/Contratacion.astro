@@ -1,7 +1,8 @@
 ---
 // src/components/Contratacion.astro
-// Modalidades de contratación — responde a "¿cómo te contrato?", que es lo
-// que una agencia necesita saber, no a "¿qué sabes hacer?".
+// Modalidades de contratación: responde a "¿cómo te contrato?", que es lo que
+// una agencia necesita saber, no a "¿qué sabes hacer?". Cuatro columnas
+// separadas por hairlines, sin tarjetas (DESIGN.md §5).
 
 import { ui } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
@@ -16,65 +17,76 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---
 
-<section id="engagements" class="card-dark relative overflow-hidden px-8 md:px-12 lg:px-16 pt-10 pb-12 md:pt-12 md:pb-14">
+<section id="engagements" class="section wrap">
+  <h2 class="sec-title reveal">{t(ui.services.title)}</h2>
 
-  <!-- Orb decorativo sutil -->
-  <div
-    class="orb orb-neon"
-    style="width:480px;height:480px;bottom:-160px;right:-100px;opacity:0.6;"
-    aria-hidden="true"
-  ></div>
-
-  <div class="relative z-10">
-
-    <!-- Header de sección -->
-    <div class="flex items-end justify-between mb-8 md:mb-10">
-      <div>
-        <p class="type-label mb-2">{t(ui.services.eyebrow)}</p>
-        <h2 class="type-section">{t(ui.services.title)}</h2>
-      </div>
-      <a href="#contact" class="hidden md:inline-flex btn-primary">
-        {t(ui.services.cta)} <span aria-hidden="true">↗</span>
-      </a>
-    </div>
-
-    <div class="sep-dark mb-8 md:mb-10"></div>
-
-    <!-- Grid de modalidades -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.06] rounded-[14px] overflow-hidden">
-
-      {engagements.map((item) => (
-        <article class="group bg-[var(--color-surface)] p-7 md:p-8 flex flex-col gap-5
-                         hover:bg-[var(--color-surface-2)] transition-colors duration-300">
-
-          <div class="flex items-start justify-between gap-4">
-            <h3 class="type-service">{t(item.title)}</h3>
-            <span class="type-label text-neon shrink-0 mt-0.5">{item.num}</span>
-          </div>
-
-          <p class="type-body flex-1">{t(item.description)}</p>
-
-          <div class="flex flex-wrap gap-2">
-            {t(item.tags).map((tag) => (
-              <span class="tag">{tag}</span>
-            ))}
-          </div>
-
-          <!-- Línea neon — aparece en hover -->
-          <div class="h-px w-0 group-hover:w-full transition-all duration-500 ease-out"
-               style="background: var(--color-neon); opacity: 0.35;"></div>
-
-        </article>
-      ))}
-
-    </div>
-
-    <!-- CTA mobile -->
-    <div class="mt-8 md:hidden">
-      <a href="#contact" class="btn-primary w-full justify-center">
-        {t(ui.services.cta)} <span aria-hidden="true">↗</span>
-      </a>
-    </div>
-
+  <div class="modes">
+    {engagements.map((item) => (
+      <article class="mode reveal">
+        <h3>{t(item.title)}</h3>
+        <p>{t(item.description)}</p>
+        <ul>
+          {t(item.tags).map((tag) => <li>{tag}</li>)}
+        </ul>
+      </article>
+    ))}
   </div>
+
+  <p class="note reveal">{t(ui.services.note)}</p>
 </section>
+
+<style>
+  .sec-title { text-align: center; }
+  .modes {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+  }
+  .mode { padding: 32px 24px 8px 0; }
+  .mode + .mode {
+    padding-left: 24px;
+    border-left: 1px solid var(--line);
+  }
+  h3 {
+    font-size: 21px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  p {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+  ul {
+    list-style: none;
+    margin-top: 18px;
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+  li {
+    padding: 6px 0;
+    border-top: 1px solid var(--line);
+  }
+  .note {
+    margin-top: 36px;
+    text-align: center;
+    color: var(--ink-3);
+  }
+
+  @media (max-width: 1023px) and (min-width: 860px) {
+    .modes { grid-template-columns: repeat(2, 1fr); }
+    .mode:nth-child(3) { padding-left: 0; border-left: 0; }
+  }
+  @media (max-width: 859px) {
+    .modes { grid-template-columns: 1fr; margin-top: 40px; }
+    .mode,
+    .mode + .mode {
+      padding: 24px 0;
+      border-left: 0;
+    }
+    .mode + .mode { border-top: 1px solid var(--line); }
+  }
+</style>

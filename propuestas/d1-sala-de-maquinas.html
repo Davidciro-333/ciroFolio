@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D1 · Sala de máquinas</title>
+<!--
+  DIRECCIÓN 1 · SALA DE MÁQUINAS
+  Referencias: Linear (canvas casi negro, hairlines, un solo acento), Raycast/Vercel (mono para datos).
+  Motivo propio: el reloj de producción. Cada sistema vivo cuenta su tiempo en marcha en tiempo real.
+  Mockup estático: no forma parte del sitio Astro.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d10;
+    --surface: #14161a;
+    --surface-2: #1a1c21;
+    --line: #24272d;
+    --line-strong: #33363d;
+    --ink: #eef0f3;        /* 17.0:1 */
+    --ink-2: #a3a9b4;      /*  8.2:1 */
+    --ink-3: #868c98;      /*  5.4:1 sobre surface */
+    --live: #3ecf8e;       /*  9.7:1 · solo estado "en producción" */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    --mono: 'Geist Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--sans); }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+  .mono { font-family: var(--mono); font-feature-settings: "tnum"; }
+
+  /* ── Nav ─────────────────────────────────────────── */
+  nav { position: sticky; top: 0; z-index: 10; background: rgba(12,13,16,.8);
+        backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { font-weight: 600; letter-spacing: -0.01em; }
+  .links { display: flex; gap: 28px; font-size: 14px; color: var(--ink-2); }
+  .links a:hover { color: var(--ink); }
+  .nav-right { display: flex; align-items: center; gap: 16px; font-size: 14px; color: var(--ink-2); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 8px;
+         font: 500 14px var(--sans); transition: transform .15s var(--ease), background .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: #ffffff; }
+  .btn-quiet { color: var(--ink); border: 1px solid var(--line-strong); }
+  .btn-quiet:hover { border-color: var(--ink-3); }
+  .btn-sm { height: 34px; padding: 0 14px; font-size: 13px; }
+
+  /* ── Hero ────────────────────────────────────────── */
+  .hero { padding: 96px 0 88px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 64px; align-items: end; }
+  h1 { font-size: clamp(40px, 5.2vw, 64px); line-height: 1.04; letter-spacing: -0.035em; font-weight: 600; }
+  h1 .dim { color: var(--ink-3); }
+  .lede { margin-top: 24px; max-width: 46ch; font-size: 18px; color: var(--ink-2); }
+  .ctas { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .who { margin-top: 48px; display: flex; align-items: center; gap: 14px; font-size: 14px; color: var(--ink-2); }
+  .who img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line-strong); }
+  .who strong { color: var(--ink); font-weight: 500; display: block; }
+
+  /* Panel de sistemas en marcha: datos reales, no una captura falsa */
+  .running { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .running header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;
+                    border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+  .running header .mono { color: var(--ink-3); font-size: 12px; }
+  .run-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .run-row:last-child { border-bottom: 0; }
+  .run-name { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 15px; }
+  .run-meta { grid-column: 1 / -1; font-size: 12px; color: var(--ink-3); }
+  .uptime { font-size: 13px; color: var(--live); text-align: right; white-space: nowrap; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); position: relative; flex: none; }
+  .dot::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--live);
+                opacity: 0; animation: ping 2.4s var(--ease) infinite; }
+  @keyframes ping { 0% { transform: scale(.4); opacity: .7; } 100% { transform: scale(1.6); opacity: 0; } }
+
+  /* ── Secciones ───────────────────────────────────── */
+  section { padding: 96px 0; }
+  .rule { height: 1px; background: var(--line); transform-origin: left; }
+  .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; margin-bottom: 40px; }
+  h2 { font-size: clamp(28px, 3.2vw, 40px); letter-spacing: -0.03em; font-weight: 600; line-height: 1.1; }
+  .sec-head p { color: var(--ink-3); font-size: 14px; }
+
+  /* Sistemas: lista tipo changelog */
+  .sys { display: grid; grid-template-columns: 44px 1.1fr 1.6fr 190px; gap: 24px; padding: 28px 0;
+         border-top: 1px solid var(--line); align-items: start; transition: background .25s; }
+  .sys:last-child { border-bottom: 1px solid var(--line); }
+  .sys:hover { background: linear-gradient(90deg, transparent, rgba(255,255,255,.015), transparent); }
+  .sys .n { font-size: 13px; color: var(--ink-3); padding-top: 4px; }
+  .sys h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .sys .year { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+  .sys p { color: var(--ink-2); font-size: 15px; }
+  .sys .stack { margin-top: 12px; font-size: 12px; color: var(--ink-3); }
+  .sys .status { text-align: right; font-size: 13px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .status .live-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--live); }
+  .status .idle { color: var(--ink-3); }
+  .case-link { color: var(--ink); border-bottom: 1px solid var(--line-strong); padding-bottom: 2px; }
+  .case-link:hover { border-color: var(--ink); }
+
+  /* Modalidades */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+  .mode { padding: 36px 36px 36px 0; border-bottom: 1px solid var(--line); }
+  .mode:nth-child(even) { padding-left: 36px; padding-right: 0; border-left: 1px solid var(--line); }
+  .mode h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 10px; }
+  .mode p { color: var(--ink-2); font-size: 15px; max-width: 52ch; }
+  .mode .terms { margin-top: 16px; font-size: 12px; color: var(--ink-3); }
+
+  /* Sobre mí */
+  .about { display: grid; grid-template-columns: 1.4fr 1fr; gap: 72px; }
+  .about p + p { margin-top: 18px; }
+  .about .body { color: var(--ink-2); font-size: 17px; }
+  .about .body strong { color: var(--ink); font-weight: 500; }
+  .stats { display: grid; gap: 0; border-top: 1px solid var(--line); }
+  .stat { padding: 22px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; }
+  .stat .v { font-size: 32px; font-weight: 500; letter-spacing: -0.03em; }
+  .stat .l { font-size: 13px; color: var(--ink-3); }
+  .stack-list { margin-top: 28px; font-size: 13px; color: var(--ink-3); line-height: 2; }
+
+  /* Trayectoria */
+  .tl { display: grid; grid-template-columns: 140px 1fr 1.4fr; gap: 24px; padding: 24px 0; border-top: 1px solid var(--line); }
+  .tl:last-child { border-bottom: 1px solid var(--line); }
+  .tl .when { font-size: 13px; color: var(--ink-3); }
+  .tl h3 { font-size: 16px; font-weight: 600; }
+  .tl .org { font-size: 14px; color: var(--ink-3); }
+  .tl p { font-size: 15px; color: var(--ink-2); }
+
+  /* Contacto */
+  .contact { text-align: left; padding: 120px 0 72px; }
+  .contact h2 { font-size: clamp(36px, 5vw, 60px); max-width: 16ch; }
+  .contact .lede { max-width: 52ch; }
+  .contact-row { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .copy { font-family: var(--mono); font-size: 14px; color: var(--ink-2); padding: 0 16px; height: 40px; display: inline-flex;
+          align-items: center; gap: 10px; border: 1px dashed var(--line-strong); border-radius: 8px; cursor: pointer; background: none; }
+  .copy:hover { color: var(--ink); }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 40px; font-size: 13px; color: var(--ink-3); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer a:hover { color: var(--ink); }
+
+  /* ── Movimiento: entra al ver, nunca al cargar todo de golpe ── */
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+  .rule.reveal { transform: scaleX(0); opacity: 1; transition: transform 1.1s var(--ease); }
+  .rule.reveal.in { transform: scaleX(1); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .rule.reveal { opacity: 1; transform: none; transition: none; }
+    .dot::after { animation: none; }
+  }
+
+  /* ── Móvil ───────────────────────────────────────── */
+  @media (max-width: 860px) {
+    .wrap { padding: 0 16px; }
+    .links { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 56px 0; gap: 40px; }
+    .sys { grid-template-columns: 1fr; gap: 10px; }
+    .sys .n { display: none; }
+    .sys .status { align-items: flex-start; text-align: left; flex-direction: row; flex-wrap: wrap; }
+    .modes { grid-template-columns: 1fr; }
+    .mode, .mode:nth-child(even) { padding: 28px 0; border-left: 0; }
+    .about { grid-template-columns: 1fr; gap: 40px; }
+    .tl { grid-template-columns: 1fr; gap: 6px; }
+    .sec-head { flex-direction: column; gap: 8px; }
+    section { padding: 64px 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="brand">David Ciro</a>
+    <div class="links">
+      <a href="#systems">Systems</a><a href="#work">Work with me</a><a href="#about">About</a><a href="#experience">Experience</a>
+    </div>
+    <div class="nav-right">
+      <a href="#" aria-label="Ver en español">ES</a>
+      <a href="#contact" class="btn btn-primary btn-sm">Start a conversation</a>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap">
+  <header class="hero">
+    <div>
+      <h1 class="reveal">I build AI automation that runs in production. <span class="dim">And I keep it running.</span></h1>
+      <p class="lede reveal">Conversational commerce, document extraction and content pipelines. Designed, deployed on my own infrastructure, operated by me.</p>
+      <div class="ctas reveal">
+        <a href="#systems" class="btn btn-primary">See the systems</a>
+        <a href="#contact" class="btn btn-quiet">Start a conversation</a>
+      </div>
+      <div class="who reveal">
+        <img src="assets/david.jpg" alt="David Ciro">
+        <div><strong>David Ciro</strong>AI automation engineer · Medellín, UTC-5</div>
+      </div>
+    </div>
+
+    <aside class="running reveal" aria-label="Systems running right now">
+      <header><span>Running in production</span><span class="mono" id="now"></span></header>
+      <div id="running-rows"></div>
+    </aside>
+  </header>
+
+  <div class="rule reveal"></div>
+
+  <section id="systems">
+    <div class="sec-head">
+      <h2 class="reveal">Systems</h2>
+      <p class="reveal">Seven systems. Four of them running right now, with no one watching.</p>
+    </div>
+    <div id="systems-list"></div>
+  </section>
+
+  <section id="work">
+    <div class="sec-head">
+      <h2 class="reveal">Work with me</h2>
+      <p class="reveal">No public rates. I answer with a number in the first email.</p>
+    </div>
+    <div class="modes">
+      <div class="mode reveal"><h3>Fixed-scope project</h3><p>You have a system in mind and want it delivered. I scope it, build it, deploy it and hand it over documented, with everything it needs to run without me.</p><p class="terms mono">Defined scope / End-to-end / Documented handover</p></div>
+      <div class="mode reveal"><h3>Monthly retainer</h3><p>Ongoing capacity for teams running automation in production: new workflows, integrations, incident triage, and the maintenance nobody has time for.</p><p class="terms mono">Monthly hours / Operations included / Async</p></div>
+      <div class="mode reveal"><h3>Team augmentation</h3><p>I join your team for a sprint or a quarter and work inside your process: your repo, your board, your review flow.</p><p class="terms mono">Your process / UTC-5 overlap / Sprint-based</p></div>
+      <div class="mode reveal"><h3>Technical audit</h3><p>A review of the automation you already run, with findings backed by evidence: what breaks silently, what has no error path, what won’t survive a second client.</p><p class="terms mono">Evidence-backed / Prioritised report / Short turnaround</p></div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="about">
+      <div>
+        <h2 class="reveal" style="margin-bottom:28px">Pilots that become platforms.</h2>
+        <div class="body">
+          <p class="reveal">I design, build and operate AI automation systems. Not prototypes: systems that run on their own. Bots handling conversations over an official WhatsApp provider, pipelines publishing on a schedule, workflows that read invoices and file them every day.</p>
+          <p class="reveal">Most of what I’ve built started as a pilot for one case and became a configurable platform. <strong>The interesting decisions live in that transition:</strong> what becomes configuration and what stays put. Sales safeguards and payment validation don’t belong in a config file.</p>
+          <p class="reveal">I work async-first: Slack, Notion, pull requests and written docs. I run my own infrastructure, AWS EC2 behind nginx, Docker and self-hosted n8n, so I don’t need anyone else to deploy what I build.</p>
+        </div>
+      </div>
+      <div>
+        <div class="stats">
+          <div class="stat reveal"><span class="v mono">5</span><span class="l">Systems shipped to production</span></div>
+          <div class="stat reveal"><span class="v mono">2020</span><span class="l">Building since</span></div>
+          <div class="stat reveal"><span class="v mono">UTC-5</span><span class="l">Full overlap with US hours</span></div>
+        </div>
+        <p class="stack-list mono reveal">n8n · LLM APIs · Redis · TypeScript · Node.js · Astro · React · Flutter · Remotion · AWS · Terraform · Docker · PostgreSQL</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="sec-head"><h2 class="reveal">Experience</h2></div>
+    <div class="tl reveal"><span class="when mono">2025 / now</span><div><h3>Co-founder · Product &amp; Infrastructure</h3><span class="org">Galactic AIMA</span></div><p>I run the self-hosted n8n on AWS EC2 the whole team’s automations run on, with services provisioned in Terraform and reached through SSM instead of open SSH.</p></div>
+    <div class="tl reveal"><span class="when mono">2022 / now</span><div><h3>Freelance Developer &amp; UI Designer</h3><span class="org">Independent</span></div><p>Digital products for clients across Latin America and Spain. React, Astro and Next.js; interfaces in Figma; workflow automation with n8n.</p></div>
+    <div class="tl reveal"><span class="when mono">2020 / now</span><div><h3>Visual &amp; Motion Designer</h3><span class="org">Own projects</span></div><p>Visual identities and motion graphics. The design judgement I bring to every product starts here.</p></div>
+    <div class="tl reveal"><span class="when mono">2020 / 2024</span><div><h3>Software Development Degree</h3><span class="org">Pascual Bravo</span></div><p>Software engineering, databases, networking and systems architecture.</p></div>
+  </section>
+
+  <section class="contact" id="contact">
+    <h2 class="reveal">Tell me what you need running.</h2>
+    <p class="lede reveal">A short message is enough. I reply in writing, with questions, a rough plan and a number.</p>
+    <div class="contact-row reveal">
+      <a href="mailto:davidcirortiz06@gmail.com" class="btn btn-primary">Start a conversation</a>
+      <button class="copy" type="button" data-copy="davidcirortiz06@gmail.com">davidcirortiz06@gmail.com <span aria-hidden="true">⧉</span></button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>David Ciro · AI automation engineer</span>
+    <span><a href="https://www.linkedin.com/in/david-ciro">LinkedIn</a> &nbsp; <a href="https://github.com/Davidciro-333">GitHub</a></span>
+  </div>
+</footer>
+
+<script>
+  // Datos reales de src/data/projects.ts (copy sin rayas largas).
+  const systems = [
+    { n:'01', name:'galacticBills', year:'2026', live:'2025-09-24', hasCase:true, tags:'n8n · Gemini · Document AI · Telegram · Google Cloud',
+      d:'Invoice capture and bookkeeping for small businesses. Send a photo or PDF over a messaging channel; an LLM extracts the tax fields, validates the totals and files them.' },
+    { n:'02', name:'beBetterStudio', year:'2026', live:'2026-04-18', hasCase:true, tags:'Node.js · TypeScript · FFmpeg · Gemini · n8n · PostgreSQL',
+      d:'A content pipeline that generates short video and carousels, publishes to four networks on a schedule, and measures what actually worked with its own analytics.' },
+    { n:'03', name:'Taxi Dispatch Platform', year:'2026', hasCase:true, tags:'PostgreSQL · Supabase · Playwright · PWA',
+      d:'QA and fixes for a dispatch platform in production in Colombia. Seven test circuits, an automated SQL and browser harness, every issue filed with cause, fix and how to verify it.' },
+    { n:'04', name:'Conversational Commerce Engine', year:'2026', live:'2026-07-16', tags:'n8n · Claude · WhatsApp API · Redis · AWS EC2',
+      d:'A multi-product sales engine over an official WhatsApp BSP: conversational AI, voice transcription, receipt validation, follow-up windows. A new product is configuration, not a rewrite.' },
+    { n:'05', name:'LinkedIn Publisher', year:'2026', live:'2026-07-30', tags:'n8n · LLM APIs · Redis · Telegram · LinkedIn API',
+      d:'The editorial pipeline behind my own LinkedIn. Curates AI news from 14 sources, drafts in a defined voice and waits for my approval before publishing.' },
+    { n:'06', name:'SignalFactory', year:'2026', tags:'Next.js · Remotion · SQLite · n8n · Cloudflare R2',
+      d:'A programmatic video factory. Renders vertical videos from a database with Remotion and headless Chrome, and publishes to two YouTube channels in two languages.' },
+    { n:'07', name:'ciro_finanzas', year:'2026', tags:'Flutter · Dart · Drift · Riverpod · SQLite',
+      d:'A local-first finance app that answers one question: how much money will I have on a given date. Pure Dart domain, 182 tests green.' },
+  ];
+
+  const since = iso => new Date(iso + 'T00:00:00-05:00').getTime();
+  const pad = n => String(n).padStart(2, '0');
+  const uptime = iso => {
+    const s = Math.max(0, Math.floor((Date.now() - since(iso)) / 1000));
+    const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+    return `${d}d ${pad(h)}h ${pad(m)}m ${pad(s % 60)}s`;
+  };
+
+  document.getElementById('running-rows').innerHTML = systems.filter(s => s.live).map(s => `
+    <div class="run-row">
+      <span class="run-name"><span class="dot" aria-hidden="true"></span>${s.name}</span>
+      <span class="uptime mono" data-live="${s.live}">${uptime(s.live)}</span>
+      <span class="run-meta mono">live since ${s.live}</span>
+    </div>`).join('');
+
+  document.getElementById('systems-list').innerHTML = systems.map(s => `
+    <article class="sys reveal">
+      <span class="n mono">${s.n}</span>
+      <div><h3>${s.name}</h3><div class="year mono">${s.year}</div></div>
+      <div><p>${s.d}</p><div class="stack mono">${s.tags}</div></div>
+      <div class="status">
+        ${s.live ? `<span class="live-tag mono"><span class="dot" aria-hidden="true"></span>${Math.floor((Date.now()-since(s.live))/864e5)} days live</span>` : `<span class="idle mono">Not running publicly</span>`}
+        ${s.hasCase ? `<a href="#" class="case-link">Read the case</a>` : ''}
+      </div>
+    </article>`).join('');
+
+  // El reloj avanza cada segundo: el sitio demuestra que los sistemas siguen corriendo.
+  const tick = () => {
+    document.querySelectorAll('[data-live]').forEach(el => el.textContent = uptime(el.dataset.live));
+    document.getElementById('now').textContent = new Date().toLocaleTimeString('en-GB', { timeZone: 'America/Bogota' }) + ' UTC-5';
+  };
+  tick(); setInterval(tick, 1000);
+
+  // Revelado al entrar en viewport, escalonado por grupo.
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const sibs = [...e.target.parentElement.children].filter(c => c.classList.contains('reveal'));
+    e.target.style.transitionDelay = Math.min(sibs.indexOf(e.target), 6) * 60 + 'ms';
+    e.target.classList.add('in'); io.unobserve(e.target);
+  }), { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => {
+    navigator.clipboard?.writeText(b.dataset.copy);
+    const t = b.innerHTML; b.textContent = 'Copied'; setTimeout(() => b.innerHTML = t, 1400);
+  }));
+</script>
+</body>
+</html>

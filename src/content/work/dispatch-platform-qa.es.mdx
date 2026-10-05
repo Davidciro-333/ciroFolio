@@ -2,7 +2,7 @@
 slug: dispatch-platform-qa
 lang: es
 title: Plataforma de despacho de taxis
-summary: QA y arreglos de una plataforma de despacho de taxis en producción en Colombia — cada issue con su causa, su arreglo y cómo verificarlo.
+summary: QA y arreglos de una plataforma de despacho de taxis en producción en Colombia. Cada issue con su causa, su arreglo y cómo verificarlo.
 role: QA y arreglos, dentro de Galactic AIMA
 year: '2026'
 stack: [PostgreSQL, Supabase, SQL, Playwright, PWA, Capacitor]
@@ -23,7 +23,7 @@ import Pipeline from '../../components/Pipeline.astro';
 ## El encargo
 
 Una plataforma de despacho de taxis ya estaba en producción en Colombia: una sola app web que
-cambia de cara según quién entre —pasajero, conductor o la central— y que se instala como PWA
+cambia de cara según quién entre (pasajero, conductor o la central) y que se instala como PWA
 desde el navegador. Antes de abrirla a una flota real, el equipo quería que alguien la
 recorriera sin el sesgo de quien la construyó.
 
@@ -50,8 +50,8 @@ más importa es el del dinero, del registro al cargo:
 />
 
 Casi todo corre sin teléfono. Construí un arnés que prueba directamente la capa de base de
-datos —las reglas viven en funciones y triggers de PostgreSQL, así que es ahí donde se
-comprueban— más una suite de navegador para lo que solo las pantallas pueden mostrar. Al
+datos (las reglas viven en funciones y triggers de PostgreSQL, así que es ahí donde se
+comprueban) más una suite de navegador para lo que solo las pantallas pueden mostrar. Al
 empezar, la capa SQL tenía **11 pruebas en rojo a propósito y 44 en verde**: cada roja era un
 defecto conocido esperando su arreglo. Hoy son **97 pruebas SQL y 38 de navegador, todas en
 verde**.
@@ -75,7 +75,7 @@ llegara a producción.
 Los issues que más pesaban no eran caídas. Eran lugares donde la app le decía a alguien algo que
 no era cierto:
 
-- La app le prometía a un conductor con el GPS desactivado que no recibiría servicios —**y se
+- La app le prometía a un conductor con el GPS desactivado que no recibiría servicios, **y se
   los seguía ofreciendo.**
 - Un conductor con la app en segundo plano dejaba de reportar posición pero **seguía "en turno"
   para siempre**, así que la central le podía despachar.
@@ -98,7 +98,7 @@ dejando los demás roles como PWA.
 - **Los cuatro issues bloqueantes están corregidos y verificados en producción,** uno por uno,
   con constancia escrita de cada comprobación.
 - **El circuito completo corrió de punta a punta en producción** el 27 de septiembre.
-- **28 issues documentados; los arreglos siguen** en el orden que priorizó el equipo —primero
+- **28 issues documentados; los arreglos siguen** en el orden que priorizó el equipo: primero
   los que ya le estaban costando plata a una persona real.
 
 El piloto con una flota real todavía no ha arrancado. Lo que muestra este caso no es un

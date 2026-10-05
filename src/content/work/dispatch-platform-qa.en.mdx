@@ -2,7 +2,7 @@
 slug: dispatch-platform-qa
 lang: en
 title: Taxi Dispatch Platform
-summary: QA and fixes for a taxi dispatch platform in production in Colombia — every issue filed with its cause, its fix and how to verify it.
+summary: QA and fixes for a taxi dispatch platform in production in Colombia. Every issue filed with its cause, its fix and how to verify it.
 role: QA and fixes, within Galactic AIMA
 year: '2026'
 stack: [PostgreSQL, Supabase, SQL, Playwright, PWA, Capacitor]
@@ -23,13 +23,13 @@ import Pipeline from '../../components/Pipeline.astro';
 ## The brief
 
 A taxi dispatch platform was already in production in Colombia: one web app that changes
-face depending on who signs in — passenger, driver or the dispatch centre — installed as a
+face depending on who signs in (passenger, driver or the dispatch centre), installed as a
 PWA straight from the browser. Before opening it to a real fleet, the team wanted someone to
 go through it without the bias of whoever built it.
 
 I took that on within Galactic AIMA. The deliverable was not "it works" or "it doesn't": it
 was GitHub issues, each one with its cause, a proposed fix and a way to check the fix held.
-A week later the brief grew — fixing those same issues became my job too.
+A week later the brief grew: fixing those same issues became my job too.
 
 ## How I tested
 
@@ -48,8 +48,8 @@ The one that matters most is the money path, from sign-up to the charge:
   ]}
 />
 
-Most of it runs without a phone. I built a harness that tests the database layer directly —
-the rules live in PostgreSQL functions and triggers, so that is where they are checked —
+Most of it runs without a phone. I built a harness that tests the database layer directly
+(the rules live in PostgreSQL functions and triggers, so that is where they are checked),
 plus a browser suite for what only the screens can show. When I started, the SQL layer had
 **11 tests red on purpose and 44 green**: every red one was a known defect waiting for its
 fix. Today it is **97 SQL tests and 38 browser tests, all green**.
@@ -73,7 +73,7 @@ reached production.
 The issues that weighed most were not crashes. They were places where the app told someone
 something that was not true:
 
-- The app promised a driver with GPS disabled that they would not receive trips — **and kept
+- The app promised a driver with GPS disabled that they would not receive trips, **and kept
   offering them trips.**
 - A driver with the app in the background stopped reporting position but **stayed "on shift"
   forever**, so dispatch could still send them work.
@@ -96,8 +96,8 @@ roles as a PWA.
 - **The four blocking issues are fixed and verified in production,** one by one, with a
   written record of each check.
 - **The full circuit ran end to end in production** on September 27.
-- **28 issues filed; the fixes continue** in the order the team prioritised — the ones
+- **28 issues filed; the fixes continue** in the order the team prioritised: the ones
   already costing a real person money first.
 
-The pilot with a real fleet has not started yet. What this case shows is not a launch — it is
+The pilot with a real fleet has not started yet. What this case shows is not a launch. It is
 the work that has to be true before one.

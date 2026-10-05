@@ -1,19 +1,18 @@
 ---
 // src/components/NotFoundPage.astro
 //
-// La 404 es zona caliente: aquí no se decide ninguna contratación, así que es
-// el sitio donde el sitio puede permitirse tener carácter sin gastar crédito.
-// De ahí el pixel art, que en el hero o en un caso de estudio costaría caro.
-//
-// El encuadre sigue siendo el del resto del portafolio —una ruta que no tiene
-// nada escuchando detrás— en vez del "¡ups, te perdiste!" de costumbre.
+// La 404 conserva la idea del rack de PixelServer (una bahía que no responde)
+// en el lenguaje de la galería: las bahías que funcionan son los sistemas
+// reales en producción, y la que falla es la ruta que pidió el visitante.
+// El encuadre sigue siendo el del resto del portafolio, una ruta sin nada
+// escuchando detrás, en vez del "¡ups, te perdiste!" de costumbre.
 
 import Layout from '../layouts/Layout.astro';
 import Nav from './Nav.astro';
-import PixelServer from './PixelServer.astro';
 import { ui } from '../i18n/ui';
 import { useTranslations, localePath } from '../i18n/utils';
-import type { Lang } from '../i18n/config';
+import { projects } from '../data/projects';
+import { LOCALE_TAGS, type Lang } from '../i18n/config';
 import { ogRoute, ogImagePath } from '../lib/og-routes';
 import { ogCard } from '../data/seo';
 
@@ -23,98 +22,150 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-
 const home = localePath(lang, '/');
+
+const live = projects.filter((p) => p.liveSince);
+const since = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString(LOCALE_TAGS[lang], {
+    year: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  });
 ---
 
 <Layout
   lang={lang}
-  title={`404 — ${t(ui.notFound.title)}`}
+  title={`404 · ${t(ui.notFound.title)}`}
   description={t(ui.notFound.body)}
   ogImage={ogImagePath(ogRoute.notFound(lang))}
   ogImageHeading={ogCard.notFoundTitle[lang]}
 >
   <Nav lang={lang} />
 
-  <main class="px-[var(--section-pad-x)]">
-    <section
-      class="card-dark px-8 md:px-12 lg:px-16 py-16 md:py-24 flex flex-col md:flex-row
-             items-center md:items-center gap-10 md:gap-16 justify-center"
-    >
-      <PixelServer width={190} class="shrink-0" />
-
-      <div class="flex flex-col items-center md:items-start text-center md:text-left max-w-lg">
-        <p class="type-label mb-2">{t(ui.notFound.eyebrow)}</p>
-        <h1 class="type-section mb-4">{t(ui.notFound.title)}</h1>
-        <p class="type-body mb-6">{t(ui.notFound.body)}</p>
-
-        <!-- La ruta pedida, en registro de log. El sitio es estático, así que
-             el servidor no la conoce: la rellena el cliente. Sin JavaScript
-             se queda el guion, que no miente ni deja un hueco raro. -->
-        <p class="log-line mb-8" aria-hidden="true">
-          <span class="log-prompt">GET</span>
-          <span data-requested-path>—</span>
-          <span class="log-code">404</span>
-        </p>
-
-        <div class="flex flex-wrap gap-3 justify-center md:justify-start">
-          <a href={`${home}#systems`} class="btn-primary">
-            {t(ui.notFound.back)} <span aria-hidden="true">↗</span>
-          </a>
-          <a href={`${home}#contact`} class="btn-ghost">
-            {t(ui.notFound.contact)}
-          </a>
-        </div>
+  <main class="wrap grid">
+    <div>
+      <p class="code reveal" aria-hidden="true">404</p>
+      <h1 class="reveal">{t(ui.notFound.title)}</h1>
+      <p class="body reveal">{t(ui.notFound.body)}</p>
+      <div class="ctas reveal">
+        <a href={`${home}#systems`} class="pill">{t(ui.notFound.back)}</a>
+        <a href={`${home}#contact`} class="text-link more">{t(ui.notFound.contact)}</a>
       </div>
+    </div>
+
+    <section class="rack reveal" aria-label={t(ui.notFound.rack)}>
+      <header><b>{t(ui.notFound.rack)}</b><span>{t(ui.notFound.rackNow)}</span></header>
+      <ul>
+        {live.map((p) => (
+          <li class="bay">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span class="name">{p.name}</span>
+            <span class="state" data-since={p.liveSince} data-days={t(ui.notFound.days)}>
+              {t(ui.status.live)} · {since(p.liveSince!)}
+            </span>
+          </li>
+        ))}
+        <li class="bay down">
+          <span class="down-dot" aria-hidden="true"></span>
+          <!-- El sitio es estático: la ruta la rellena el cliente. Sin
+               JavaScript queda un guion, que no miente ni deja un hueco raro. -->
+          <span class="name" data-requested-path>-</span>
+          <span class="state">{t(ui.notFound.down)}</span>
+        </li>
+      </ul>
     </section>
   </main>
 </Layout>
 
 <style>
-  .log-line {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 12px;
-    color: var(--color-text-muted);
-    word-break: break-all;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: baseline;
-  }
-
-  .log-prompt {
-    color: var(--color-text-faint);
-  }
-
-  .log-code {
-    color: #e05252;
-    font-weight: 600;
-  }
-
-  /* Secundario del CTA principal: mismo peso tipográfico, sin el relleno,
-     para que no compitan por la atención. */
-  .btn-ghost {
-    display: inline-flex;
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 72px;
     align-items: center;
-    padding: 12px 22px;
-    border: 1px solid var(--color-border-mid);
-    border-radius: var(--radius-btn);
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    transition:
-      color 0.25s,
-      border-color 0.25s;
+    min-height: calc(100dvh - 52px);
+    padding-top: 64px;
+    padding-bottom: 96px;
+  }
+  .code {
+    font-size: clamp(88px, 12vw, 152px);
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+    font-variant-numeric: tabular-nums;
+  }
+  h1 {
+    margin-top: 20px;
+    font-size: clamp(32px, 3.8vw, 44px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+  .body {
+    margin-top: 14px;
+    max-width: 36ch;
+    font-size: 19px;
+    color: var(--ink-2);
+  }
+  .ctas {
+    margin-top: 32px;
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
-  .btn-ghost:hover {
-    color: var(--color-text-primary);
-    border-color: var(--color-border-mid);
+  .rack {
+    background: var(--parch);
+    border-radius: 28px;
+    padding: 14px;
+  }
+  .rack header {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 14px 14px;
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+  .rack header b { color: var(--ink); font-weight: 600; }
+  ul { list-style: none; display: grid; gap: 8px; }
+  .bay {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+    background: var(--bg);
+    border-radius: 16px;
+    padding: 16px 18px;
+    transition: background-color 0.4s ease;
+  }
+  .name { font-weight: 600; letter-spacing: -0.015em; overflow-wrap: anywhere; }
+  .state {
+    font-size: 14px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .down { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .down-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+  }
+  .down .state { color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 859px) {
+    .grid { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; min-height: 0; }
   }
 </style>
 
 <script>
-  const slot = document.querySelector('[data-requested-path]');
-  if (slot) slot.textContent = window.location.pathname;
+  const path = document.querySelector('[data-requested-path]');
+  if (path) path.textContent = decodeURIComponent(window.location.pathname);
+
+  for (const el of document.querySelectorAll<HTMLElement>('.state[data-since]')) {
+    const days = Math.floor((Date.now() - Date.parse(`${el.dataset.since}T00:00:00-05:00`)) / 86_400_000);
+    if (days > 0) el.textContent = `${el.textContent?.split('·')[0].trim()} · ${days.toLocaleString()} ${el.dataset.days}`;
+  }
 </script>

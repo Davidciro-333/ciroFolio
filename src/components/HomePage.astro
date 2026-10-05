@@ -29,11 +29,13 @@ const { lang } = Astro.props;
 >
   <Nav lang={lang} />
 
-  <main class="px-[var(--section-pad-x)] flex flex-col gap-[var(--section-gap)]">
+  <!-- Primero la prueba, después la oferta (DESIGN.md §5): los sistemas van
+       antes que las modalidades. -->
+  <main>
     <Hero         lang={lang} />
+    <Proyectos    lang={lang} />
     <Contratacion lang={lang} />
     <SobreMi      lang={lang} />
-    <Proyectos    lang={lang} />
     <Experiencia  lang={lang} />
     <Contacto     lang={lang} />
   </main>

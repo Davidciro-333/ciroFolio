@@ -1,0 +1,115 @@
+---
+// src/components/Bars.astro
+// Una serie en el tiempo como barras verticales, para los casos de estudio.
+// La última barra es la noticia: va en tinta llena, el resto en gris.
+//
+// Los datos también van como <table> oculta a la vista: el gráfico es
+// aria-hidden y el lector de pantalla lee la tabla, que no se pierde nada.
+
+interface Item {
+  label: string;
+  value: number;
+  /** Cómo se escribe el valor (separadores del idioma). Por defecto, el número. */
+  display?: string;
+}
+
+interface Props {
+  /** Qué se mide: encabeza la tabla accesible y el gráfico. */
+  title: string;
+  items: Item[];
+  caption?: string;
+}
+
+const { title, items, caption } = Astro.props;
+const max = Math.max(...items.map((i) => i.value));
+---
+
+<figure class="bars reveal">
+  <p class="bars-title" aria-hidden="true">{title}</p>
+  <div class="plot" aria-hidden="true">
+    {items.map((item, index) => (
+      <div class:list={['col', index === items.length - 1 && 'is-last']}>
+        <span class="val">{item.display ?? item.value}</span>
+        <span class="bar" style={`--h: ${(item.value / max).toFixed(3)}; --i: ${index}`}></span>
+        <span class="lab">{item.label}</span>
+      </div>
+    ))}
+  </div>
+
+  <table class="sr-only">
+    <caption>{title}</caption>
+    <tr>{items.map((item) => <th scope="col">{item.label}</th>)}</tr>
+    <tr>{items.map((item) => <td>{item.display ?? item.value}</td>)}</tr>
+  </table>
+
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  figure.bars {
+    margin: 32px 0 36px;
+    padding: 28px 28px 22px;
+    background: var(--parch);
+    border-radius: 28px;
+    transition: background-color 0.4s ease;
+  }
+  .bars-title {
+    margin: 0 0 18px !important;
+    font-size: 15px !important;
+    font-weight: 600;
+    color: var(--ink-2) !important;
+  }
+  .plot {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 16px;
+    align-items: end;
+    height: 220px;
+  }
+  .col {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    gap: 8px;
+    text-align: center;
+  }
+  .val {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .bar {
+    display: block;
+    height: calc(var(--h) * 150px);
+    min-height: 4px;
+    border-radius: 10px;
+    background: var(--ink-3);
+    opacity: 0.35;
+    transform-origin: bottom;
+  }
+  .lab { font-size: 14px; color: var(--ink-3); }
+  .is-last .val { color: var(--ink); font-size: 20px; letter-spacing: -0.02em; }
+  .is-last .bar { background: var(--ink); opacity: 1; }
+  .is-last .lab { color: var(--ink); font-weight: 600; }
+
+  figcaption {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--ink-3);
+    text-wrap: pretty;
+  }
+
+  /* Las barras crecen una vez, al aparecer: cuentan la caída en orden */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .bars .bar {
+      transform: scaleY(0);
+      transition: transform 0.9s var(--spring);
+      transition-delay: calc(0.25s + var(--i) * 0.12s);
+    }
+    :global(.js) .bars.is-in .bar { transform: scaleY(1); }
+  }
+</style>

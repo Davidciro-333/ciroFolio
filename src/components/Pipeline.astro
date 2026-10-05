@@ -1,13 +1,21 @@
 ---
 // src/components/Pipeline.astro
-// Diagrama de flujo para los casos de estudio.
+// Diagrama de flujo de los casos de estudio, en dos formas con UNA sola fuente:
 //
-// Es una lista ordenada de verdad (<ol>), no un dibujo: se lee con lector de
-// pantalla, se puede copiar y no se rompe al hacer zoom. Sin JS y sin SVG de
-// ancho fijo — un diagrama que obliga a hacer scroll horizontal en el móvil
-// no es un diagrama, es una imagen.
+// 1. El diagrama vivo (≥ 860 px): un SVG generado en el build a partir de los
+//    mismos `steps`, con la frontera de lo fijo dibujada y un elemento que lo
+//    recorre mientras está en pantalla. Es decorativo (aria-hidden): repite
+//    lo que dice la lista.
+// 2. La lista ordenada (<ol>): siempre presente. Se lee con lector de
+//    pantalla, se puede copiar, no se rompe al hacer zoom y es lo que se ve en
+//    móvil. Un SVG que obliga a hacer scroll horizontal no es un diagrama.
 //
-// Nada se comunica solo con color: las ramas llevan su etiqueta escrita.
+// Nada se comunica solo con color: lo fijo lleva su etiqueta escrita, las
+// ramas su "else", y lo planeado su texto.
+
+import { ui } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { DEFAULT_LOCALE, type Lang } from '../i18n/config';
 
 export interface Step {
   /** Número o marca corta del paso. */
@@ -16,8 +24,12 @@ export interface Step {
   detail?: string;
   /** Ruta alternativa: qué pasa cuando este paso no se cumple. */
   branch?: string;
+  /** Nombre corto del destino de la rama, para el nodo del diagrama. */
+  branchNode?: string;
   /** Destinos en abanico al final del paso. */
   outputs?: string[];
+  /** Marca escrita sobre el nodo ("Fixed by design"). Se dibuja con borde grueso. */
+  flag?: string;
 }
 
 interface Props {
@@ -25,97 +37,277 @@ interface Props {
   caption?: string;
   /** Etiqueta del desvío. Se traduce desde el MDX de cada idioma. */
   branchLabel?: string;
+  /** Qué significa la marca `flag`, para la leyenda. */
+  flagLegend?: string;
+  /** Capa de configuración planeada (no construida): texto y pasos a los que alimenta. */
+  config?: { label: string; targets: string[] };
 }
 
-const { steps, caption, branchLabel = 'else' } = Astro.props;
+const { steps, caption, branchLabel = 'else', flagLegend, config } = Astro.props;
+const lang = (Astro.currentLocale ?? DEFAULT_LOCALE) as Lang;
+const t = useTranslations(lang);
+
+// ── Geometría del diagrama ─────────────────────────────────
+const STEP = 140;            // distancia entre centros
+const NODE_W = 118;
+const NODE_H = 48;
+const ROW_Y = 150;           // centro vertical de la fila principal
+const LOW_Y = 268;           // centro vertical de ramas y salidas
+const W = steps.length * STEP;
+const cx = (i: number) => STEP / 2 + i * STEP;
+const hasLow = steps.some((s) => s.branch || s.outputs?.length);
+const H = hasLow ? 300 : 190;
+const top = config ? 0 : 60;
+
+type Box = { x: number; y: number; w: number; h: number; label: string; step?: boolean; flagged?: boolean };
+const boxes: Box[] = [];
+const wires: { d: string; plan?: boolean }[] = [];
+const elseLabels: { x: number; y: number }[] = [];
+let branchRoute: string | undefined;
+
+wires.push({ d: `M${cx(0)} ${ROW_Y} H${cx(steps.length - 1)}` });
+
+steps.forEach((s, i) => {
+  boxes.push({ x: cx(i) - NODE_W / 2, y: ROW_Y - NODE_H / 2, w: NODE_W, h: NODE_H, label: s.title, step: true, flagged: !!s.flag });
+
+  if (s.branch) {
+    wires.push({ d: `M${cx(i)} ${ROW_Y + NODE_H / 2} V${LOW_Y - 22}` });
+    elseLabels.push({ x: cx(i) + 8, y: (ROW_Y + LOW_Y) / 2 + 4 });
+    boxes.push({ x: cx(i) - 66, y: LOW_Y - 22, w: 132, h: 44, label: s.branchNode ?? branchLabel });
+    branchRoute = `M${cx(0)} ${ROW_Y} H${cx(i)} V${LOW_Y}`; // la última rama: suele ser la más interesante
+  }
+
+  if (s.outputs?.length) {
+    const ow = 124, gap = 10;
+    const total = s.outputs.length * ow + (s.outputs.length - 1) * gap;
+    const start = Math.min(Math.max(cx(i) - total / 2, 10), W - total - 10);
+    const busY = (ROW_Y + NODE_H / 2 + LOW_Y - 22) / 2;
+    wires.push({ d: `M${cx(i)} ${ROW_Y + NODE_H / 2} V${busY}` });
+    wires.push({ d: `M${start + ow / 2} ${busY} H${start + total - ow / 2}` });
+    s.outputs.forEach((o, k) => {
+      const ox = start + k * (ow + gap);
+      wires.push({ d: `M${ox + ow / 2} ${busY} V${LOW_Y - 22}` });
+      boxes.push({ x: ox, y: LOW_Y - 22, w: ow, h: 44, label: o });
+    });
+    branchRoute ??= `M${cx(0)} ${ROW_Y} H${cx(i)} V${busY} H${start + ow / 2} V${LOW_Y}`;
+  }
+});
+
+const configTargets = config ? steps.flatMap((s, i) => (config.targets.includes(s.n) ? [i] : [])) : [];
+configTargets.forEach((i) => wires.push({ d: `M${cx(i)} 46 V${ROW_Y - NODE_H / 2}`, plan: true }));
+
+const mainRoute = `M${cx(0)} ${ROW_Y} H${cx(steps.length - 1)}`;
 ---
 
-<figure class="pipeline my-9">
-  <ol class="flex flex-col">
-    {steps.map((step, index) => (
-      <li class="grid grid-cols-[auto_1fr] gap-x-5">
+<figure class="pipeline">
+  <div class="stage" aria-hidden="true" data-pipeline-stage>
+    <svg viewBox={`0 ${top} ${W} ${H - top}`} preserveAspectRatio="xMidYMid meet">
+      {config && (
+        <g class="cfg">
+          <rect x="10" y="6" width={W - 20} height="40" rx="12" />
+          <text x={W / 2} y="31" text-anchor="middle">{config.label}</text>
+        </g>
+      )}
 
-        <!-- Columna del indicador: número + línea conectora -->
-        <div class="flex flex-col items-center">
-          <span
-            class="w-9 h-9 rounded-full shrink-0
-                   flex items-center justify-center
-                   text-[12px] font-bold tabular-nums
-                   border border-[var(--color-neon)]/40 bg-[var(--color-neon)]/[0.08]"
-            style="color: var(--color-neon); font-family: var(--font-body);"
-          >{step.n}</span>
+      {wires.map((w) => <path class:list={['wire draw', w.plan && 'plan']} d={w.d} />)}
+      {elseLabels.map((l) => <text class="else" x={l.x} y={l.y}>{branchLabel}</text>)}
 
-          {index < steps.length - 1 && (
-            <span
-              class="w-px flex-1 min-h-[28px] my-1"
-              style="background: linear-gradient(to bottom, rgba(200,241,53,0.35), rgba(255,255,255,0.08));"
-              aria-hidden="true"
-            ></span>
-          )}
-        </div>
+      <path id="route-main" class="route" d={mainRoute} />
+      {branchRoute && <path class="route route-alt" d={branchRoute} />}
+      <circle class="pkt" r="5" cx="-20" cy="-20" />
 
-        <!-- Contenido del paso -->
-        <div class={index < steps.length - 1 ? 'pb-7' : ''}>
-          <p
-            class="text-[15px] font-semibold leading-snug"
-            style="font-family: var(--font-body); color: var(--color-text-primary);"
-          >{step.title}</p>
+      {steps.map((s, i) => s.flag && (
+        <text class="flag" x={cx(i)} y={ROW_Y - NODE_H / 2 - 12} text-anchor="middle">{s.flag}</text>
+      ))}
 
-          {step.detail && (
-            <p
-              class="text-[14px] leading-relaxed mt-1"
-              style="font-family: var(--font-body); color: var(--color-text-secondary);"
-            >{step.detail}</p>
-          )}
+      {boxes.map((b) => (
+        <g class:list={['node', b.step && 'step', b.flagged && 'flagged']}>
+          <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="12" />
+          <text x={b.x + b.w / 2} y={b.y + b.h / 2 + 4.5} text-anchor="middle">{b.label}</text>
+        </g>
+      ))}
+    </svg>
 
-          {step.branch && (
-            <p
-              class="text-[13px] leading-relaxed mt-3 pl-3 border-l border-dashed"
-              style="font-family: var(--font-body); color: var(--color-text-secondary); border-color: rgba(255,255,255,0.22);"
-            >
-              <span class="font-semibold" style="color: var(--color-text-primary);">{branchLabel} →</span>
-              {' '}{step.branch}
-            </p>
-          )}
+    <div class="legend">
+      {flagLegend && <span><i class="k-flag"></i>{flagLegend}</span>}
+      {config && <span><i class="k-plan"></i>{t(ui.diagram.planned)}</span>}
+      <span><i class="k-pkt"></i>{t(ui.diagram.packet)}</span>
+    </div>
+  </div>
 
-          {step.outputs && step.outputs.length > 0 && (
-            <ul class="flex flex-wrap gap-2 mt-3">
-              {step.outputs.map((output) => (
-                <li class="tag">{output}</li>
-              ))}
-            </ul>
-          )}
-        </div>
+  {caption && <figcaption>{caption}</figcaption>}
 
+  <ol class="steps" aria-label={t(ui.diagram.steps)}>
+    {steps.map((step) => (
+      <li>
+        <p class="title">
+          <span class="n">{step.n}</span> {step.title}
+          {step.flag && <span class="flag-chip">{step.flag}</span>}
+        </p>
+        {step.detail && <p class="detail">{step.detail}</p>}
+        {step.branch && (
+          <p class="branch"><b>{branchLabel}:</b> {step.branch}</p>
+        )}
+        {step.outputs && step.outputs.length > 0 && (
+          <p class="outputs">{step.outputs.join(', ')}</p>
+        )}
       </li>
     ))}
   </ol>
-
-  {caption && (
-    <figcaption
-      class="text-[13px] mt-5 pt-4 border-t"
-      style="font-family: var(--font-body); color: var(--color-text-secondary); border-color: rgba(255,255,255,0.08);"
-    >{caption}</figcaption>
-  )}
 </figure>
 
 <style>
-  /* El diagrama vive dentro de .case-prose, que estiliza ul/ol/li/p para
-     lectura larga. Aquí eso estorba: metería viñetas y márgenes entre los
-     pasos. Se neutraliza con especificidad mayor que la de la prosa, en vez
-     de con !important. */
+  /* El diagrama vive dentro de la prosa del caso, que estiliza ol/li/p para
+     lectura larga. Aquí eso estorba: se neutraliza con más especificidad en
+     vez de con !important. */
+  figure.pipeline { margin: 48px 0; }
   figure.pipeline ol,
-  figure.pipeline ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  figure.pipeline p { margin: 0; padding: 0; list-style: none; }
+  figure.pipeline li { margin: 0; }
+
+  /* Rompe el ancho de lectura: el diagrama necesita el ancho de la galería */
+  .stage {
+    width: min(1072px, calc(100vw - 2 * var(--gutter)));
+    margin-left: 50%;
+    transform: translateX(-50%);
+    background: var(--parch);
+    border-radius: 32px;
+    padding: 36px 32px 24px;
+    transition: background-color 0.4s ease;
+  }
+  .stage svg { width: 100%; height: auto; overflow: visible; }
+
+  .node rect { fill: var(--bg); stroke: var(--ink-3); stroke-width: 1; transition: fill 0.4s ease; }
+  .node.flagged rect { stroke: var(--ink); stroke-width: 2; }
+  .node text { font: 600 13px var(--font-sans); fill: var(--ink); letter-spacing: -0.01em; }
+  .node:not(.step) text { font-weight: 500; font-size: 12.5px; }
+  .flag { font: 600 11.5px var(--font-sans); fill: var(--ink); }
+  .else { font: 500 11.5px var(--font-sans); fill: var(--ink-3); }
+  .wire { fill: none; stroke: var(--ink-3); stroke-width: 1.4; }
+  .cfg rect { fill: none; stroke: var(--ink-3); stroke-dasharray: 5 5; }
+  .cfg text { font: 500 12.5px var(--font-sans); fill: var(--ink-2); }
+  .route { fill: none; stroke: none; }
+  .pkt { fill: var(--blue); visibility: hidden; }
+
+  /* Las conexiones se trazan una vez, al entrar en pantalla */
+  .draw { stroke-dasharray: 1400; stroke-dashoffset: 1400; }
+  .is-on .draw { animation: pipeline-draw 1.4s var(--spring) forwards; }
+  .draw.plan { stroke-dasharray: 4 5; stroke-dashoffset: 0; opacity: 0; }
+  .is-on .draw.plan { animation: pipeline-fade 0.8s ease 0.9s forwards; }
+  @keyframes pipeline-draw { to { stroke-dashoffset: 0; } }
+  @keyframes pipeline-fade { to { opacity: 1; } }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+  .legend i { display: inline-block; vertical-align: -1px; margin-right: 8px; }
+  .k-flag { width: 22px; height: 12px; border-radius: 4px; border: 2px solid var(--ink); }
+  .k-plan { width: 22px; height: 12px; border-radius: 4px; border: 1px dashed var(--ink-3); }
+  .k-pkt { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); vertical-align: 1px !important; }
+
+  figcaption {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 15px;
+    color: var(--ink-3);
+    text-wrap: pretty;
   }
 
-  figure.pipeline li {
-    margin: 0;
+  /* La lista: dos columnas en escritorio, una en móvil */
+  .steps {
+    margin-top: 40px !important;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 40px;
   }
+  .steps li { padding: 16px 0; border-top: 1px solid var(--line); }
+  .title { font-weight: 700; letter-spacing: -0.015em; color: var(--ink); }
+  .n { color: var(--ink-3); font-weight: 500; font-variant-numeric: tabular-nums; margin-right: 4px; }
+  .flag-chip {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    vertical-align: 1px;
+  }
+  .detail { margin-top: 4px !important; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+  .branch, .outputs { margin-top: 6px !important; font-size: 14px; line-height: 1.5; color: var(--ink-3); }
+  .branch b { color: var(--ink-2); font-weight: 600; }
 
-  figure.pipeline p {
-    margin: 0;
+  @media (max-width: 859px) {
+    .stage { display: none; }
+    .steps { grid-template-columns: 1fr; margin-top: 0 !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .draw, .is-on .draw, .is-on .draw.plan { animation: none; stroke-dashoffset: 0; opacity: 1; }
   }
 </style>
+
+<script>
+  // Un elemento recorre el sistema mientras el diagrama está en pantalla; fuera
+  // de pantalla se para. Cada tercer ciclo toma la rama (o el abanico), para
+  // que se vea que existe. Con movimiento reducido no hay paquete.
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (const stage of document.querySelectorAll<HTMLElement>('[data-pipeline-stage]')) {
+    const pkt = stage.querySelector<SVGCircleElement>('.pkt');
+    const main = stage.querySelector<SVGPathElement>('.route:not(.route-alt)');
+    const alt = stage.querySelector<SVGPathElement>('.route-alt');
+    if (!pkt || !main) continue;
+
+    let visible = false;
+    let running = false;
+    let cycle = 0;
+
+    const travel = (path: SVGPathElement, duration: number) =>
+      new Promise<void>((done) => {
+        const length = path.getTotalLength();
+        const t0 = performance.now();
+        pkt.style.visibility = 'visible';
+        const frame = (now: number) => {
+          const p = Math.min(1, (now - t0) / duration);
+          const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+          const point = path.getPointAtLength(eased * length);
+          pkt.setAttribute('cx', String(point.x));
+          pkt.setAttribute('cy', String(point.y));
+          if (p < 1 && visible) requestAnimationFrame(frame);
+          else {
+            pkt.style.visibility = 'hidden';
+            done();
+          }
+        };
+        requestAnimationFrame(frame);
+      });
+
+    const loop = async () => {
+      if (running) return;
+      running = true;
+      while (visible) {
+        cycle += 1;
+        if (alt && cycle % 3 === 0) await travel(alt, 2600);
+        else await travel(main, 3200);
+        await new Promise((r) => setTimeout(r, 1800));
+      }
+      running = false;
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        if (!visible) return;
+        stage.classList.add('is-on');
+        if (!reduce) setTimeout(loop, running ? 0 : 1400);
+      },
+      { threshold: 0.35 },
+    ).observe(stage);
+  }
+</script>
