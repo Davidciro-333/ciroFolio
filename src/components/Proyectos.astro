@@ -7,7 +7,7 @@
 import { ui } from '../i18n/ui';
 import { useTranslations, localePath } from '../i18n/utils';
 import { projects } from '../data/projects';
-import { savings, hoursOf, totalHours, totalValueUsd, HOURLY_RATE_USD, SAVINGS_AS_OF, publisherPace } from '../data/savings';
+import { savings, hoursOf, totalHours, HOURLY_RATE_USD, SAVINGS_AS_OF, publisherPace } from '../data/savings';
 import { LOCALE_TAGS, type Lang } from '../i18n/config';
 
 interface Props {
@@ -41,7 +41,8 @@ const sinceLabel = (iso: string) =>
 const fmt = (n: number) => n.toLocaleString(LOCALE_TAGS[lang]);
 const usd = (n: number) => `USD ${fmt(n)}`;
 const savedHours = Math.round(totalHours / 10) * 10;
-const savedValue = Math.round(totalValueUsd / 100) * 100;
+// El valor sale de las horas ya redondeadas: si no, "≈ 250 h a USD 20" y "USD 4.900" no cuadran.
+const savedValue = savedHours * HOURLY_RATE_USD;
 const nameOf = (slug: string) => projects.find((p) => p.slug === slug)?.name ?? slug;
 const savedRows = savings.map((s) => ({
   name: nameOf(s.slug),
