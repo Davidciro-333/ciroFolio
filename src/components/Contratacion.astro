@@ -2,7 +2,8 @@
 // src/components/Contratacion.astro
 // Modalidades de contratación: responde a "¿cómo te contrato?", que es lo que
 // una agencia necesita saber, no a "¿qué sabes hacer?". Cuatro columnas
-// separadas por hairlines, sin tarjetas (DESIGN.md §5).
+// separadas por hairlines, sin tarjetas (DESIGN.md §5). El tiempo completo va
+// aparte, en una franja ancha: es otra forma de contratar, no una quinta columna.
 
 import { ui } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
@@ -15,13 +16,15 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
+const modes = engagements.filter((item) => !item.wide);
+const wide = engagements.filter((item) => item.wide);
 ---
 
 <section id="engagements" class="section wrap">
   <h2 class="sec-title reveal">{t(ui.services.title)}</h2>
 
   <div class="modes">
-    {engagements.map((item) => (
+    {modes.map((item) => (
       <article class="mode reveal">
         <h3>{t(item.title)}</h3>
         <p>{t(item.description)}</p>
@@ -31,6 +34,16 @@ const t = useTranslations(lang);
       </article>
     ))}
   </div>
+
+  {wide.map((item) => (
+    <article class="wide reveal">
+      <h3>{t(item.title)}</h3>
+      <p>{t(item.description)}</p>
+      <ul>
+        {t(item.tags).map((tag) => <li>{tag}</li>)}
+      </ul>
+    </article>
+  ))}
 
   <p class="note reveal">{t(ui.services.note)}</p>
 </section>
@@ -70,6 +83,18 @@ const t = useTranslations(lang);
     padding: 6px 0;
     border-top: 1px solid var(--line);
   }
+  /* Franja de tiempo completo: título, texto y condiciones en una fila */
+  .wide {
+    margin-top: 24px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .wide p,
+  .wide ul { margin-top: 0; }
   .note {
     margin-top: 36px;
     text-align: center;
@@ -88,5 +113,7 @@ const t = useTranslations(lang);
       border-left: 0;
     }
     .mode + .mode { border-top: 1px solid var(--line); }
+    .wide { grid-template-columns: 1fr; gap: 10px; margin-top: 0; padding-top: 24px; }
+    .wide ul { margin-top: 8px; }
   }
 </style>

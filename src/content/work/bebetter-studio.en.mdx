@@ -7,8 +7,8 @@ role: Design, build and operations
 year: '2026'
 stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, PostgreSQL, AWS EC2, Docker]
 metrics:
-  - { value: '755K', label: 'Views across 124 pieces' }
-  - { value: '127K', label: 'Views on the best single piece' }
+  - { value: '847K', label: 'Views across 148 pieces' }
+  - { value: '128K', label: 'Views on the best single piece' }
   - { value: '4.9s → 6.6s', label: 'Median watch time after the fix' }
   - { value: '39/40', label: 'Orphan posts recovered' }
 links:
@@ -25,8 +25,8 @@ import Compare from '../../components/Compare.astro';
 ## The problem I thought I had
 
 Publishing short-form content by hand does not scale. Pick an image, pick a line, lay
-out the text, render, upload to four networks, write four captions, schedule. Twenty
-minutes per post, every day, forever.
+out the text, render, upload to four networks, write four captions, schedule. Half an
+hour per post, every day, forever.
 
 So I built the machine. It worked. And then the account started dying anyway, which
 turned out to be the actually interesting problem.
@@ -169,10 +169,11 @@ the bot cannot propose a line that would not get published.
 
 ## Where it stands
 
-Running, at three pieces a day, and every piece still goes through human approval before it
-is published. As of September 12, 2026: **124 pieces with metrics, 755,151 views in total,
-and 127,404 on the best single piece.** Median reach per piece is 1,687. I quote the median
-rather than the average (4,313) because two pieces pull the average up.
+Running, and every piece still goes through human approval before it is published. As of
+November 2, 2026: **148 pieces with metrics, 847,337 views in total, and 128,397 on the best
+single piece.** Median reach per piece is 1,718. I quote the median rather than the average
+because two pieces pull the average up. At half an hour each, those 148 pieces are about 74
+hours of manual publishing that nobody had to do.
 
 The part worth taking away is not the renderer. It is that a content pipeline without
 measurement is a machine for producing more of whatever you were already doing wrong,

@@ -19,8 +19,8 @@ export const meta = {
     es: 'David Ciro · Ingeniero de Automatización con IA',
   },
   description: {
-    en: 'I build AI automation systems that run in production: conversational commerce, document extraction and content pipelines. Available for freelance work. Based in Colombia, UTC-5.',
-    es: 'Construyo sistemas de automatización con IA que corren en producción: comercio conversacional, extracción de documentos y pipelines de contenido. Disponible para trabajo freelance. Colombia, UTC-5.',
+    en: 'I build AI automation systems that run in production: conversational commerce, document extraction and content pipelines. Available for remote contracts or a full-time role. Based in Colombia, UTC-5.',
+    es: 'Construyo sistemas de automatización con IA que corren en producción: comercio conversacional, extracción de documentos y pipelines de contenido. Disponible para contratos en remoto o un rol de tiempo completo. Colombia, UTC-5.',
   },
 } satisfies Record<string, Localized<string>>;
 
@@ -46,8 +46,8 @@ export const ogCard = {
     es: 'Sistemas de automatización con IA que corren en producción: comercio conversacional, extracción de documentos y pipelines de contenido.',
   },
   homeSignature: {
-    en: 'itsciro.com · Colombia, UTC−5 · Available for freelance work',
-    es: 'itsciro.com · Colombia, UTC−5 · Disponible para trabajo freelance',
+    en: 'itsciro.com · Colombia, UTC−5 · Available for contract or full-time work',
+    es: 'itsciro.com · Colombia, UTC−5 · Disponible por contrato o tiempo completo',
   },
 
   /** Casos de estudio. */

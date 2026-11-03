@@ -1,0 +1,105 @@
+---
+slug: publishing-studio
+lang: en
+title: Video Publishing Studio
+summary: A web app where a creative team uploads finished videos, puts them on a calendar, and they publish themselves to Instagram and Facebook.
+role: Spec, build, deployment and operations, within Galactic AIMA
+year: '2026'
+stack: [TypeScript, React, Express, PostgreSQL, Cloudflare R2, n8n, Meta Graph API, Telegram, Docker, AWS]
+metrics:
+  - { value: '4 days', label: 'From written spec to production' }
+  - { value: '277', label: 'Automated tests, all green' }
+  - { value: '1st try', label: 'First reel published to Instagram and Facebook' }
+  - { value: '0', label: 'Publishing state kept inside n8n' }
+links: []
+draft: false
+order: 4
+---
+
+import Pipeline from '../../components/Pipeline.astro';
+
+> An internal tool of Galactic AIMA, described here without its product name. Figures as of
+> November 2, 2026.
+
+## The brief
+
+The team at Galactic AIMA records videos every week and was publishing them by hand: open
+Business Suite, upload, paste the copy, pick a time, repeat for each network. I had already
+solved the publishing half of that problem for my own content pipeline, beBetterStudio: a
+queue, an n8n scheduler that drains it, tokens that rotate themselves, notices on Telegram.
+
+The ask was that half, without the video generator, for several people at once: upload what
+you recorded, put it on a calendar, forget about it.
+
+## Spec before code
+
+I wrote the specification first: every post and per-network state with its transitions, the
+contract between the app and n8n, the contract with Telegram, the scheduled jobs, the
+environment variables and the test strategy. Meta's requirements were checked against the
+official documentation before a line was written: Facebook Reels only accepts 3 to 90
+seconds, and a Page can publish 30 posts in 24 hours.
+
+The test strategy included a fake n8n. That let the first four phases (sign-in, uploads,
+posts, calendar, the internal API with leases and retries) be built and tested with no Meta
+account involved at all. When the real integration arrived, it was the last piece, not the
+first unknown.
+
+## The system
+
+<Pipeline
+  branchLabel="else"
+  flagLegend="The app decides. n8n only executes."
+  caption="n8n claims, publishes and reports. It never decides whether a post is published, failed or retried: that lives in the app's database."
+  steps={[
+    { n: '01', title: 'Ingest', detail: 'Uploaded from the web straight to a private bucket (in 10 MB parts above 100 MB), or dropped into a shared Drive folder, which always enters as a draft.' },
+    { n: '02', title: 'Inspect', detail: 'ffprobe reads duration, resolution and codec, and a thumbnail is generated.', branch: 'the video breaks a network rule: it stays a draft with the reason written on it.', branchNode: 'Draft' },
+    { n: '03', title: 'Copy', detail: 'The caption is drafted with AI help per network, with an optional comment keyword for automated replies.' },
+    { n: '04', title: 'Schedule', detail: 'Placed on a month, week or day calendar. Scheduling is approving: Telegram announces it with a Cancel button.' },
+    { n: '05', title: 'Claim', detail: 'Every 5 minutes n8n claims what is due, with a 15-minute lease.', flag: 'The app decides' },
+    { n: '06', title: 'Publish', detail: 'Meta downloads the video from a 24-hour signed URL; Facebook Reels go through their three-phase upload.', outputs: ['Instagram Reels', 'Facebook Reels'] },
+    { n: '07', title: 'Result', detail: 'n8n reports back; the app records the attempt and decides the state and any retry.', flag: 'The app decides' },
+  ]}
+/>
+
+It is a TypeScript monorepo: React and FullCalendar on the front, Express with PostgreSQL on
+the back, Google sign-in, and a bucket that is private end to end. The browser, ffprobe and
+Meta itself all read the video through signed URLs.
+
+## The decision that mattered: who owns the state
+
+The easy version puts the logic in n8n: a workflow reads the queue, publishes, and marks the
+row. It works until something dies halfway. Then n8n holds half the truth, the database holds
+the other half, and nobody can say whether a video went out.
+
+So n8n holds nothing. It asks the app for work, and the app hands it out with
+`FOR UPDATE SKIP LOCKED` and a 15-minute lease. Progress renews the lease, the result closes
+the attempt, and a job marks any expired lease as a timeout. Every attempt and every state
+change goes into two append-only logs, so the history of a post can be read, never edited.
+
+The subtle case is a success that arrives after a timeout, with the same claim. That one is
+accepted as published, on purpose: otherwise the retry publishes the same video twice, and a
+duplicate on a client's feed is worse than a late status.
+
+A post also has one target per network, and its state is derived from them. Instagram can be
+published while Facebook is retrying; cancelling stops what can still be stopped and leaves
+what is already live alone.
+
+## Deployment
+
+It shares a small ARM instance on AWS with another service, behind that service's nginx,
+separated by host name. The internal API only accepts requests from the n8n server's IP.
+Secrets live in Parameter Store, not on disk in the repo. The database is dumped every
+morning to object storage with 30 days of retention, and if a dump is missing for two days an
+alarm fires: a backup that nobody checks is a hope, not a backup.
+
+## Where it stands
+
+In production since October 31, 2026. The first reel published itself to Instagram and
+Facebook on the first attempt, one minute apart. Since then it has gained AI-assisted copy
+with automatic comment keywords, free time slots, batch scheduling and an upload path that a
+creator can trigger from Claude with a personal key. 277 automated tests, all green.
+
+What is deliberately not there yet: YouTube and TikTok are prepared but not connected, and
+it runs as a single instance for a single team. Opening it to other businesses means
+Facebook Login for Business and Meta's App Review, which is a product decision before it is
+a technical one.

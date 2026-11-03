@@ -1,0 +1,119 @@
+---
+slug: conversational-commerce
+lang: en
+title: Conversational Commerce Engine
+summary: A WhatsApp sales engine that delivers first, validates the payment receipt with a vision model, and never approves one on its own.
+role: Design, build and operations, within Galactic AIMA
+year: '2026'
+stack: [n8n, WhatsApp Business API, LLM APIs, Claude, Redis, Google Sheets, Telegram, AWS EC2]
+metrics:
+  - { value: '11 of ~84', label: 'Nodes touched each time the messaging channel changed' }
+  - { value: '3', label: 'Messaging channels it has run on' }
+  - { value: '2', label: 'Products run on it, the second swapped in place' }
+  - { value: '0', label: 'Receipts approved without a check' }
+links: []
+draft: false
+order: 5
+---
+
+import Pipeline from '../../components/Pipeline.astro';
+
+> The products and the brand are not named here. This is a pilot: small paid campaigns,
+> real conversations, and no sales volume worth quoting yet. Figures as of November 2, 2026.
+
+## The brief
+
+Sell low-priced digital products over WhatsApp to people who arrive from an ad, with nobody on
+shift. The model is unusual: the product is delivered first, and the buyer is then invited to
+pay what they think it is worth by bank transfer and send the receipt. No checkout, no card
+form, no account.
+
+That model only works if three things hold. The conversation has to feel like a person, not a
+menu. Delivery has to happen exactly once. And a receipt has to be checked properly, because
+a fake one costs nothing to send.
+
+## The system
+
+<Pipeline
+  branchLabel="else"
+  flagLegend="Enforced in code, not in the prompt."
+  caption="The model talks. Delivery, follow-ups and approvals are decided by code that the model cannot talk its way around."
+  steps={[
+    { n: '01', title: 'Inbound', detail: 'The official BSP webhook delivers the message; only inbound-message events go through.' },
+    { n: '02', title: 'Buffer', detail: 'Bursts are grouped in Redis for about ten seconds, so three quick messages get one answer.' },
+    { n: '03', title: 'Understand', detail: 'Voice notes are transcribed. Images only reach the receipt validator if the customer is at a stage where a receipt makes sense.' },
+    { n: '04', title: 'Converse', detail: 'An LLM agent answers with the customer state from the sheet and a 7-day memory, split into one bubble per paragraph.' },
+    { n: '05', title: 'Deliver', detail: 'The agent only emits a tag; a separate workflow sends the files, under a per-customer lock against double delivery.', flag: 'Enforced in code' },
+    { n: '06', title: 'Validate', detail: 'A vision model reads the receipt, with today’s date and the receiving account injected by the workflow.', branch: 'it fails twice, or the model errors: a human reviews it, and the customer hears “I am checking it”.', branchNode: 'Human review', flag: 'Enforced in code' },
+    { n: '07', title: 'Follow up', detail: 'At most two messages, inside the 24-hour window, never at night, never after STOP or a payment.', flag: 'Enforced in code' },
+  ]}
+/>
+
+It runs on the self-hosted n8n I operate on AWS, with Redis for memory and locks, a Google
+Sheet as the customer state the sales team can read, and alerts to Telegram.
+
+## Decision one: one door to the channel
+
+Everything that talks to WhatsApp lives in a single sub-workflow with a contract that knows
+nothing about the provider: type, recipient, text, file, caption, delay. Nothing else in the
+system knows which channel it is on.
+
+That looked like over-engineering on day one. It paid for itself three times. The engine has
+run on an unofficial WhatsApp bridge, on Telegram for testing, and on an official BSP. Each
+move touched about 11 of roughly 84 nodes. The agent, the delivery, the receipts, the sheet
+and the follow-ups were not touched once.
+
+## Decision two: the prompt is not a safeguard
+
+A prompt can be argued with. Code cannot. So every rule that would cost money or trust if
+broken lives in code:
+
+- **The model never writes payment details.** It emits a tag; the delivery workflow sends
+  the account numbers from its own configuration. A model cannot invent an account it never
+  sees.
+- **The receipt validator gets its facts injected.** A language model has no clock and does
+  not know whose account is the right one. Without the date and the account in the prompt, it
+  rejected valid receipts and would have accepted transfers to someone else.
+- **It never approves on its own when in doubt.** A model error means "I am checking it" to
+  the customer and an alert to a human. Two rejections escalate to manual review.
+- **Follow-ups are filtered in code:** opted out, already paid, two messages sent, or outside
+  the 24-hour window, and the message does not go, whatever the model thinks.
+
+## What production taught me
+
+Most of what is in this engine was found by running it, not by planning it.
+
+**A deploy silently broke every accent.** A configuration change pushed through an old shell
+re-encoded every non-ASCII character as a question mark, in a product written in Spanish. It
+was caught before any customer saw it, restored character by character from a backup, and
+since then every deploy goes through a script that uploads UTF-8 from a file and verifies
+the live version is identical to the one that was generated.
+
+**WhatsApp truncated the offer at the worst word.** Long replies get cut with "Read more"
+around 700 characters, and the cut landed exactly on the explanation of the pay-after model,
+the argument the whole sale rests on. Replies now go out one paragraph per bubble.
+
+**Real customers broke assumptions.** People with usernames instead of phone numbers, messages
+the platform reports as unavailable, a repeated "yes" that would have delivered twice. Each one
+got a fix and a test conversation before the campaign kept running.
+
+## Swapping the product
+
+In September the first product was retired and a second one took its place. The engine was
+updated in place, keeping every workflow id, after a full backup that can be restored with
+one command. It was tested live from three numbers the same day.
+
+The honest part: today the product still lives in several workflows: prompts, file ids,
+payment accounts, sheet tabs. The next step is already designed: a catalog, so that a new
+product is one row and not a careful edit across seven workflows. It is not built, because it
+should be shaped by the second brand, not guessed before it exists.
+
+## Where it stands
+
+Running since July 2026, now on its second product with a small paid test campaign. Since
+September 30 it has handled 115 real conversations on its own: at ten minutes each, about 19
+hours of attention nobody had to give, nights and weekends included. The rule
+for reading results is about fifty conversations per ad angle before drawing any conclusion,
+and it is not there yet. What it proves today is not revenue. It is that an unattended sales
+conversation can run for months without delivering twice, approving a fake receipt, or
+messaging someone who said stop.
