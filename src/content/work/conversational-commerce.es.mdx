@@ -1,0 +1,123 @@
+---
+slug: conversational-commerce
+lang: es
+title: Motor de ventas conversacional
+summary: Motor de ventas por WhatsApp que entrega primero, valida el comprobante de pago con un modelo de visión y nunca aprueba uno por su cuenta.
+role: Diseño, construcción y operación, dentro de Galactic AIMA
+year: '2026'
+stack: [n8n, WhatsApp Business API, LLM APIs, Claude, Redis, Google Sheets, Telegram, AWS EC2]
+metrics:
+  - { value: '11 de ~84', label: 'Nodos tocados cada vez que cambió el canal de mensajería' }
+  - { value: '3', label: 'Canales de mensajería sobre los que ha corrido' }
+  - { value: '2', label: 'Productos que han corrido en él, el segundo cambiado en sitio' }
+  - { value: '0', label: 'Comprobantes aprobados sin revisión' }
+links: []
+draft: false
+order: 5
+---
+
+import Pipeline from '../../components/Pipeline.astro';
+
+> Aquí no se nombran los productos ni la marca. Es un piloto: campañas pagas pequeñas,
+> conversaciones reales y todavía ningún volumen de ventas que valga la pena citar. Cifras al
+> 2 de noviembre de 2026.
+
+## El encargo
+
+Vender productos digitales de precio bajo por WhatsApp a personas que llegan desde un anuncio,
+sin nadie de turno. El modelo es poco común: primero se entrega el producto, y después se
+invita al comprador a pagar lo que crea que vale por transferencia y a mandar el comprobante.
+Sin checkout, sin formulario de tarjeta, sin cuenta.
+
+Ese modelo solo funciona si se cumplen tres cosas. La conversación tiene que sentirse como una
+persona, no como un menú. La entrega tiene que ocurrir exactamente una vez. Y el comprobante
+hay que revisarlo bien, porque mandar uno falso no cuesta nada.
+
+## El sistema
+
+<Pipeline
+  branchLabel="si no"
+  flagLegend="Se exige en código, no en el prompt."
+  caption="El modelo conversa. La entrega, los seguimientos y las aprobaciones los decide código que el modelo no puede convencer."
+  steps={[
+    { n: '01', title: 'Entrada', detail: 'El webhook del BSP oficial entrega el mensaje; solo pasan los eventos de mensaje entrante.' },
+    { n: '02', title: 'Buffer', detail: 'Las ráfagas se agrupan en Redis unos diez segundos: tres mensajes seguidos reciben una sola respuesta.' },
+    { n: '03', title: 'Entender', detail: 'Las notas de voz se transcriben. Las imágenes solo llegan al validador si el cliente está en una etapa en la que un comprobante tiene sentido.' },
+    { n: '04', title: 'Conversar', detail: 'Un agente LLM responde con el estado del cliente que hay en la hoja y una memoria de 7 días, partido en una burbuja por párrafo.' },
+    { n: '05', title: 'Entregar', detail: 'El agente solo emite una etiqueta; otro workflow manda los archivos, con un candado por cliente contra la doble entrega.', flag: 'Se exige en código' },
+    { n: '06', title: 'Validar', detail: 'Un modelo de visión lee el comprobante, con la fecha de hoy y la cuenta receptora inyectadas por el workflow.', branch: 'falla dos veces, o el modelo da error: lo revisa una persona, y el cliente lee «lo estoy revisando».', branchNode: 'Revisión humana', flag: 'Se exige en código' },
+    { n: '07', title: 'Seguimiento', detail: 'Como máximo dos mensajes, dentro de la ventana de 24 horas, nunca de noche, nunca después de un STOP o de un pago.', flag: 'Se exige en código' },
+  ]}
+/>
+
+Corre sobre el n8n self-hosted que opero en AWS, con Redis para memoria y candados, una hoja de
+Google como estado del cliente que el equipo comercial puede leer, y avisos por Telegram.
+
+## Primera decisión: una sola puerta al canal
+
+Todo lo que habla con WhatsApp vive en un único sub-workflow, con un contrato que no sabe nada
+del proveedor: tipo, destinatario, texto, archivo, pie y pausa. Ninguna otra parte del sistema
+sabe sobre qué canal está.
+
+El primer día parecía sobreingeniería. Se pagó sola tres veces. El motor ha corrido sobre un
+puente no oficial de WhatsApp, sobre Telegram para pruebas y sobre un BSP oficial. Cada cambio
+tocó unos 11 de cerca de 84 nodos. El agente, la entrega, los comprobantes, la hoja y los
+seguimientos no se tocaron ni una vez.
+
+## Segunda decisión: el prompt no es una salvaguarda
+
+A un prompt se le puede discutir. Al código no. Por eso cada regla que costaría dinero o
+confianza si se rompe vive en código:
+
+- **El modelo nunca escribe los datos de pago.** Emite una etiqueta, y el workflow de entrega
+  manda las cuentas desde su propia configuración. Un modelo no puede inventar una cuenta que
+  nunca ve.
+- **Al validador se le inyectan los hechos.** Un modelo de lenguaje no tiene reloj ni sabe cuál
+  es la cuenta correcta. Sin la fecha y la cuenta en el prompt, rechazaba comprobantes válidos
+  y habría aceptado transferencias a otra persona.
+- **Ante la duda, nunca aprueba solo.** Un error del modelo significa «lo estoy revisando» para
+  el cliente y un aviso a una persona. Dos rechazos escalan a revisión manual.
+- **Los seguimientos se filtran en código:** si la persona se dio de baja, ya pagó, ya recibió
+  dos mensajes o está fuera de la ventana de 24 horas, el mensaje no sale, piense lo que piense
+  el modelo.
+
+## Lo que me enseñó producción
+
+Casi todo lo que hay en este motor se encontró haciéndolo correr, no planificándolo.
+
+**Un despliegue rompió todas las tildes en silencio.** Un cambio de configuración subido desde
+una consola vieja recodificó cada carácter no ASCII como un signo de interrogación, en un
+producto escrito en español. Se detectó antes de que lo viera un cliente, se restauró carácter
+por carácter desde un respaldo, y desde entonces cada despliegue pasa por un script que sube
+UTF-8 desde un archivo y comprueba que la versión en vivo es idéntica a la generada.
+
+**WhatsApp cortaba la oferta en la peor palabra.** Las respuestas largas se truncan con «Leer
+más» hacia los 700 caracteres, y el corte caía justo sobre la explicación de pagar después de
+recibir, el argumento sobre el que descansa toda la venta. Ahora las respuestas salen un párrafo
+por burbuja.
+
+**Los clientes reales rompieron supuestos.** Personas con nombre de usuario en vez de número de
+teléfono, mensajes que la plataforma reporta como no disponibles, un «sí» repetido que habría
+entregado dos veces. Cada uno recibió su arreglo y una conversación de prueba antes de que la
+campaña siguiera corriendo.
+
+## Cambiar el producto
+
+En septiembre se retiró el primer producto y otro ocupó su lugar. El motor se actualizó en
+sitio, conservando el id de cada workflow, después de un respaldo completo que se restaura con
+un solo comando. Se probó en vivo desde tres números el mismo día.
+
+La parte honesta: hoy el producto todavía vive en varios workflows: prompts, ids de archivos,
+cuentas de cobro, pestañas de la hoja. El siguiente paso ya está diseñado: un catálogo, para
+que un producto nuevo sea una fila y no una edición cuidadosa en siete workflows. No está
+construido, porque debe darle forma la segunda marca, no adivinarse antes de que exista.
+
+## En qué punto está
+
+Corriendo desde julio de 2026, ahora con su segundo producto y una campaña de prueba pequeña.
+Desde el 30 de septiembre ha atendido solo 115 conversaciones reales: a diez minutos cada una,
+unas 19 horas de atención que nadie tuvo que dar, noches y fines de semana incluidos.
+La regla para leer resultados es unas cincuenta conversaciones por ángulo de anuncio antes de
+sacar conclusiones, y todavía no se llega. Lo que demuestra hoy no son ingresos. Es que una
+conversación de venta sin nadie al frente puede correr durante meses sin entregar dos veces,
+sin aprobar un comprobante falso y sin escribirle a alguien que pidió que no.

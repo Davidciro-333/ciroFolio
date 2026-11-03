@@ -7,8 +7,8 @@ role: Diseño, construcción y operación
 year: '2026'
 stack: [Node.js, TypeScript, React, FFmpeg, Gemini, n8n, PostgreSQL, AWS EC2, Docker]
 metrics:
-  - { value: '755K', label: 'Reproducciones en 124 piezas' }
-  - { value: '127K', label: 'Reproducciones de la mejor pieza' }
+  - { value: '847K', label: 'Reproducciones en 148 piezas' }
+  - { value: '128K', label: 'Reproducciones de la mejor pieza' }
   - { value: '4,9s → 6,6s', label: 'Watch time mediano tras el cambio' }
   - { value: '39/40', label: 'Publicaciones huérfanas recuperadas' }
 links:
@@ -25,8 +25,8 @@ import Compare from '../../components/Compare.astro';
 ## El problema que creía tener
 
 Publicar contenido corto a mano no escala. Elegir imagen, elegir frase, maquetar el
-texto, renderizar, subir a cuatro redes, escribir cuatro copies, programar. Veinte
-minutos por pieza, todos los días, para siempre.
+texto, renderizar, subir a cuatro redes, escribir cuatro copies, programar. Media
+hora por pieza, todos los días, para siempre.
 
 Así que construí la máquina. Funcionó. Y aun así la cuenta se empezó a caer, que
 resultó ser el problema realmente interesante.
@@ -171,10 +171,11 @@ no se publicaría.
 
 ## Estado actual
 
-Funcionando, a tres piezas diarias, y cada pieza sigue pasando por aprobación humana antes de
-publicarse. Al 12 de septiembre de 2026: **124 piezas con métricas, 755.151 reproducciones en
-total y 127.404 en la mejor pieza.** El alcance mediano por pieza es 1.687. Cito la mediana y
-no el promedio (4.313) porque dos piezas tiran del promedio hacia arriba.
+Funcionando, y cada pieza sigue pasando por aprobación humana antes de publicarse. Al 2 de
+noviembre de 2026: **148 piezas con métricas, 847.337 reproducciones en total y 128.397 en la
+mejor pieza.** El alcance mediano por pieza es 1.718. Cito la mediana y no el promedio porque
+dos piezas tiran del promedio hacia arriba. A media hora cada una, esas 148 piezas son unas 74
+horas de publicación manual que nadie tuvo que hacer.
 
 Lo que vale la pena llevarse no es el renderizador. Es que un pipeline de contenido sin
 medición es una máquina para producir más de aquello que ya estabas haciendo mal, solo

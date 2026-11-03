@@ -52,10 +52,27 @@ export const ui = {
     },
     caseStudy: { en: 'Case study', es: 'Caso de estudio' },
     viewCase:  { en: 'Read the case', es: 'Leer el caso' },
+    // Banda de horas ahorradas bajo el bento (src/data/savings.ts).
+    savedUnit:  { en: 'hours of manual work already saved', es: 'horas de trabajo manual ya ahorradas' },
+    savedValue: { en: 'About {value} at {rate} an hour.', es: 'Unos {value} a {rate} la hora.' },
+    savedHow:   { en: 'How it is counted', es: 'Cómo se cuenta' },
+    // Proyección del publicador: fuera del total, con su base escrita al lado.
+    savedPace: {
+      en: 'Plus ≈ {hours} h a month for the whole team on {name}, projected from its current pace in production ({posts} posts in {days} days).',
+      es: 'Y ≈ {hours} h al mes para todo el equipo con {name}, proyectadas a su ritmo actual en producción ({posts} posts en {days} días).',
+    },
+    savedPaceRow: {
+      en: '≈ {perMonth} posts a month at its current pace, {minutes} min each. Projection, not counted in the total',
+      es: '≈ {perMonth} posts al mes a su ritmo actual, {minutes} min cada uno. Proyección, no entra en el total',
+    },
+    savedNote: {
+      en: 'Units are counted from production data as of {date}. Minutes per unit are mid-range estimates of the manual task.',
+      es: 'Las unidades se cuentan en los datos de producción al {date}. Los minutos por unidad son estimaciones de punto medio de la tarea a mano.',
+    },
   },
 
   services: {
-    title: { en: 'Four ways to work together.', es: 'Cuatro formas de trabajar juntos.' },
+    title: { en: 'Five ways to work together.', es: 'Cinco formas de trabajar juntos.' },
     note: {
       en: 'No public rates. You get a number in my first reply.',
       es: 'Sin tarifas públicas. Te doy un número en mi primera respuesta.',
@@ -116,8 +133,8 @@ export const ui = {
     } as Localized<string[]>,
     budget:          { en: 'Budget range', es: 'Presupuesto' },
     budgetOptions: {
-      en: ['Under 2k USD', '2k-5k USD', '5k-15k USD', 'Over 15k USD', 'Not defined yet'],
-      es: ['Menos de 2k USD', '2k-5k USD', '5k-15k USD', 'Más de 15k USD', 'Sin definir'],
+      en: ['Under 2k USD', '2k-5k USD', '5k-15k USD', 'Over 15k USD', 'Full-time role (salary)', 'Not defined yet'],
+      es: ['Menos de 2k USD', '2k-5k USD', '5k-15k USD', 'Más de 15k USD', 'Rol de tiempo completo (salario)', 'Sin definir'],
     } as Localized<string[]>,
     select:          { en: 'Select an option', es: 'Elige una opción' },
     required:        { en: 'required', es: 'obligatorio' },

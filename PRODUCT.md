@@ -10,15 +10,17 @@ web
 
 **Agencias y empresas de EE.UU. y Europa que subcontratan talento en LatAm** para un entregable concreto de automatización con IA. Confirmado por David el 2026-10-05.
 
+**Y, desde el 2026-11-02, empresas que contratan en remoto un rol de automatización a tiempo completo** (ejemplo real: una empresa española de experiencia de cliente que busca a alguien que automatice sus áreas internas). Leen igual que las agencias, pero buscan horas liberadas en un equipo, criterio con los modelos y documentación, no un entregable.
+
 - Pagan en USD y trabajan de forma asíncrona (Slack, Notion, pull requests): texto escrito antes que llamadas.
 - Dentro de la agencia leen dos perfiles: alguien de negocio que filtra en diagonal (qué problema resuelve, si es fiable) y alguien técnico que valida (arquitectura, decisiones, código).
 - Mercado secundario: LatAm hispanohablante, servido por la versión `/es/` y por referidos. No se optimiza para él.
 
 ## Product Purpose
 
-ciroFolio es el portafolio profesional de David Ciro, servido en `www.itsciro.com/cirofolio`. **No es un ejercicio de diseño: es una herramienta comercial con una sola conversión**: que una agencia o empresa escriba para contratar un entregable freelance.
+ciroFolio es el portafolio profesional de David Ciro, servido en `www.itsciro.com/cirofolio`. **No es un ejercicio de diseño: es una herramienta comercial con una sola conversión**: que una agencia o empresa escriba para contratar, sea un entregable por contrato o un rol de tiempo completo en remoto.
 
-Éxito = mensajes entrantes por el formulario o el correo con un encargo concreto.
+Éxito = mensajes entrantes por el formulario o el correo con un encargo concreto o una oferta de puesto.
 
 ## Positioning
 
@@ -61,7 +63,7 @@ Narrativa central: *construyo pilotos que después convierto en plataformas conf
 
 ## Product Principles
 
-1. **Una sola conversión.** Cada sección empuja hacia que una agencia escriba; lo que no ayuda a eso no entra.
+1. **Una sola conversión.** Cada sección empuja hacia que una agencia o empresa escriba; lo que no ayuda a eso no entra.
 2. **Probar, no afirmar.** Sistemas en producción, fechas, métricas y diagramas valen más que adjetivos.
 3. **Primero la prueba, después la oferta.** Quien llega ve qué corre antes de ver cómo contratar.
 4. **Asíncrono por diseño.** El canal de contacto es escrito; el sitio nunca empuja a una llamada.

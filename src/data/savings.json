@@ -1,0 +1,11 @@
+{
+  "asOf": "2026-11-02",
+  "units": {
+    "ad-library-radar": 75,
+    "bebetter-studio": 148,
+    "conversational-commerce": 115
+  },
+  "pace": {
+    "publishing-studio": { "posts": 8, "days": 7 }
+  }
+}

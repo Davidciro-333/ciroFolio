@@ -9,6 +9,10 @@ import type { Localized } from '../i18n/config';
  *
  * Sin precios públicos: la tarifa se decide por dentro y se responde en el
  * primer correo. Un número en la web ancla — bajo encierra, alto descarta.
+ *
+ * Desde el 2026-11-02 también se ofrece tiempo completo en remoto: el lector
+ * puede ser una empresa que contrata empleado, no solo una agencia que
+ * subcontrata un entregable. Va como franja ancha (`wide`) bajo las cuatro.
  */
 
 export interface Engagement {
@@ -17,6 +21,8 @@ export interface Engagement {
   description: Localized;
   /** Formato y condiciones, no tecnologías. */
   tags: Localized<string[]>;
+  /** Ocupa toda la fila, debajo de las modalidades por proyecto. */
+  wide?: boolean;
 }
 
 export const engagements: Engagement[] = [
@@ -79,5 +85,21 @@ export const engagements: Engagement[] = [
       en: ['Evidence-backed', 'Prioritised report', 'Short turnaround'],
       es: ['Con evidencia', 'Informe priorizado', 'Entrega corta'],
     },
+  },
+  {
+    num: '05',
+    title: {
+      en: 'Full-time, remote',
+      es: 'Tiempo completo, en remoto',
+    },
+    description: {
+      en: 'When automation is a role on your team and not a project, I can take it on full time: find where the manual hours go across your departments, build the workflows that connect your internal tools, measure the models against your team’s own judgement, and document every flow so anyone can maintain it.',
+      es: 'Cuando la automatización es un rol en tu equipo y no un proyecto, puedo asumirlo a tiempo completo: encontrar dónde se van las horas manuales en cada área, construir los flujos que conectan tus herramientas internas, medir los modelos contra el criterio de tu propio equipo y documentar cada flujo para que cualquiera pueda mantenerlo.',
+    },
+    tags: {
+      en: ['Full-time', '100% remote', 'Native Spanish'],
+      es: ['Tiempo completo', '100% remoto', 'Español nativo'],
+    },
+    wide: true,
   },
 ];

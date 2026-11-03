@@ -30,8 +30,8 @@ export const timeline: TimelineEntry[] = [
     org: { en: 'Galactic AIMA', es: 'Galactic AIMA' },
     kind: { en: 'Own company', es: 'Empresa propia' },
     description: {
-      en: 'I lead product development and run the infrastructure: the self-hosted n8n on AWS EC2 that the whole team’s automations run on, services provisioned with Terraform and reached through SSM instead of open SSH, and the AI systems the agency sells. I also own QA and fixes on a client platform in production.',
-      es: 'A cargo del desarrollo de productos y de la infraestructura: el n8n self-hosted en AWS EC2 sobre el que corren las automatizaciones de todo el equipo, servicios aprovisionados con Terraform y accesibles por SSM en vez de SSH abierto, y los sistemas de IA que vende la agencia. También llevo el QA y los arreglos de una plataforma de cliente en producción.',
+      en: 'I lead product development and run the infrastructure: the self-hosted n8n on AWS EC2 that the whole team’s automations run on, services provisioned with Terraform and reached through SSM instead of open SSH, the AI systems the agency sells, and the internal tools the team runs on, like its video publishing studio. I also own QA and fixes on a client platform in production.',
+      es: 'A cargo del desarrollo de productos y de la infraestructura: el n8n self-hosted en AWS EC2 sobre el que corren las automatizaciones de todo el equipo, servicios aprovisionados con Terraform y accesibles por SSM en vez de SSH abierto, los sistemas de IA que vende la agencia y las herramientas internas con las que trabaja el equipo, como su estudio de publicación de video. También llevo el QA y los arreglos de una plataforma de cliente en producción.',
     },
     tags: ['AWS', 'Terraform', 'Docker', 'n8n', 'PostgreSQL', 'LLM APIs'],
     active: true,

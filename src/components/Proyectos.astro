@@ -7,6 +7,7 @@
 import { ui } from '../i18n/ui';
 import { useTranslations, localePath } from '../i18n/utils';
 import { projects } from '../data/projects';
+import { savings, hoursOf, totalHours, totalValueUsd, HOURLY_RATE_USD, SAVINGS_AS_OF, publisherPace } from '../data/savings';
 import { LOCALE_TAGS, type Lang } from '../i18n/config';
 
 interface Props {
@@ -16,8 +17,8 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-// Ritmo del bento en 6 columnas: 4+2 / 3+3 / 2+2+2.
-const SPANS = [4, 2, 3, 3, 2, 2, 2];
+// Ritmo del bento en 6 columnas: 4+2 / 3+3 / 2+2+2 / 2+2+2.
+const SPANS = [4, 2, 3, 3, 2, 2, 2, 2, 2, 2];
 // El tile invertido: el polo opuesto de la página, uno solo.
 const INVERTED = 'conversational-commerce';
 
@@ -34,6 +35,36 @@ const sinceLabel = (iso: string) =>
     month: 'short',
     timeZone: 'UTC',
   });
+
+// Horas ahorradas: redondeadas para no fingir una precisión que los minutos
+// estimados no tienen (horas a la decena, dinero a la centena).
+const fmt = (n: number) => n.toLocaleString(LOCALE_TAGS[lang]);
+const usd = (n: number) => `USD ${fmt(n)}`;
+const savedHours = Math.round(totalHours / 10) * 10;
+const savedValue = Math.round(totalValueUsd / 100) * 100;
+const nameOf = (slug: string) => projects.find((p) => p.slug === slug)?.name ?? slug;
+const savedRows = savings.map((s) => ({
+  name: nameOf(s.slug),
+  detail: `${fmt(s.units)} ${t(s.unit)}`,
+  hours: Math.round(hoursOf(s)),
+}));
+const fill = (text: string, values: Record<string, string>) =>
+  text.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? `{${key}}`);
+const paceName = nameOf('publishing-studio');
+const paceHours = Math.round(publisherPace.hoursPerMonth);
+const paceLine = fill(t(ui.work.savedPace), {
+  hours: fmt(paceHours),
+  name: paceName,
+  posts: fmt(publisherPace.posts),
+  days: fmt(publisherPace.days),
+});
+const paceRow = fill(t(ui.work.savedPaceRow), {
+  perMonth: fmt(Math.round(publisherPace.postsPerMonth)),
+  minutes: fmt(publisherPace.minutesEach),
+});
+const asOf = new Date(`${SAVINGS_AS_OF}T00:00:00Z`).toLocaleDateString(LOCALE_TAGS[lang], {
+  year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
+});
 
 const items = projects.map((project, index) => ({
   ...project,
@@ -94,6 +125,25 @@ const items = projects.map((project, index) => ({
       </li>
     ))}
   </ul>
+
+  <div class="saved reveal">
+    <p class="saved-num">≈ {fmt(savedHours)}</p>
+    <p class="saved-label">{t(ui.work.savedUnit)}</p>
+    <p class="saved-value">
+      {t(ui.work.savedValue).replace('{value}', usd(savedValue)).replace('{rate}', usd(HOURLY_RATE_USD))}
+    </p>
+    <p class="saved-pace">{paceLine}</p>
+    <details class="saved-how">
+      <summary>{t(ui.work.savedHow)}</summary>
+      <ul>
+        {savedRows.map((r) => (
+          <li><p><strong>{r.name}</strong>: {r.detail}</p><span>≈ {fmt(r.hours)} h</span></li>
+        ))}
+        <li class="is-pace"><p><strong>{paceName}</strong>: {paceRow}</p><span>≈ {fmt(paceHours)} h/{lang === 'es' ? 'mes' : 'mo'}</span></li>
+      </ul>
+      <p>{t(ui.work.savedNote).replace('{date}', asOf)}</p>
+    </details>
+  </div>
 </section>
 
 <style>
@@ -172,6 +222,61 @@ const items = projects.map((project, index) => ({
     margin-top: 18px;
     font-size: 16px;
   }
+
+  /* Banda de horas ahorradas: la conclusión del bento, no otro tile */
+  .saved {
+    margin-top: 56px;
+    text-align: center;
+  }
+  .saved-num {
+    font-size: clamp(48px, 6vw, 80px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .saved-label {
+    margin-top: 8px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .saved-value {
+    margin-top: 6px;
+    color: var(--ink-2);
+  }
+  .saved-pace {
+    margin: 10px auto 0;
+    max-width: 52ch;
+    font-size: 15px;
+    color: var(--ink-3);
+    text-wrap: balance;
+  }
+  .saved-how {
+    margin: 20px auto 0;
+    max-width: 60ch;
+    font-size: 14px;
+    color: var(--ink-3);
+    text-align: left;
+  }
+  .saved-how summary {
+    cursor: pointer;
+    text-align: center;
+    color: var(--blue);
+  }
+  .saved-how ul {
+    list-style: none;
+    margin-top: 12px;
+  }
+  .saved-how li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+    border-top: 1px solid var(--line);
+  }
+  .saved-how li strong { color: var(--ink-2); }
+  .saved-how li span { flex: none; }
+  .saved-how li.is-pace { font-style: italic; }
+  .saved-how > p { margin-top: 12px; }
 
   @media (max-width: 859px) {
     .bento { grid-template-columns: 1fr; margin-top: 40px; }

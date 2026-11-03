@@ -1,0 +1,107 @@
+---
+slug: publishing-studio
+lang: es
+title: Estudio de publicación de video
+summary: App web donde un equipo creativo sube videos terminados, los pone en un calendario y se publican solos en Instagram y Facebook.
+role: Especificación, construcción, despliegue y operación, dentro de Galactic AIMA
+year: '2026'
+stack: [TypeScript, React, Express, PostgreSQL, Cloudflare R2, n8n, Meta Graph API, Telegram, Docker, AWS]
+metrics:
+  - { value: '4 días', label: 'De la especificación escrita a producción' }
+  - { value: '277', label: 'Pruebas automáticas, todas en verde' }
+  - { value: 'Al 1.er intento', label: 'Primer reel publicado en Instagram y Facebook' }
+  - { value: '0', label: 'Estado de publicación guardado dentro de n8n' }
+links: []
+draft: false
+order: 4
+---
+
+import Pipeline from '../../components/Pipeline.astro';
+
+> Una herramienta interna de Galactic AIMA, descrita aquí sin su nombre de producto. Cifras al
+> 2 de noviembre de 2026.
+
+## El encargo
+
+El equipo de Galactic AIMA graba videos cada semana y los publicaba a mano: abrir Business
+Suite, subir, pegar el copy, elegir la hora y repetir en cada red. La mitad de publicación de
+ese problema ya la había resuelto para mi propio pipeline de contenido, beBetterStudio: una
+cola, un programador en n8n que la vacía, tokens que se renuevan solos y avisos por Telegram.
+
+Lo que se pedía era esa mitad, sin el generador de videos, para varias personas a la vez:
+subes lo que grabaste, lo pones en un calendario y te olvidas.
+
+## Primero la especificación, después el código
+
+Escribí primero la especificación: cada estado del post y de cada red con sus transiciones, el
+contrato entre la app y n8n, el contrato con Telegram, los trabajos programados, las variables
+de entorno y la estrategia de pruebas. Los requisitos de Meta se comprobaron en la
+documentación oficial antes de escribir una línea: Facebook Reels solo acepta de 3 a 90
+segundos, y una página puede publicar 30 posts en 24 horas.
+
+La estrategia de pruebas incluía un n8n falso. Gracias a eso, las cuatro primeras fases
+(acceso, subidas, posts, calendario y la API interna con leases y reintentos) se
+construyeron y probaron sin tocar ninguna cuenta de Meta. Cuando llegó la integración real,
+fue la última pieza y no la primera incógnita.
+
+## El sistema
+
+<Pipeline
+  branchLabel="si no"
+  flagLegend="Decide la app. n8n solo ejecuta."
+  caption="n8n reclama, publica e informa. Nunca decide si un post quedó publicado, falló o se reintenta: eso vive en la base de datos de la app."
+  steps={[
+    { n: '01', title: 'Entrada', detail: 'Se sube desde la web directo a un bucket privado (por partes de 10 MB por encima de 100 MB), o se deja en una carpeta de Drive, y entonces entra siempre como borrador.' },
+    { n: '02', title: 'Inspección', detail: 'ffprobe lee duración, resolución y códec, y se genera la miniatura.', branch: 'el video incumple una regla de la red: se queda en borrador con el motivo escrito.', branchNode: 'Borrador' },
+    { n: '03', title: 'Copy', detail: 'El texto se redacta con ayuda de IA para cada red, con una palabra clave opcional para responder comentarios de forma automática.' },
+    { n: '04', title: 'Programar', detail: 'Se ubica en un calendario de mes, semana o día. Programar es aprobar: Telegram lo anuncia con un botón de Cancelar.' },
+    { n: '05', title: 'Reclamar', detail: 'Cada 5 minutos n8n reclama lo que toca, con un lease de 15 minutos.', flag: 'Decide la app' },
+    { n: '06', title: 'Publicar', detail: 'Meta descarga el video desde una URL firmada de 24 horas; los Reels de Facebook pasan por su subida en tres fases.', outputs: ['Instagram Reels', 'Facebook Reels'] },
+    { n: '07', title: 'Resultado', detail: 'n8n informa; la app registra el intento y decide el estado y si hay reintento.', flag: 'Decide la app' },
+  ]}
+/>
+
+Es un monorepo en TypeScript: React y FullCalendar en el cliente, Express con PostgreSQL en el
+servidor, acceso con Google y un bucket privado de punta a punta. El navegador, ffprobe y la
+propia Meta leen el video con URLs firmadas.
+
+## La decisión que importaba: quién es dueño del estado
+
+La versión fácil pone la lógica en n8n: un workflow lee la cola, publica y marca la fila.
+Funciona hasta que algo se cae a mitad de camino. Entonces n8n tiene media verdad, la base de
+datos la otra media, y nadie puede decir si el video salió o no.
+
+Por eso n8n no guarda nada. Le pide trabajo a la app, y la app lo reparte con
+`FOR UPDATE SKIP LOCKED` y un lease de 15 minutos. El progreso renueva el lease, el resultado
+cierra el intento, y un trabajo programado marca como timeout cualquier lease vencido. Cada
+intento y cada cambio de estado van a dos bitácoras de solo inserción: la historia de un post
+se puede leer, nunca editar.
+
+El caso sutil es un éxito que llega después de un timeout, con el mismo reclamo. Ese se acepta
+como publicado, a propósito: si no, el reintento publica dos veces el mismo video, y un
+duplicado en el feed de un cliente es peor que un estado que llega tarde.
+
+Además, un post tiene un destino por red y su estado se deriva de ellos. Instagram puede estar
+publicado mientras Facebook se reintenta; cancelar detiene lo que todavía se puede detener y
+deja en paz lo que ya está al aire.
+
+## Despliegue
+
+Comparte una instancia ARM pequeña en AWS con otro servicio, detrás del nginx de ese servicio,
+separados por nombre de host. La API interna solo acepta peticiones desde la IP del servidor
+de n8n. Los secretos viven en Parameter Store, no en archivos del repo. La base se respalda
+cada mañana en almacenamiento de objetos con 30 días de retención, y si falta un respaldo dos
+días seguidos salta una alarma: un respaldo que nadie revisa es una esperanza, no un respaldo.
+
+## En qué punto está
+
+En producción desde el 31 de octubre de 2026. El primer reel se publicó solo en Instagram y
+Facebook al primer intento, con un minuto de diferencia. Desde entonces ha sumado copy con
+ayuda de IA y palabra clave automática para comentarios, horarios libres, programación por
+lotes y una vía de subida que un creador puede lanzar desde Claude con una clave personal.
+277 pruebas automáticas, todas en verde.
+
+Lo que deliberadamente todavía no tiene: YouTube y TikTok están preparados pero sin conectar,
+y corre como una sola instancia para un solo equipo. Abrirlo a otros negocios exige Facebook
+Login for Business y la revisión de apps de Meta, que es una decisión de producto antes que
+técnica.

@@ -1,10 +1,11 @@
 import type { Localized } from '../i18n/config';
+import { savings, hoursOf } from './savings';
 
 /**
  * Los proyectos que se listan en la home.
  *
- * Sustituyen a los placeholders "Proyecto Dos / Tres / Cuatro" por los cinco
- * sistemas reales decididos para el sitio. La descripción larga de cada uno
+ * Sustituyen a los placeholders "Proyecto Dos / Tres / Cuatro" por los
+ * sistemas reales del sitio. La descripción larga de cada uno
  * vive en `src/content/work/<slug>.<lang>.md`.
  *
  * `hasCase` controla si la tarjeta enlaza a su caso de estudio: se pone en
@@ -46,9 +47,58 @@ export interface Project {
     | { kind: 'statement'; text: Localized; label: Localized };
 }
 
+const radar = savings.find((s) => s.slug === 'ad-library-radar');
+const radarHours = radar ? Math.round(hoursOf(radar)) : 0;
+
 export const projects: Project[] = [
   {
+    // Anónimo por decisión de David (2026-11-02): herramienta interna de
+    // Galactic AIMA, se describe sin su nombre de producto.
     num: '01',
+    slug: 'publishing-studio',
+    name: 'Video Publishing Studio',
+    year: '2026',
+    description: {
+      en: 'A web app for a creative team: upload finished videos or drop them in a shared Drive folder, write the copy with AI help, place them on a calendar, and they publish themselves to Instagram and Facebook. Scheduling is approving; any post can still be cancelled from Telegram.',
+      es: 'App web para un equipo creativo: sube videos terminados o los deja en una carpeta de Drive, escribe el copy con ayuda de IA, los ubica en un calendario y se publican solos en Instagram y Facebook. Programar es aprobar; cualquier post se puede cancelar desde Telegram.',
+    },
+    tags: ['TypeScript', 'React', 'Express', 'PostgreSQL', 'Cloudflare R2', 'n8n', 'Meta Graph API', 'AWS'],
+    hasCase: true,
+    // Despliegue en el servidor de producción y primer reel publicado solo en
+    // IG y FB. Los workflows [Sched]/[Pub] galactic existen desde el 10-29,
+    // pero entonces publicaban desde la app en local.
+    liveSince: '2026-10-31',
+    short: {
+      en: 'Upload the videos, put them on a calendar and they publish themselves to Instagram and Facebook.',
+      es: 'Subes los videos, los pones en un calendario y se publican solos en Instagram y Facebook.',
+    },
+    figure: { kind: 'value', value: '4', label: { en: 'days from written spec to production', es: 'días de la especificación escrita a producción' } },
+  },
+  {
+    // Anónimo por decisión de David (2026-11-02).
+    num: '02',
+    slug: 'ad-library-radar',
+    name: 'Ad Library Radar',
+    year: '2026',
+    description: {
+      en: "Reads Meta's public Ad Library every day across four Latin American markets and keeps a dated observation of every ad, so an offer that keeps running for weeks, or an advertiser that is scaling, stands out on its own. Cheap filters first, an LLM only for the few dozen that survive, and a morning digest on Telegram.",
+      es: 'Lee cada día la Biblioteca de Anuncios de Meta en cuatro mercados de Latinoamérica y guarda una observación fechada de cada anuncio, para que una oferta que lleva semanas corriendo, o un anunciante que está escalando, salte a la vista sola. Primero filtros baratos, un LLM solo para las decenas que sobreviven, y un resumen cada mañana en Telegram.',
+    },
+    tags: ['Python', 'Playwright', 'PostgreSQL', 'Claude', 'Docker', 'AWS EC2', 'Telegram'],
+    hasCase: false,
+    // Arranque de la instancia en la nube. Sigue archivando barridos a diario
+    // en S3, comprobado el 2026-11-02 (último, del 2026-10-31).
+    liveSince: '2026-08-06',
+    category: { en: 'Market intelligence', es: 'Inteligencia de mercado' },
+    short: {
+      en: "Reads Meta's Ad Library every day and remembers it, so the offers that keep running and the advertisers that scale stand out on their own.",
+      es: 'Lee la Biblioteca de Anuncios de Meta cada día y la recuerda, para que las ofertas que siguen corriendo y los anunciantes que escalan salten a la vista.',
+    },
+    // Días con barridos × 2 h de revisión a mano; se actualiza con savings.json.
+    figure: { kind: 'value', value: `${radarHours} h`, label: { en: 'of manual ad research saved since August', es: 'de investigación manual de anuncios ahorradas desde agosto' } },
+  },
+  {
+    num: '03',
     slug: 'galactic-bills',
     name: 'galacticBills',
     year: '2026',
@@ -66,7 +116,31 @@ export const projects: Project[] = [
     figure: { kind: 'days' },
   },
   {
-    num: '02',
+    num: '04',
+    slug: 'conversational-commerce',
+    name: 'Conversational Commerce Engine',
+    year: '2026',
+    description: {
+      en: 'A sales engine running on WhatsApp through an official BSP: conversational AI, voice transcription, payment-receipt validation and follow-up windows. Two digital products have run on it; the second replaced the first in place, in a day.',
+      es: 'Motor de ventas sobre WhatsApp vía BSP oficial: IA conversacional, transcripción de voz, validación de comprobantes de pago y ventanas de seguimiento. Han corrido dos productos digitales sobre él; el segundo reemplazó al primero en sitio, en un día.',
+    },
+    tags: ['n8n', 'LLM APIs', 'WhatsApp API', 'Redis', 'AWS EC2'],
+    hasCase: true,
+    // Creado como [Devocional] Agent Volver al Altar; desde el 2026-09-30 es
+    // [Palabra] Agent, con el mismo id. Activo comprobado el 2026-11-02.
+    liveSince: '2026-07-16',
+    short: {
+      en: 'A sales engine over an official WhatsApp BSP. It delivers first, validates the payment receipt, and never auto-approves one.',
+      es: 'Motor de ventas sobre WhatsApp vía BSP oficial. Entrega primero, valida el comprobante de pago y nunca aprueba uno solo.',
+    },
+    figure: {
+      kind: 'statement',
+      text: { en: 'Safeguards in code, not in the prompt.', es: 'Salvaguardas en código, no en el prompt.' },
+      label: { en: 'The rule every workflow follows', es: 'La regla que sigue cada workflow' },
+    },
+  },
+  {
+    num: '05',
     slug: 'bebetter-studio',
     name: 'beBetterStudio',
     year: '2026',
@@ -81,53 +155,11 @@ export const projects: Project[] = [
       en: 'A content pipeline with its own analytics. It publishes on a schedule and measures which decisions actually worked.',
       es: 'Un pipeline de contenido con analítica propia. Publica en calendario y mide qué decisiones funcionaron de verdad.',
     },
-    // Dato del caso (bebetter-studio.*.mdx), a 2026-09-12.
-    figure: { kind: 'value', value: '755K', label: { en: 'views across 124 pieces', es: 'vistas en 124 piezas' } },
+    // Dato del caso (bebetter-studio.*.mdx), consultado en la VM el 2026-11-02.
+    figure: { kind: 'value', value: '847K', label: { en: 'views across 148 pieces', es: 'vistas en 148 piezas' } },
   },
   {
-    // Anónimo a petición del socio (Camilo, 2026-09-29): sin nombre, sin
-    // ciudad y sin tamaño de flota, porque juntos identifican el proyecto. El
-    // nombre es marca del cliente y se pedirá después del piloto.
-    num: '03',
-    slug: 'dispatch-platform-qa',
-    name: 'Taxi Dispatch Platform',
-    year: '2026',
-    description: {
-      en: 'QA and fixes for a taxi dispatch platform in production in Colombia, within Galactic AIMA. Seven test circuits, an automated SQL and browser test harness, and every issue filed with its cause, its fix and how to verify it.',
-      es: 'QA y arreglos de una plataforma de despacho de taxis en producción en Colombia, dentro de Galactic AIMA. Siete circuitos de prueba, un arnés automatizado de pruebas SQL y de navegador, y cada issue con su causa, su arreglo y cómo verificarlo.',
-    },
-    tags: ['PostgreSQL', 'Supabase', 'Playwright', 'PWA', 'QA'],
-    hasCase: true,
-    short: {
-      en: 'QA and fixes for a dispatch platform in production in Colombia. Every issue filed with its cause, its fix and how to verify it.',
-      es: 'QA y arreglos de una plataforma de despacho en producción en Colombia. Cada issue con su causa, su arreglo y cómo verificarlo.',
-    },
-    figure: { kind: 'value', value: '7', label: { en: 'test circuits, automated SQL and browser harness', es: 'circuitos de prueba, arnés automatizado de SQL y navegador' } },
-  },
-  {
-    num: '04',
-    slug: 'conversational-commerce',
-    name: 'Conversational Commerce Engine',
-    year: '2026',
-    description: {
-      en: 'A multi-product sales engine running on WhatsApp through an official BSP: conversational AI, voice transcription, payment-receipt validation and follow-up windows. Launching a new product is configuration, not a rewrite.',
-      es: 'Motor de ventas multi-producto sobre WhatsApp vía BSP oficial: IA conversacional, transcripción de voz, validación de comprobantes de pago y ventanas de seguimiento. Lanzar un producto nuevo es configuración, no reescritura.',
-    },
-    tags: ['n8n', 'Claude', 'WhatsApp API', 'Redis', 'AWS EC2'],
-    hasCase: false,
-    liveSince: '2026-07-16', // [Devocional] Agent Volver al Altar
-    short: {
-      en: 'A multi-product sales engine over an official WhatsApp BSP. Conversational AI, voice transcription, payment-receipt validation and follow-up windows.',
-      es: 'Motor de ventas multi-producto sobre WhatsApp vía BSP oficial. IA conversacional, transcripción de voz, validación de comprobantes y ventanas de seguimiento.',
-    },
-    figure: {
-      kind: 'statement',
-      text: { en: 'Configuration, not a rewrite.', es: 'Configuración, no reescritura.' },
-      label: { en: 'How a new product launches on the engine', es: 'Así se lanza un producto nuevo en el motor' },
-    },
-  },
-  {
-    num: '05',
+    num: '06',
     slug: 'linkedin-publisher',
     name: 'LinkedIn Publisher',
     year: '2026',
@@ -145,7 +177,45 @@ export const projects: Project[] = [
     figure: { kind: 'value', value: '14', label: { en: 'sources curated', es: 'fuentes curadas' } },
   },
   {
-    num: '06',
+    // Anónimo a petición del socio (Camilo, 2026-09-29): sin nombre, sin
+    // ciudad y sin tamaño de flota, porque juntos identifican el proyecto. El
+    // nombre es marca del cliente y se pedirá después del piloto.
+    num: '07',
+    slug: 'dispatch-platform-qa',
+    name: 'Taxi Dispatch Platform',
+    year: '2026',
+    description: {
+      en: 'QA and fixes for a taxi dispatch platform in production in Colombia, within Galactic AIMA. Seven test circuits, an automated SQL and browser test harness, and every issue filed with its cause, its fix and how to verify it.',
+      es: 'QA y arreglos de una plataforma de despacho de taxis en producción en Colombia, dentro de Galactic AIMA. Siete circuitos de prueba, un arnés automatizado de pruebas SQL y de navegador, y cada issue con su causa, su arreglo y cómo verificarlo.',
+    },
+    tags: ['PostgreSQL', 'Supabase', 'Playwright', 'PWA', 'QA'],
+    hasCase: true,
+    short: {
+      en: 'QA and fixes for a dispatch platform in production in Colombia. Every issue filed with its cause, its fix and how to verify it.',
+      es: 'QA y arreglos de una plataforma de despacho en producción en Colombia. Cada issue con su causa, su arreglo y cómo verificarlo.',
+    },
+    figure: { kind: 'value', value: '7', label: { en: 'test circuits, automated SQL and browser harness', es: 'circuitos de prueba, arnés automatizado de SQL y navegador' } },
+  },
+  {
+    num: '08',
+    slug: 'ai-video-ads',
+    name: 'AI Video Ads',
+    year: '2026',
+    description: {
+      en: "A production pipeline for 30-second ads for local businesses: it researches the business from its public listings, generates shots from the business's own photos with Nano Banana Pro and Veo 3.1 on Vertex AI, and cuts them to the beat of the music. In progress: the first ads are made, the first client is not signed yet.",
+      es: 'Pipeline de producción de anuncios de 30 segundos para negocios locales: investiga el negocio en sus perfiles públicos, genera planos a partir de sus propias fotos con Nano Banana Pro y Veo 3.1 en Vertex AI, y los monta al compás de la música. En proceso: los primeros anuncios están hechos, el primer cliente aún no está firmado.',
+    },
+    tags: ['Vertex AI', 'Veo 3.1', 'Nano Banana Pro', 'Python', 'FFmpeg', 'Apify', 'HyperFrames'],
+    hasCase: false,
+    category: { en: 'In progress', es: 'En proceso' },
+    short: {
+      en: 'Researches a local business, generates shots from its own photos and cuts a 30-second ad to the beat.',
+      es: 'Investiga un negocio local, genera planos a partir de sus propias fotos y monta un anuncio de 30 segundos al compás.',
+    },
+    figure: { kind: 'value', value: '~$7', label: { en: 'in model credits per 30-second ad', es: 'en créditos de modelos por anuncio de 30 s' } },
+  },
+  {
+    num: '09',
     slug: 'signal-factory',
     name: 'SignalFactory',
     year: '2026',
@@ -163,7 +233,7 @@ export const projects: Project[] = [
     figure: { kind: 'value', value: '2', label: { en: 'YouTube channels, in two languages', es: 'canales de YouTube, en dos idiomas' } },
   },
   {
-    num: '07',
+    num: '10',
     slug: 'ciro-finanzas',
     name: 'ciro_finanzas',
     year: '2026',
