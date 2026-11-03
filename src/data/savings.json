@@ -6,6 +6,9 @@
     "conversational-commerce": 115
   },
   "pace": {
-    "publishing-studio": { "posts": 8, "days": 7 }
+    "publishing-studio": {
+      "posts": 8,
+      "days": 7
+    }
   }
 }
